@@ -1,0 +1,161 @@
+{
+    "logs": [
+        {
+            "id": "69025d2212a368fa57138729",
+            "timestamp": "2025-10-29T18:29:54.335000",
+            "level": "info",
+            "message": "Starting agent run with message: bernulli para n = 10",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "69025cdd12a368fa57138726",
+            "timestamp": "2025-10-29T18:28:45.023000",
+            "level": "info",
+            "message": "Starting agent run with message: oi",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "69025b0512a368fa57138723",
+            "timestamp": "2025-10-29T18:20:53.425000",
+            "level": "info",
+            "message": "Starting agent run with message: quanto e bernoulli para n = 10",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "69025a9d12a368fa57138720",
+            "timestamp": "2025-10-29T18:19:09.465000",
+            "level": "info",
+            "message": "Starting agent run with message: suma 234 e 5609",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "6902123412a368fa5713871d",
+            "timestamp": "2025-10-29T13:10:10.378000",
+            "level": "info",
+            "message": "Starting agent run with message: Olá",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "690211b712a368fa5713871c",
+            "timestamp": "2025-10-29T13:08:03.367000",
+            "level": "info",
+            "message": "Starting agent run with message: oi",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "69020fd512a368fa5713871b",
+            "timestamp": "2025-10-29T13:00:01.324000",
+            "level": "info",
+            "message": "Starting agent run with message: clase estudiante com nome edad",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "69020eff12a368fa5713871a",
+            "timestamp": "2025-10-29T12:56:27.675000",
+            "level": "info",
+            "message": "Starting agent run with message: Olá",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "69020e5b12a368fa57138719",
+            "timestamp": "2025-10-29T12:53:41.861000",
+            "level": "info",
+            "message": "Starting agent run with message: olá",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "69020d9412a368fa57138718",
+            "timestamp": "2025-10-29T12:50:21.246000",
+            "level": "info",
+            "message": "Starting agent run with message: Olá",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "69006d8c0501ca6433cb1e77",
+            "timestamp": "2025-10-28T04:15:24.287000",
+            "level": "info",
+            "message": "Demo log entry",
+            "resource_id": "demo-resource",
+            "custom_object": null
+        },
+        {
+            "id": "68f75cfc702ee87c3dff6f91",
+            "timestamp": "2025-10-21T10:14:07.103000",
+            "level": "info",
+            "message": "Starting agent run with message: oi",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "68f24a6c094deeaaf79fc2bc",
+            "timestamp": "2025-10-17T13:53:48.440000",
+            "level": "info",
+            "message": "Starting agent run with message: olá",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "68f2492c094deeaaf79fc2bb",
+            "timestamp": "2025-10-17T13:48:26.750000",
+            "level": "error",
+            "message": "Error during agent run:",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "68f2492c094deeaaf79fc2ba",
+            "timestamp": "2025-10-17T13:48:15.579000",
+            "level": "info",
+            "message": "Starting agent run with message: olá",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "68f23976cb8c2a0693f8dfb1",
+            "timestamp": "2025-10-17T12:41:24.008000",
+            "level": "info",
+            "message": "Starting agent run with message: Olá",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "68f17f69cb8c2a0693f8dfb0",
+            "timestamp": "2025-10-16T23:27:31.930000",
+            "level": "info",
+            "message": "Starting agent run with message: cria uma clase gato com propriedad nome e raza",
+            "resource_id": null,
+            "custom_object": null
+        },
+        {
+            "id": "68f17f32cb8c2a0693f8dfaf",
+            "timestamp": "2025-10-16T23:26:39.275000",
+            "level": "info",
+            "message": "Starting agent run with message: oi",
+            "resource_id": null,
+            "custom_object": null
+        }
+    ],
+    "metadata": {
+        "total_count": 18,
+        "returned_count": 18,
+        "limit": 100,
+        "offset": 0,
+        "has_more": false
+    },
+    "filters": {
+        "level": null,
+        "resource_id": null,
+        "start_date": null,
+        "end_date": null
+    }
+}
