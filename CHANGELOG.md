@@ -5,9 +5,13 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] - 2024-12-09
 
 ### Added
+- **Handoffs as Tool Messages**: Agent handoffs (`on_handoff`) now automatically create a `tool` type message in addition to the `Transfer` record
+  - New tool message with `tool_name="transfer_to_agent"` for frontend visualization
+  - Includes `from_agent`, `to_agent`, and `reason` (when available) in `tool_calls` arguments
+  - Enables frontend to display handoffs as tool calls without synthetic message generation
 - Full LangChain integration with `MonkAICallbackHandler`
 - Graceful import handling for optional dependencies (LangChain, OpenAI Agents)
 - Batch upload support for improved performance
@@ -24,6 +28,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - LangChain integration can now be imported without LangChain installed (raises error only on instantiation)
 - Consistent token field presence prevents analytics inconsistencies
 - Import path compatibility with updated openai-agents-python package
+
+## [0.1.0] - 2024-01-XX
+
+### Added
+- Initial release
+- OpenAI Agents integration via `MonkAIRunHooks`
+- Python logging integration via `MonkAILogHandler`
+- Core client for conversation and log uploads
+- Batch upload support
+- Token usage tracking with segmentation
+- Multi-agent transfer tracking
+- JSON file upload utilities
 
 ## [0.1.0] - 2024-01-XX
 

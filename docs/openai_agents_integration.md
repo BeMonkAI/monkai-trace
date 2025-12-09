@@ -122,11 +122,33 @@ MonkAI provides detailed token breakdown:
 - **Memory Tokens**: Conversation history, context window
 
 ### Multi-Agent Handoffs
+
 When agents hand off to each other, MonkAI tracks:
 - Source agent name
 - Target agent name
 - Handoff timestamp
 - Token usage per agent
+- **🆕 Handoff reason** (when provided)
+
+**New in v0.2.0**: Handoffs are now also recorded as `tool` type messages with `tool_name="transfer_to_agent"`. This allows the frontend to display handoffs inline with other tool calls, providing a complete visualization of the agent flow.
+
+Example handoff message structure:
+```python
+Message(
+    role="tool",
+    content="Transferindo conversa para Billing Agent",
+    sender="Triage Agent",
+    tool_name="transfer_to_agent",
+    tool_calls=[{
+        "name": "transfer_to_agent",
+        "arguments": {
+            "from_agent": "Triage Agent",
+            "to_agent": "Billing Agent",
+            "timestamp": "2024-12-09T15:30:00.000Z"
+        }
+    }]
+)
+```
 
 ### Tool Calls
 All tool invocations are tracked with:
@@ -193,7 +215,7 @@ After running your agent with MonkAI hooks:
 4. **Monitor token usage** to optimize costs
 5. **Review handoff patterns** to improve agent routing
 
-## Example: Multi-Agent System
+## Example: Multi-Agent System with Handoffs
 
 ```python
 from agents import Agent, Runner
@@ -216,15 +238,15 @@ async def main():
         instructions="Handle technical issues"
     )
     
-    # Triage agent
+    # Triage agent with handoff capability
     triage_agent = Agent(
         name="Triage",
-        instructions="Route to specialist",
+        instructions="Route to specialist based on user needs",
         handoffs=[billing_agent, tech_agent]
     )
     
     # Run with tracking (capture user message explicitly)
-    user_message = "I was charged twice"
+    user_message = "I was charged twice for my subscription"
     hooks.set_user_input(user_message)
     result = await Runner.run(
         triage_agent,
@@ -232,8 +254,51 @@ async def main():
         hooks=hooks
     )
     
-    # MonkAI tracks the handoff flow automatically
-    # User messages, tool calls, and transfers are all captured
+    # MonkAI tracks:
+    # 1. User message: "I was charged twice..."
+    # 2. Triage agent response
+    # 3. Handoff tool message: transfer_to_agent (Triage → Billing Agent)
+    # 4. Billing Agent response
+    # 5. Token usage for each agent
+```
+
+### What Gets Recorded
+
+When a handoff occurs, MonkAI automatically creates:
+
+1. **Transfer Record** - For analytics and flow visualization:
+   ```python
+   Transfer(
+       from_agent="Triage",
+       to_agent="Billing Agent",
+       timestamp="2024-12-09T15:30:00.000Z"
+   )
+   ```
+
+2. **Tool Message** - For inline display with other messages:
+   ```python
+   Message(
+       role="tool",
+       content="Transferindo conversa para Billing Agent",
+       tool_name="transfer_to_agent",
+       tool_calls=[{
+           "name": "transfer_to_agent",
+           "arguments": {
+               "from_agent": "Triage",
+               "to_agent": "Billing Agent",
+               "timestamp": "2024-12-09T15:30:00.000Z"
+           }
+       }]
+   )
+   ```
+
+### Viewing Handoffs in the Dashboard
+
+In the MonkAI dashboard, handoffs are displayed with:
+- **Amber-colored badge** indicating "Transferência de Agente"
+- **Arrow visualization** showing `Agent A → Agent B`
+- **Reason** (if provided during handoff)
+- **Position** in the conversation timeline alongside other messages
 ```
 
 ## Troubleshooting

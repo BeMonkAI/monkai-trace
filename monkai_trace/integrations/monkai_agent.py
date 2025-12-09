@@ -210,14 +210,35 @@ class MonkAIAgentHooks:
             context: Optional agent context
             reason: Optional reason for handoff
         """
+        timestamp = datetime.utcnow().isoformat()
+        
         transfer = Transfer(
             from_agent=from_agent.name,
             to_agent=to_agent.name,
             reason=reason,
-            timestamp=datetime.utcnow().isoformat()
+            timestamp=timestamp
         )
         
         self._transfers.append(transfer)
+        
+        # Also create a tool message for the handoff (for frontend visualization)
+        msg = Message(
+            role="tool",
+            content=f"Transferindo conversa para {to_agent.name}",
+            sender=from_agent.name,
+            tool_name="transfer_to_agent",
+            tool_calls=[{
+                "name": "transfer_to_agent",
+                "arguments": {
+                    "from_agent": from_agent.name,
+                    "to_agent": to_agent.name,
+                    "reason": reason,
+                    "timestamp": timestamp
+                }
+            }],
+            timestamp=timestamp
+        )
+        self._messages.append(msg)
         
         logger.info(f"Handoff: {from_agent.name} → {to_agent.name}")
     

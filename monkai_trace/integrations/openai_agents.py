@@ -278,13 +278,31 @@ class MonkAIRunHooks(RunHooks):
         """Called when agent hands off to another agent"""
         print(f"[MonkAI] Handoff: {from_agent.name} → {to_agent.name}")
         
+        timestamp = datetime.utcnow().isoformat()
+        
         # Track the transfer
         transfer = Transfer(
             from_agent=from_agent.name,
             to_agent=to_agent.name,
-            timestamp=datetime.utcnow().isoformat()
+            timestamp=timestamp
         )
         self._transfers.append(transfer)
+        
+        # Also create a tool message for the handoff (for frontend visualization)
+        self._messages.append(Message(
+            role="tool",
+            content=f"Transferindo conversa para {to_agent.name}",
+            sender=from_agent.name,
+            tool_name="transfer_to_agent",
+            tool_calls=[{
+                "name": "transfer_to_agent",
+                "arguments": {
+                    "from_agent": from_agent.name,
+                    "to_agent": to_agent.name,
+                    "timestamp": timestamp
+                }
+            }]
+        ))
     
     async def on_tool_start(
         self,

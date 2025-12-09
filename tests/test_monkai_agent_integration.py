@@ -183,7 +183,7 @@ class TestMonkAIAgentHooks:
         assert hooks._token_counts["output"] > 0
     
     def test_on_handoff(self, hooks, mock_agent):
-        """Test on_handoff tracks agent transfers"""
+        """Test on_handoff tracks agent transfers and creates tool message"""
         from_agent = Mock(name="Triage Agent")
         from_agent.name = "Triage Agent"
         
@@ -196,6 +196,7 @@ class TestMonkAIAgentHooks:
             reason="Billing inquiry detected"
         )
         
+        # Should track the transfer
         assert len(hooks._transfers) == 1
         transfer = hooks._transfers[0]
         assert isinstance(transfer, Transfer)
@@ -203,6 +204,16 @@ class TestMonkAIAgentHooks:
         assert transfer.to_agent == "Billing Agent"
         assert transfer.reason == "Billing inquiry detected"
         assert transfer.timestamp is not None
+        
+        # Should ALSO create a tool message for frontend visualization
+        assert len(hooks._messages) == 1
+        msg = hooks._messages[0]
+        assert msg.role == "tool"
+        assert msg.tool_name == "transfer_to_agent"
+        assert "Billing Agent" in msg.content
+        assert msg.tool_calls[0]["arguments"]["from_agent"] == "Triage Agent"
+        assert msg.tool_calls[0]["arguments"]["to_agent"] == "Billing Agent"
+        assert msg.tool_calls[0]["arguments"]["reason"] == "Billing inquiry detected"
     
     def test_on_tool_start(self, hooks, mock_agent):
         """Test on_tool_start tracks tool execution"""

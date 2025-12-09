@@ -89,6 +89,14 @@ async def test_on_handoff(mock_context):
     assert len(hooks._transfers) == 1
     assert hooks._transfers[0].from_agent == "Agent A"
     assert hooks._transfers[0].to_agent == "Agent B"
+    
+    # Should ALSO create a tool message for frontend visualization
+    assert len(hooks._messages) == 1
+    assert hooks._messages[0].role == "tool"
+    assert hooks._messages[0].tool_name == "transfer_to_agent"
+    assert "Agent B" in hooks._messages[0].content
+    assert hooks._messages[0].tool_calls[0]["arguments"]["from_agent"] == "Agent A"
+    assert hooks._messages[0].tool_calls[0]["arguments"]["to_agent"] == "Agent B"
 
 
 @pytest.mark.asyncio

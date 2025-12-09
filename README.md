@@ -1,6 +1,6 @@
-# monkai-trace
+# MonkAI Trace - Python SDK
 
-Official Python client for [MonkAI](https://www.monkai.com.br) - Monitor, analyze, and optimize your AI agents.
+Official Python client for [MonkAI](https://monkai.ai) - Monitor, analyze, and optimize your AI agents.
 
 ## Features
 
@@ -265,7 +265,7 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ## Support
 
-- [Documentation](https://www.monkai.com.br/docs)
+- [Documentation](https://docs.monkai.ai)
 - [GitHub Issues](https://github.com/monkai/monkai-trace-python/issues)
 - [Discord Community](https://discord.gg/monkai)
 
