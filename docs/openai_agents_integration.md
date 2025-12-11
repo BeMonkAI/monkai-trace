@@ -157,6 +157,39 @@ All tool invocations are tracked with:
 - Output results
 - Execution time
 
+### Internal OpenAI Tools (New in v0.2.1)
+
+MonkAI automatically captures OpenAI's built-in internal tools that don't trigger regular `on_tool_start`/`on_tool_end` hooks. These tools are identified from the response's `raw_items`:
+
+| Tool | Type ID | What's Captured |
+|------|---------|-----------------|
+| **Web Search** | `web_search_call` | Query, sources, search results |
+| **File Search** | `file_search_call` | Query, file IDs, matched results |
+| **Code Interpreter** | `code_interpreter_call` | Code, language, execution output |
+| **Computer Use** | `computer_call` | Action type, output |
+
+Example internal tool message structure:
+```python
+Message(
+    role="tool",
+    content="Internal tool: web_search",
+    sender="Research Agent",
+    tool_name="web_search",
+    is_internal_tool=True,
+    internal_tool_type="web_search_call",
+    tool_calls=[{
+        "name": "web_search",
+        "type": "web_search_call",
+        "id": "ws_abc123...",
+        "status": "completed",
+        "arguments": {"query": "latest AI news", "sources": [...]},
+        "result": {"content": "..."}
+    }]
+)
+```
+
+These internal tools appear alongside your custom tools in the MonkAI Conversations panel, providing complete visibility into all tool usage during agent execution.
+
 ## Advanced Features
 
 ### Batch Upload

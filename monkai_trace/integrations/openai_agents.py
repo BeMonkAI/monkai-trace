@@ -196,6 +196,9 @@ class MonkAIRunHooks(RunHooks):
         """Called when agent completes - upload conversation to MonkAI"""
         print(f"[MonkAI] Agent '{agent.name}' ended")
         
+        # Capture internal tools from response raw_items (web_search, file_search, etc.)
+        self._capture_internal_tools(output, context, agent.name)
+        
         # Extract usage statistics
         usage = getattr(context, 'usage', None)
         if usage is None:
@@ -377,6 +380,108 @@ class MonkAIRunHooks(RunHooks):
                 if not has_user:
                     self._messages.append(Message(role="user", content=self._user_input, sender="user"))
                     print(f"[MonkAI] Captured user message from on_llm_start: {self._user_input[:50]}...")
+    
+    def _capture_internal_tools(self, output: Any, context: RunContextWrapper, agent_name: str) -> None:
+        """
+        Capture OpenAI internal tools from response raw_items.
+        These tools (web_search, file_search, code_interpreter) don't trigger on_tool_start/end hooks.
+        """
+        # Map of internal tool types
+        internal_tool_types = {
+            'web_search_call': 'web_search',
+            'file_search_call': 'file_search',
+            'code_interpreter_call': 'code_interpreter',
+            'computer_call': 'computer_use',
+        }
+        
+        raw_items = None
+        
+        # Try to get raw_items from output
+        if hasattr(output, 'raw_items') and output.raw_items:
+            raw_items = output.raw_items
+        # Try from context.response
+        elif hasattr(context, 'response') and hasattr(context.response, 'raw_items'):
+            raw_items = context.response.raw_items
+        # Try from output as iterable
+        elif hasattr(output, '__iter__') and not isinstance(output, str):
+            try:
+                raw_items = list(output)
+            except:
+                pass
+        
+        if not raw_items:
+            return
+        
+        captured_count = 0
+        for item in raw_items:
+            item_type = getattr(item, 'type', None)
+            
+            if item_type in internal_tool_types:
+                tool_name = internal_tool_types[item_type]
+                tool_details = self._parse_internal_tool_details(item, item_type)
+                
+                self._messages.append(Message(
+                    role="tool",
+                    content=f"Internal tool: {tool_name}",
+                    sender=agent_name,
+                    tool_name=tool_name,
+                    is_internal_tool=True,
+                    internal_tool_type=item_type,
+                    tool_calls=[{
+                        "name": tool_name,
+                        "type": item_type,
+                        "id": getattr(item, 'id', None),
+                        "status": getattr(item, 'status', None),
+                        "arguments": tool_details.get('arguments'),
+                        "result": tool_details.get('result'),
+                    }]
+                ))
+                captured_count += 1
+        
+        if captured_count > 0:
+            print(f"[MonkAI] Captured {captured_count} internal tool(s)")
+    
+    def _parse_internal_tool_details(self, item: Any, item_type: str) -> Dict:
+        """Parse specific details for each internal tool type"""
+        
+        if item_type == 'web_search_call':
+            action = getattr(item, 'action', None)
+            return {
+                "arguments": {
+                    "query": getattr(action, 'query', None) if action else None,
+                    "sources": getattr(action, 'sources', None) if action else None,
+                },
+                "result": getattr(item, 'result', None)
+            }
+        
+        elif item_type == 'file_search_call':
+            return {
+                "arguments": {
+                    "query": getattr(item, 'query', None),
+                    "file_ids": getattr(item, 'file_ids', None),
+                },
+                "result": getattr(item, 'results', None)
+            }
+        
+        elif item_type == 'code_interpreter_call':
+            return {
+                "arguments": {
+                    "code": getattr(item, 'code', None),
+                    "language": getattr(item, 'language', 'python'),
+                },
+                "result": getattr(item, 'output', None)
+            }
+        
+        elif item_type == 'computer_call':
+            action = getattr(item, 'action', None)
+            return {
+                "arguments": {
+                    "action_type": getattr(action, 'type', None) if action else None,
+                },
+                "result": getattr(item, 'output', None)
+            }
+        
+        return {"arguments": None, "result": None}
     
     async def _flush_batch(self):
         """Upload batched records"""

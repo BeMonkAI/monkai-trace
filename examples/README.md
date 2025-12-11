@@ -100,6 +100,28 @@ python examples/openai_agents_multi_agent.py --token tk_your_token --namespace s
 
 ---
 
+### 6. Internal Tools (Web Search, Code Interpreter) ⭐ NEW
+**File**: `openai_agents_internal_tools.py`
+
+Capture OpenAI's built-in internal tools:
+- ✅ Web search queries and results
+- ✅ File search with document retrieval
+- ✅ Code interpreter execution
+- ✅ Computer use actions
+- ✅ Multi-tool agent patterns
+
+**Run:**
+```bash
+python examples/openai_agents_internal_tools.py --token tk_your_token --namespace internal-tools-demo
+```
+
+**What you'll see:**
+- Internal tools automatically captured from `response.raw_items`
+- Tools displayed alongside custom tools in MonkAI dashboard
+- Query, arguments, and results tracked for each tool type
+
+---
+
 ## Other Integrations
 
 ### 6. LangChain
@@ -171,11 +193,8 @@ python examples/openai_agents_multi_agent.py --token tk_your_token
 ### I have multiple specialized agents
 → Start with: `openai_agents_multi_agent.py`
 
----
-
-## Example Output
-
-All examples include detailed console output showing:
+### I'm using OpenAI's web search, code interpreter, or file search
+→ Start with: `openai_agents_internal_tools.py`
 - 📋 Session IDs
 - 👤 User IDs
 - ⏱️ Session duration

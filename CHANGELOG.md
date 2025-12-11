@@ -5,6 +5,23 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2024-12-11
+
+### Added
+- **Internal OpenAI Tools Capture**: Automatic capture of OpenAI's built-in tools that don't trigger regular hooks
+  - `web_search_call` - Web search queries, sources, and results
+  - `file_search_call` - File search queries and matched results
+  - `code_interpreter_call` - Code execution with language and output
+  - `computer_call` - Computer use actions and outputs
+- New `Message` fields: `is_internal_tool` and `internal_tool_type` for identifying internal tools
+- New `_capture_internal_tools()` method in `MonkAIRunHooks` to extract tools from `response.raw_items`
+- New `_parse_internal_tool_details()` method for type-specific argument/result extraction
+- Documentation section on internal tools in `docs/openai_agents_integration.md`
+
+### Changed
+- `_format_messages()` now includes `is_internal_tool` and `internal_tool_type` fields in API output
+- Internal tools appear alongside custom tools in MonkAI Conversations panel
+
 ## [0.2.0] - 2024-12-09
 
 ### Added

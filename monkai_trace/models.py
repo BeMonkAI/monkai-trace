@@ -17,6 +17,8 @@ class Message(BaseModel):
     annotations: Optional[List[Any]] = None
     audio: Optional[Any] = None
     function_call: Optional[Dict] = None
+    is_internal_tool: Optional[bool] = Field(False, description="Whether this is an OpenAI internal tool (web_search, file_search, etc.)")
+    internal_tool_type: Optional[str] = Field(None, description="Type of internal tool: web_search_call, file_search_call, code_interpreter_call")
 
 
 class Transfer(BaseModel):
@@ -171,6 +173,11 @@ class ConversationRecord(BaseModel):
                         msg_dict["tool_call_id"] = m.tool_call_id
                     if m.tool_name:
                         msg_dict["tool_name"] = m.tool_name
+                    # Include internal tool fields if present
+                    if m.is_internal_tool:
+                        msg_dict["is_internal_tool"] = m.is_internal_tool
+                    if m.internal_tool_type:
+                        msg_dict["internal_tool_type"] = m.internal_tool_type
                     formatted.append(msg_dict)
                 else:
                     formatted.append(m)
@@ -187,6 +194,11 @@ class ConversationRecord(BaseModel):
                 msg_dict["tool_call_id"] = self.msg.tool_call_id
             if self.msg.tool_name:
                 msg_dict["tool_name"] = self.msg.tool_name
+            # Include internal tool fields if present
+            if self.msg.is_internal_tool:
+                msg_dict["is_internal_tool"] = self.msg.is_internal_tool
+            if self.msg.internal_tool_type:
+                msg_dict["internal_tool_type"] = self.msg.internal_tool_type
             return msg_dict
         else:
             return self.msg

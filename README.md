@@ -9,6 +9,7 @@ Official Python client for [MonkAI](https://monkai.ai) - Monitor, analyze, and o
 - 📁 **Upload from JSON files** (supports your existing data)
 - 🔄 **Batch processing** with automatic chunking and improved error handling
 - 🛡️ **Graceful optional dependencies** - Import without dependencies, error only on use
+- 🌐 **HTTP REST API** - Language-agnostic tracing for any runtime (Deno, Go, Node.js, etc.)
 - 🔌 **Framework Integrations**:
   - ✅ **MonkAI Agent** - Native framework with automatic tracking
   - ✅ **LangChain** - Full callback handler support (v0.2+)
@@ -137,6 +138,38 @@ result = await MonkAIRunHooks.run_with_tracking(agent, "Hello!", hooks)
 # ✅ Multiple capture methods + final guarantee = reliable user message tracking!
 ```
 
+### HTTP REST API (Language-Agnostic)
+
+For non-Python runtimes or when you prefer direct HTTP calls:
+
+```python
+import requests
+
+MONKAI_API = "https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api"
+TOKEN = "tk_your_token"
+
+# Create session
+session = requests.post(
+    f"{MONKAI_API}/sessions/create",
+    headers={"tracer_token": TOKEN, "Content-Type": "application/json"},
+    json={"namespace": "my-agent", "user_id": "user123"}
+).json()
+
+# Trace LLM call
+requests.post(
+    f"{MONKAI_API}/traces/llm",
+    headers={"tracer_token": TOKEN, "Content-Type": "application/json"},
+    json={
+        "session_id": session["session_id"],
+        "model": "gpt-4",
+        "input": {"messages": [{"role": "user", "content": "Hello"}]},
+        "output": {"content": "Hi!", "usage": {"prompt_tokens": 5, "completion_tokens": 3}}
+    }
+)
+```
+
+See [HTTP REST API Guide](docs/http_rest_api.md) for complete documentation.
+
 ### Upload from JSON Files
 
 ```python
@@ -159,6 +192,11 @@ Learn by example! Check out our comprehensive examples:
 ### OpenAI Agents
 - **[Basic Integration](examples/openai_agents_example.py)** - Get started quickly
 - **[Multi-Agent](examples/openai_agents_multi_agent.py)** - Advanced handoff patterns
+
+### HTTP REST API
+- **[Basic Usage](examples/http_rest_basic.py)** - Direct API calls without SDK
+- **[Async Client](examples/http_rest_async.py)** - High-performance async tracing
+- **[OpenAI + HTTP](examples/http_rest_openai.py)** - Trace OpenAI calls via REST
 
 **Run any example:**
 ```bash
@@ -213,6 +251,7 @@ client.upload_record(
 ## Documentation
 
 - [Quick Start Guide](docs/quickstart.md)
+- [HTTP REST API Guide](docs/http_rest_api.md) ⭐ **NEW**
 - [Session Management Guide](docs/session_management.md)
 - [MonkAI Agent Integration](docs/monkai_agent_integration.md)
 - [LangChain Integration](docs/langchain_integration.md)
@@ -232,6 +271,9 @@ See the `examples/` directory for:
 - `logging_example.py` - Python logging integration (scripts)
 - `service_logging_example.py` - Python logging for long-running services
 - `send_json_files.py` - Upload from JSON files
+- `http_rest_basic.py` - HTTP REST API basic usage ⭐ **NEW**
+- `http_rest_async.py` - Async HTTP REST client ⭐ **NEW**
+- `http_rest_openai.py` - OpenAI + HTTP REST tracing ⭐ **NEW**
 
 ## Development
 
