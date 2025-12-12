@@ -385,6 +385,11 @@ class MonkAIRunHooks(RunHooks):
         """
         Capture OpenAI internal tools from response raw_items.
         These tools (web_search, file_search, code_interpreter) don't trigger on_tool_start/end hooks.
+        
+        Handles multiple structures:
+        1. Direct internal tool items: item.type == 'web_search_call'
+        2. Wrapped in ToolCallItem: item.type == 'tool_call_item' with item.raw_item.type == 'web_search_call'
+        3. web_searches array on output object
         """
         # Map of internal tool types
         internal_tool_types = {
@@ -394,91 +399,141 @@ class MonkAIRunHooks(RunHooks):
             'computer_call': 'computer_use',
         }
         
+        print(f"[MonkAI DEBUG] === Internal Tools Capture Start ===")
+        print(f"[MonkAI DEBUG] Output type: {type(output).__name__}")
+        
         raw_items = None
+        raw_items_source = None
         
         # Try to get raw_items from output
         if hasattr(output, 'raw_items') and output.raw_items:
             raw_items = output.raw_items
+            raw_items_source = "output.raw_items"
         # Try from context.response
         elif hasattr(context, 'response') and hasattr(context.response, 'raw_items'):
             raw_items = context.response.raw_items
+            raw_items_source = "context.response.raw_items"
         # Try from output as iterable
         elif hasattr(output, '__iter__') and not isinstance(output, str):
             try:
                 raw_items = list(output)
+                raw_items_source = "output (iterable)"
             except:
                 pass
         
-        if not raw_items:
-            return
+        print(f"[MonkAI DEBUG] raw_items source: {raw_items_source}, count: {len(raw_items) if raw_items else 0}")
         
         captured_count = 0
-        for item in raw_items:
-            item_type = getattr(item, 'type', None)
-            
-            if item_type in internal_tool_types:
-                tool_name = internal_tool_types[item_type]
-                tool_details = self._parse_internal_tool_details(item, item_type)
-                
-                self._messages.append(Message(
-                    role="tool",
-                    content=f"Internal tool: {tool_name}",
-                    sender=agent_name,
-                    tool_name=tool_name,
-                    is_internal_tool=True,
-                    internal_tool_type=item_type,
-                    tool_calls=[{
-                        "name": tool_name,
-                        "type": item_type,
-                        "id": getattr(item, 'id', None),
-                        "status": getattr(item, 'status', None),
-                        "arguments": tool_details.get('arguments'),
-                        "result": tool_details.get('result'),
-                    }]
-                ))
-                captured_count += 1
         
+        # Process raw_items if found
+        if raw_items:
+            for idx, item in enumerate(raw_items):
+                item_type = getattr(item, 'type', None)
+                print(f"[MonkAI DEBUG] Item {idx}: type={item_type}, class={type(item).__name__}")
+                
+                # Case 1: Direct internal tool type (item.type == 'web_search_call')
+                if item_type in internal_tool_types:
+                    tool_name = internal_tool_types[item_type]
+                    tool_details = self._parse_internal_tool_details(item, item_type)
+                    self._add_internal_tool_message(agent_name, item, item_type, tool_name, tool_details)
+                    captured_count += 1
+                    print(f"[MonkAI DEBUG] >>> CAPTURED direct internal tool: {tool_name}")
+                
+                # Case 2: Wrapped in tool_call_item (item.type == 'tool_call_item')
+                elif item_type == 'tool_call_item':
+                    raw_item = getattr(item, 'raw_item', None)
+                    if raw_item:
+                        # Get the actual type from raw_item (can be object or dict)
+                        actual_type = self._get_attr(raw_item, 'type')
+                        print(f"[MonkAI DEBUG] tool_call_item.raw_item.type: {actual_type}")
+                        
+                        if actual_type in internal_tool_types:
+                            tool_name = internal_tool_types[actual_type]
+                            tool_details = self._parse_internal_tool_details(raw_item, actual_type)
+                            self._add_internal_tool_message(agent_name, raw_item, actual_type, tool_name, tool_details)
+                            captured_count += 1
+                            print(f"[MonkAI DEBUG] >>> CAPTURED wrapped internal tool: {tool_name}")
+        
+        # Case 3: Check for web_searches array directly on output (fallback)
+        if hasattr(output, 'web_searches') and output.web_searches:
+            print(f"[MonkAI DEBUG] Found output.web_searches: {len(output.web_searches)} items")
+            for ws_idx, ws in enumerate(output.web_searches):
+                ws_type = self._get_attr(ws, 'type')
+                if ws_type == 'web_search_call':
+                    tool_details = self._parse_internal_tool_details(ws, 'web_search_call')
+                    self._add_internal_tool_message(agent_name, ws, 'web_search_call', 'web_search', tool_details)
+                    captured_count += 1
+                    print(f"[MonkAI DEBUG] >>> CAPTURED from web_searches array: web_search")
+        
+        print(f"[MonkAI DEBUG] === Internal Tools Capture End (captured: {captured_count}) ===")
         if captured_count > 0:
             print(f"[MonkAI] Captured {captured_count} internal tool(s)")
     
+    def _get_attr(self, obj: Any, attr: str, default: Any = None) -> Any:
+        """Get attribute from object or dict safely"""
+        if obj is None:
+            return default
+        if isinstance(obj, dict):
+            return obj.get(attr, default)
+        return getattr(obj, attr, default)
+    
+    def _add_internal_tool_message(self, agent_name: str, item: Any, item_type: str, tool_name: str, tool_details: Dict) -> None:
+        """Add an internal tool message to the messages list"""
+        self._messages.append(Message(
+            role="tool",
+            content=f"Internal tool: {tool_name}",
+            sender=agent_name,
+            tool_name=tool_name,
+            is_internal_tool=True,
+            internal_tool_type=item_type,
+            tool_calls=[{
+                "name": tool_name,
+                "type": item_type,
+                "id": self._get_attr(item, 'id'),
+                "status": self._get_attr(item, 'status'),
+                "arguments": tool_details.get('arguments'),
+                "result": tool_details.get('result'),
+            }]
+        ))
+    
     def _parse_internal_tool_details(self, item: Any, item_type: str) -> Dict:
-        """Parse specific details for each internal tool type"""
+        """Parse specific details for each internal tool type. Supports both objects and dicts."""
         
         if item_type == 'web_search_call':
-            action = getattr(item, 'action', None)
+            action = self._get_attr(item, 'action')
             return {
                 "arguments": {
-                    "query": getattr(action, 'query', None) if action else None,
-                    "sources": getattr(action, 'sources', None) if action else None,
+                    "query": self._get_attr(action, 'query') if action else None,
+                    "sources": self._get_attr(action, 'sources') if action else None,
                 },
-                "result": getattr(item, 'result', None)
+                "result": self._get_attr(item, 'result')
             }
         
         elif item_type == 'file_search_call':
             return {
                 "arguments": {
-                    "query": getattr(item, 'query', None),
-                    "file_ids": getattr(item, 'file_ids', None),
+                    "query": self._get_attr(item, 'query'),
+                    "file_ids": self._get_attr(item, 'file_ids'),
                 },
-                "result": getattr(item, 'results', None)
+                "result": self._get_attr(item, 'results')
             }
         
         elif item_type == 'code_interpreter_call':
             return {
                 "arguments": {
-                    "code": getattr(item, 'code', None),
-                    "language": getattr(item, 'language', 'python'),
+                    "code": self._get_attr(item, 'code'),
+                    "language": self._get_attr(item, 'language', 'python'),
                 },
-                "result": getattr(item, 'output', None)
+                "result": self._get_attr(item, 'output')
             }
         
         elif item_type == 'computer_call':
-            action = getattr(item, 'action', None)
+            action = self._get_attr(item, 'action')
             return {
                 "arguments": {
-                    "action_type": getattr(action, 'type', None) if action else None,
+                    "action_type": self._get_attr(action, 'type') if action else None,
                 },
-                "result": getattr(item, 'output', None)
+                "result": self._get_attr(item, 'output')
             }
         
         return {"arguments": None, "result": None}

@@ -5,6 +5,15 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - 2024-12-12
+
+### Fixed
+- **Web Search Capture Fix**: Fixed capture of `web_search_call` and other internal tools that are wrapped in `tool_call_item`
+  - Now correctly extracts internal tools from `item.raw_item.type` when `item.type == 'tool_call_item'`
+  - Added fallback check for `output.web_searches` array
+  - Refactored `_parse_internal_tool_details()` to support both object attributes and dictionary access
+- Added helper methods `_get_attr()` and `_add_internal_tool_message()` for cleaner code organization
+
 ## [0.2.1] - 2024-12-11
 
 ### Added
