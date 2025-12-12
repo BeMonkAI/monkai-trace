@@ -190,6 +190,61 @@ Message(
 
 These internal tools appear alongside your custom tools in the MonkAI Conversations panel, providing complete visibility into all tool usage during agent execution.
 
+### Example: Agent with Web Search
+
+```python
+import asyncio
+from agents import Agent, Runner, WebSearchTool
+from monkai_trace.integrations.openai_agents import MonkAIRunHooks
+
+
+async def main():
+    # Create hooks for tracking
+    hooks = MonkAIRunHooks(
+        tracer_token="tk_your_token",
+        namespace="research-agent"
+    )
+    
+    # Create agent with web search capability
+    agent = Agent(
+        name="Research Assistant",
+        instructions="You are a research assistant. Use web search to find current information.",
+        tools=[WebSearchTool()]  # Enable web search
+    )
+    
+    # Run with tracking
+    user_message = "What are the latest developments in AI agents?"
+    result = await MonkAIRunHooks.run_with_tracking(
+        agent,
+        user_message,
+        hooks
+    )
+    
+    print(result.final_output)
+    
+    # MonkAI automatically captures:
+    # 1. User message: "What are the latest developments in AI agents?"
+    # 2. Web search tool call with query, sources, and results
+    # 3. Assistant response using the search results
+    # 4. Token usage breakdown
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+**What gets captured from web_search:**
+- **Query**: The search query sent to the web search tool
+- **Sources**: URLs and domains searched
+- **Results**: The content returned from the search
+- **Status**: Whether the search completed successfully
+
+In the MonkAI dashboard, web search calls appear with:
+- **Blue "Web Search" badge**
+- **Query visualization** showing what was searched
+- **Expandable results** showing sources and content
+- **Position** in the conversation timeline
+
 ## Advanced Features
 
 ### Batch Upload

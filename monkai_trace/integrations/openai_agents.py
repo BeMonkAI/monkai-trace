@@ -399,37 +399,27 @@ class MonkAIRunHooks(RunHooks):
             'computer_call': 'computer_use',
         }
         
-        print(f"[MonkAI DEBUG] === Internal Tools Capture Start ===")
-        print(f"[MonkAI DEBUG] Output type: {type(output).__name__}")
-        
         raw_items = None
-        raw_items_source = None
         
         # Try to get raw_items from output
         if hasattr(output, 'raw_items') and output.raw_items:
             raw_items = output.raw_items
-            raw_items_source = "output.raw_items"
         # Try from context.response
         elif hasattr(context, 'response') and hasattr(context.response, 'raw_items'):
             raw_items = context.response.raw_items
-            raw_items_source = "context.response.raw_items"
         # Try from output as iterable
         elif hasattr(output, '__iter__') and not isinstance(output, str):
             try:
                 raw_items = list(output)
-                raw_items_source = "output (iterable)"
             except:
                 pass
-        
-        print(f"[MonkAI DEBUG] raw_items source: {raw_items_source}, count: {len(raw_items) if raw_items else 0}")
         
         captured_count = 0
         
         # Process raw_items if found
         if raw_items:
-            for idx, item in enumerate(raw_items):
+            for item in raw_items:
                 item_type = getattr(item, 'type', None)
-                print(f"[MonkAI DEBUG] Item {idx}: type={item_type}, class={type(item).__name__}")
                 
                 # Case 1: Direct internal tool type (item.type == 'web_search_call')
                 if item_type in internal_tool_types:
@@ -437,7 +427,6 @@ class MonkAIRunHooks(RunHooks):
                     tool_details = self._parse_internal_tool_details(item, item_type)
                     self._add_internal_tool_message(agent_name, item, item_type, tool_name, tool_details)
                     captured_count += 1
-                    print(f"[MonkAI DEBUG] >>> CAPTURED direct internal tool: {tool_name}")
                 
                 # Case 2: Wrapped in tool_call_item (item.type == 'tool_call_item')
                 elif item_type == 'tool_call_item':
@@ -445,27 +434,22 @@ class MonkAIRunHooks(RunHooks):
                     if raw_item:
                         # Get the actual type from raw_item (can be object or dict)
                         actual_type = self._get_attr(raw_item, 'type')
-                        print(f"[MonkAI DEBUG] tool_call_item.raw_item.type: {actual_type}")
                         
                         if actual_type in internal_tool_types:
                             tool_name = internal_tool_types[actual_type]
                             tool_details = self._parse_internal_tool_details(raw_item, actual_type)
                             self._add_internal_tool_message(agent_name, raw_item, actual_type, tool_name, tool_details)
                             captured_count += 1
-                            print(f"[MonkAI DEBUG] >>> CAPTURED wrapped internal tool: {tool_name}")
         
         # Case 3: Check for web_searches array directly on output (fallback)
         if hasattr(output, 'web_searches') and output.web_searches:
-            print(f"[MonkAI DEBUG] Found output.web_searches: {len(output.web_searches)} items")
-            for ws_idx, ws in enumerate(output.web_searches):
+            for ws in output.web_searches:
                 ws_type = self._get_attr(ws, 'type')
                 if ws_type == 'web_search_call':
                     tool_details = self._parse_internal_tool_details(ws, 'web_search_call')
                     self._add_internal_tool_message(agent_name, ws, 'web_search_call', 'web_search', tool_details)
                     captured_count += 1
-                    print(f"[MonkAI DEBUG] >>> CAPTURED from web_searches array: web_search")
         
-        print(f"[MonkAI DEBUG] === Internal Tools Capture End (captured: {captured_count}) ===")
         if captured_count > 0:
             print(f"[MonkAI] Captured {captured_count} internal tool(s)")
     
