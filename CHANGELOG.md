@@ -5,6 +5,26 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.3] - 2024-12-12
+
+### Added
+- **Debug Logging for Internal Tools**: Comprehensive debug output in `_capture_internal_tools()` to investigate `Runner.run()` output structure
+  - Logs output type, class name, and all public attributes
+  - Logs specific attribute values: `raw_items`, `new_items`, `items`, `output`, `final_output`, `messages`, `raw_response`, `data`
+  - Logs first 5 items of list attributes with their class and type
+  - Logs nested `raw_item` structures within `tool_call_item` wrappers
+  - Logs context attributes and `context.response.raw_items` when available
+  - Identifies source of captured raw_items for debugging
+
+### Fixed
+- Extended internal tool capture to check additional locations:
+  - `output.new_items` (RunResult structure)
+  - `output.items`
+  - `output.output.raw_items` (nested streaming results)
+  - `output.output.new_items`
+  - `output.data.raw_items`
+- Added fallback nested attribute check for `raw_item`, `item`, `data`, `content`
+
 ## [0.2.2] - 2024-12-12
 
 ### Fixed
