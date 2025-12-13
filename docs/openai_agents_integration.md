@@ -5,15 +5,45 @@ This guide shows how to integrate MonkAI tracking into OpenAI Agents application
 ## Installation
 
 ```bash
-pip install monkai-trace
+pip install monkai-trace>=0.2.4
 pip install openai-agents-python
 ```
 
 > **Compatibility:** This integration is compatible with the latest version of `openai-agents-python` and uses the updated `agents.run_context` module for run context management.
 
+## Breaking Changes in v0.2.4
+
+### `run_with_tracking()` is now async
+
+**Before (v0.2.3 and earlier):**
+```python
+result = MonkAIRunHooks.run_with_tracking(agent, input, hooks)
+```
+
+**After (v0.2.4+):**
+```python
+result = await MonkAIRunHooks.run_with_tracking(agent, input, hooks)
+```
+
+### Internal tools REQUIRE `run_with_tracking()`
+
+⚠️ **CRITICAL:** If you use `Runner.run()` directly, internal tools (web_search, file_search, code_interpreter, computer_use) will **NOT** be captured.
+
+**Technical reason:** The `on_agent_end` hook only receives the `final_output` (a string), NOT the complete `RunResult` containing `new_items` and `raw_responses` where internal tools are stored.
+
+**Solution:** Always use `run_with_tracking()` when you need internal tool tracking:
+
+```python
+# ❌ DON'T do this (internal tools will NOT be captured):
+result = await Runner.run(agent, "query", hooks=hooks)
+
+# ✅ DO this instead (internal tools WILL be captured):
+result = await MonkAIRunHooks.run_with_tracking(agent, "query", hooks)
+```
+
 ## Quick Start
 
-⚠️ **IMPORTANT:** To ensure the initial user message is captured, use one of the following methods:
+⚠️ **IMPORTANT:** To ensure the initial user message AND internal tools are captured, use one of the following methods:
 
 ### Method 1: Wrapper Convenience (Recommended)
 
@@ -157,9 +187,11 @@ All tool invocations are tracked with:
 - Output results
 - Execution time
 
-### Internal OpenAI Tools (New in v0.2.1)
+### Internal OpenAI Tools (v0.2.1+, improved in v0.2.4)
 
-MonkAI automatically captures OpenAI's built-in internal tools that don't trigger regular `on_tool_start`/`on_tool_end` hooks. These tools are identified from the response's `raw_items`:
+MonkAI automatically captures OpenAI's built-in internal tools that don't trigger regular `on_tool_start`/`on_tool_end` hooks. These tools are identified from the `RunResult.new_items` and `raw_responses`:
+
+> ⚠️ **v0.2.4 REQUIREMENT:** You MUST use `run_with_tracking()` to capture internal tools. Using `Runner.run()` directly will NOT work because `on_agent_end` only receives the `final_output` string, not the complete `RunResult`.
 
 | Tool | Type ID | What's Captured |
 |------|---------|-----------------|
@@ -194,7 +226,7 @@ These internal tools appear alongside your custom tools in the MonkAI Conversati
 
 ```python
 import asyncio
-from agents import Agent, Runner, WebSearchTool
+from agents import Agent, WebSearchTool
 from monkai_trace.integrations.openai_agents import MonkAIRunHooks
 
 
@@ -212,7 +244,8 @@ async def main():
         tools=[WebSearchTool()]  # Enable web search
     )
     
-    # Run with tracking
+    # ✅ REQUIRED for internal tools: Use run_with_tracking (async in v0.2.4+)
+    # This captures web_search_call from RunResult.new_items
     user_message = "What are the latest developments in AI agents?"
     result = await MonkAIRunHooks.run_with_tracking(
         agent,
@@ -224,7 +257,7 @@ async def main():
     
     # MonkAI automatically captures:
     # 1. User message: "What are the latest developments in AI agents?"
-    # 2. Web search tool call with query, sources, and results
+    # 2. Web search tool call with query, sources, and results (via run_with_tracking)
     # 3. Assistant response using the search results
     # 4. Token usage breakdown
 
@@ -232,6 +265,8 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 ```
+
+> **Note:** Using `Runner.run()` directly would NOT capture the web_search_call. The `run_with_tracking()` method is required because it has access to the complete `RunResult` object.
 
 **What gets captured from web_search:**
 - **Query**: The search query sent to the web search tool

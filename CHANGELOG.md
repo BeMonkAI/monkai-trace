@@ -5,6 +5,19 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4] - 2024-12-13
+
+### Fixed
+- **Critical Fix for Internal Tools Capture**: Internal tools (web_search, file_search, code_interpreter, computer_use) are now correctly captured from the complete `RunResult`
+  - `on_agent_end` only receives `final_output` (string), not the full result with `new_items`
+  - Moved internal tool capture to `run_with_tracking()` which has access to complete `RunResult`
+  - New method `_capture_internal_tools_from_result()` processes `result.new_items` and `result.raw_responses`
+  - New helper method `_process_items_for_internal_tools()` handles both direct and wrapped tool items
+  - Internal tools are now correctly added to the buffered conversation record before upload
+
+### Changed
+- **[BREAKING]** `run_with_tracking()` is now `async` and must be awaited: `result = await MonkAIRunHooks.run_with_tracking(agent, input, hooks)`
+
 ## [0.2.3] - 2024-12-12
 
 ### Added

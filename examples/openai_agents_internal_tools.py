@@ -5,6 +5,14 @@ Example: OpenAI Agents with Internal Tools (web_search, file_search, code_interp
 This example demonstrates how MonkAI automatically captures OpenAI's built-in
 internal tools that don't trigger regular on_tool_start/on_tool_end hooks.
 
+⚠️ IMPORTANT - SDK v0.2.4+ BREAKING CHANGE:
+    run_with_tracking() is now REQUIRED and ASYNC to capture internal tools.
+    
+    Using Runner.run() directly will NOT capture internal tools because
+    the on_agent_end hook only receives final_output (a string), NOT the
+    complete RunResult containing new_items/raw_responses where internal
+    tools are stored.
+
 Supported internal tools:
 - web_search_call: Web search queries and results
 - file_search_call: File/document search
@@ -12,7 +20,7 @@ Supported internal tools:
 - computer_call: Computer use actions
 
 Requirements:
-    pip install monkai-trace openai-agents-python
+    pip install monkai-trace>=0.2.4 openai-agents-python
 
 Usage:
     python openai_agents_internal_tools.py --token tk_your_token --namespace my-agent
@@ -39,8 +47,30 @@ async def main(token: str, namespace: str):
     )
     
     print("=" * 60)
-    print("MonkAI Internal Tools Capture Demo")
+    print("MonkAI Internal Tools Capture Demo (SDK v0.2.4+)")
     print("=" * 60)
+    
+    # ==========================================================
+    # CRITICAL: Why run_with_tracking() is REQUIRED (v0.2.4+)
+    # ==========================================================
+    print("\n📋 IMPORTANT: Why run_with_tracking() is required")
+    print("-" * 40)
+    print("""
+Internal tools (web_search, file_search, etc.) are ONLY available
+in the complete RunResult object returned by Runner.run().
+
+The on_agent_end hook only receives the final_output (a string),
+NOT the full RunResult with new_items/raw_responses.
+
+Therefore, run_with_tracking() is REQUIRED to capture internal tools.
+It runs the agent and then extracts tools from the complete result.
+
+❌ DON'T do this (internal tools will NOT be captured):
+   result = await Runner.run(agent, "query", hooks=hooks)
+
+✅ DO this instead (internal tools WILL be captured):
+   result = await MonkAIRunHooks.run_with_tracking(agent, "query", hooks)
+""")
     
     # ==========================================================
     # Example 1: Agent with Web Search
@@ -61,13 +91,15 @@ async def main(token: str, namespace: str):
     )
     
     try:
-        # Run with tracking - MonkAI will capture any web_search_call from raw_items
+        # ✅ CORRECT: Use run_with_tracking to capture web_search_call
+        # This is REQUIRED for internal tools - Runner.run() won't work!
         result = await MonkAIRunHooks.run_with_tracking(
             web_search_agent,
             "What are the latest developments in AI agents as of today?",
             hooks
         )
         print(f"✅ Response: {str(result.final_output)[:200]}...")
+        print("   Check debug output above for '_capture_internal_tools_from_result' messages")
     except Exception as e:
         print(f"⚠️ Web search example skipped: {e}")
         print("   (Web search requires specific OpenAI API access)")
@@ -87,6 +119,7 @@ async def main(token: str, namespace: str):
     )
     
     try:
+        # ✅ CORRECT: Use run_with_tracking to capture code_interpreter_call
         result = await MonkAIRunHooks.run_with_tracking(
             code_agent,
             "Calculate the first 10 Fibonacci numbers and show me the result",
@@ -112,6 +145,7 @@ async def main(token: str, namespace: str):
     )
     
     try:
+        # ✅ CORRECT: Use run_with_tracking to capture file_search_call
         result = await MonkAIRunHooks.run_with_tracking(
             file_search_agent,
             "Search my documents for information about project deadlines",
@@ -140,6 +174,7 @@ async def main(token: str, namespace: str):
     )
     
     try:
+        # ✅ CORRECT: Use run_with_tracking to capture ALL internal tools
         result = await MonkAIRunHooks.run_with_tracking(
             multi_tool_agent,
             "What's the current stock price of NVIDIA and calculate its year-to-date percentage change?",
@@ -153,19 +188,28 @@ async def main(token: str, namespace: str):
     # Summary
     # ==========================================================
     print("\n" + "=" * 60)
-    print("📊 MonkAI Tracking Summary")
+    print("📊 MonkAI Tracking Summary (SDK v0.2.4+)")
     print("=" * 60)
     print(f"""
-Internal tools captured by MonkAI are automatically extracted from
-the response's raw_items field. These include:
+BREAKING CHANGE in v0.2.4:
+• run_with_tracking() is now ASYNC (must use await)
+• run_with_tracking() is REQUIRED for internal tools capture
 
+Technical reason:
+• on_agent_end hook only receives final_output (string)
+• Internal tools are in RunResult.new_items and raw_responses
+• run_with_tracking() captures the complete RunResult
+
+Internal tools captured by MonkAI:
 • web_search_call  → Query, sources, results
 • file_search_call → Query, file IDs, matches  
 • code_interpreter_call → Code, language, output
 • computer_call → Action type, output
 
-Check your MonkAI dashboard to see the captured internal tools
-displayed alongside your custom tools in the Conversations panel.
+Debugging:
+• Look for "[MonkAI DEBUG]" messages in console
+• "_capture_internal_tools_from_result" shows what was found
+• "Added internal tool message" confirms tool was captured
 
 Dashboard: https://monkai.com.br/dashboard/monitoring
 Namespace: {namespace}
@@ -174,7 +218,7 @@ Namespace: {namespace}
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Demo: OpenAI Agents with Internal Tools + MonkAI Tracking"
+        description="Demo: OpenAI Agents with Internal Tools + MonkAI Tracking (v0.2.4+)"
     )
     parser.add_argument(
         "--token",
