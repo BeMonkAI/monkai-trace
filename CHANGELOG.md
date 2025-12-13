@@ -5,12 +5,18 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.5] - 2025-12-13
+## [0.2.6] - 2025-12-13
 
 ### Fixed
-- **web_search sources extraction**: Fixed bug where `sources` were being extracted from `action` instead of `result`, causing all sources to appear as `null`
-- **result capture**: Improved extraction of web search results to properly capture the complete result object
-- **debug logging**: Added detailed debug output for web_search_call to inspect action/result structure
+- **CRITICAL: web_search sources extraction**: Sources are in `action.sources`, not `result.sources`. Reverted incorrect v0.2.5 change
+- **Added include parameters**: `run_with_tracking()` now automatically requests `web_search_call.action.sources` and `file_search_call.results` from OpenAI API
+- **Dual extraction strategy**: Try `action.sources` first, fallback to `result` for edge cases
+- **Removed debug logs**: Cleaned up temporary print statements from v0.2.5
+
+## [0.2.5] - 2025-12-13 [YANKED]
+
+### Note
+This version had incorrect sources extraction logic and has been superseded by v0.2.6
 
 ## [0.2.4] - 2024-12-13
 

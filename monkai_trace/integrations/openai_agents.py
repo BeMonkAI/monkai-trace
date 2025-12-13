@@ -600,40 +600,25 @@ class MonkAIRunHooks(RunHooks):
             action = self._get_attr(item, 'action')
             result = self._get_attr(item, 'result')
             
-            # Debug logging to understand structure
-            print(f"[MonkAI DEBUG] web_search_call - action type: {type(action)}")
-            print(f"[MonkAI DEBUG] web_search_call - result type: {type(result)}")
-            if result:
-                if hasattr(result, '__dict__'):
-                    result_attrs = [attr for attr in dir(result) if not attr.startswith('_')]
-                    print(f"[MonkAI DEBUG] web_search_call - result attrs: {result_attrs[:10]}")
-                elif isinstance(result, dict):
-                    print(f"[MonkAI DEBUG] web_search_call - result keys: {list(result.keys())[:10]}")
-                elif isinstance(result, list):
-                    print(f"[MonkAI DEBUG] web_search_call - result is list with {len(result)} items")
-                    if result:
-                        first_item = result[0]
-                        print(f"[MonkAI DEBUG] web_search_call - first item type: {type(first_item)}")
+            # Primary: sources are in action.sources (when include param is used)
+            sources = self._get_attr(action, 'sources') if action else None
             
-            # Extract sources from result object (not from action!)
-            sources = None
-            if result:
-                # Try various attribute names where sources might be stored
+            # Fallback: if sources is None, try result as fallback
+            if sources is None and result:
                 sources = (
                     self._get_attr(result, 'sources') or 
                     self._get_attr(result, 'results') or
                     self._get_attr(result, 'web_results')
                 )
-                # If sources is still None but result is a list, use result directly as sources
                 if sources is None and isinstance(result, list):
                     sources = result
             
             return {
                 "arguments": {
                     "query": self._get_attr(action, 'query') if action else None,
-                    "sources": sources,  # From result, not action
+                    "sources": sources,
                 },
-                "result": result  # Full result object for detailed view
+                "result": result
             }
         
         elif item_type == 'file_search_call':
@@ -695,9 +680,6 @@ class MonkAIRunHooks(RunHooks):
         - on_agent_end only receives final_output (a string), not the full RunResult
         - RunResult.new_items contains all ToolCallItem objects with web_search_call, etc.
         """
-        print(f"\n[MonkAI DEBUG] ========== _capture_internal_tools_from_result START ==========")
-        print(f"[MonkAI DEBUG] result type: {type(result)}")
-        print(f"[MonkAI DEBUG] result class: {result.__class__.__name__ if result else 'None'}")
         
         internal_tool_types = {
             'web_search_call': 'web_search',
@@ -711,47 +693,31 @@ class MonkAIRunHooks(RunHooks):
         # Check for new_items (primary source)
         new_items = getattr(result, 'new_items', None)
         if new_items:
-            print(f"[MonkAI DEBUG] Found result.new_items with {len(new_items)} items")
             captured_count += self._process_items_for_internal_tools(new_items, agent_name, 'result.new_items', internal_tool_types)
-        else:
-            print(f"[MonkAI DEBUG] No new_items found in result")
         
         # Also check raw_responses as backup
         raw_responses = getattr(result, 'raw_responses', None)
         if raw_responses:
-            print(f"[MonkAI DEBUG] Found result.raw_responses with {len(raw_responses)} items")
             for i, resp in enumerate(raw_responses):
                 resp_output = getattr(resp, 'output', None)
                 if resp_output and isinstance(resp_output, list):
                     captured_count += self._process_items_for_internal_tools(resp_output, agent_name, f'result.raw_responses[{i}].output', internal_tool_types)
         
         if captured_count > 0:
-            print(f"[MonkAI] Captured {captured_count} internal tool(s) from RunResult")
-            
             # Add internal tools to the LAST buffered record (the one from on_agent_end)
             if self._batch_buffer:
                 last_record = self._batch_buffer[-1]
-                # Append the internal tool messages to the record's messages
-                # The _messages list now contains the internal tools we just captured
                 internal_tool_messages = [m for m in self._messages if getattr(m, 'is_internal_tool', False)]
                 if internal_tool_messages:
-                    # Update the last record's msg list
                     existing_msgs = last_record.msg if isinstance(last_record.msg, list) else []
                     last_record.msg = existing_msgs + internal_tool_messages
-                    print(f"[MonkAI DEBUG] Added {len(internal_tool_messages)} internal tool messages to buffered record")
-        
-        print(f"[MonkAI DEBUG] ========== _capture_internal_tools_from_result END ==========\n")
     
     def _process_items_for_internal_tools(self, items: list, agent_name: str, source: str, internal_tool_types: dict) -> int:
         """Process a list of items to extract internal tools. Returns count of captured tools."""
         captured_count = 0
         
-        for i, item in enumerate(items):
-            # Get item type - handle both objects and dicts
+        for item in items:
             item_type = self._get_attr(item, 'type')
-            item_class = type(item).__name__
-            
-            print(f"[MonkAI DEBUG] {source}[{i}]: class={item_class}, type={item_type}")
             
             # Case 1: Direct internal tool (item.type == 'web_search_call')
             if item_type in internal_tool_types:
@@ -759,7 +725,6 @@ class MonkAIRunHooks(RunHooks):
                 tool_details = self._parse_internal_tool_details(item, item_type)
                 self._add_internal_tool_message(agent_name, item, item_type, tool_name, tool_details)
                 captured_count += 1
-                print(f"[MonkAI DEBUG] ✅ Found direct internal tool: {tool_name}")
                 continue
             
             # Case 2: Wrapped in ToolCallItem (item.type == 'tool_call_item')
@@ -767,13 +732,11 @@ class MonkAIRunHooks(RunHooks):
                 raw_item = self._get_attr(item, 'raw_item')
                 if raw_item:
                     actual_type = self._get_attr(raw_item, 'type')
-                    print(f"[MonkAI DEBUG] tool_call_item has raw_item.type={actual_type}")
                     if actual_type in internal_tool_types:
                         tool_name = internal_tool_types[actual_type]
                         tool_details = self._parse_internal_tool_details(raw_item, actual_type)
                         self._add_internal_tool_message(agent_name, raw_item, actual_type, tool_name, tool_details)
                         captured_count += 1
-                        print(f"[MonkAI DEBUG] ✅ Found wrapped internal tool: {tool_name}")
         
         return captured_count
     
@@ -797,8 +760,21 @@ class MonkAIRunHooks(RunHooks):
         # Import Runner here to avoid circular dependency
         from agents import Runner
         
-        # Run the agent and get complete RunResult
-        result = await Runner.run(agent, user_input, hooks=hooks, **kwargs)
+        # Ensure we request sources from OpenAI API via include params
+        include_params = kwargs.pop('include', None)
+        include_params = list(include_params) if include_params else []
+        
+        # Add required includes for capturing tool sources (only if not already present)
+        required_includes = [
+            "web_search_call.action.sources",
+            "file_search_call.results",
+        ]
+        for inc in required_includes:
+            if inc not in include_params:
+                include_params.append(inc)
+        
+        # Run the agent and get complete RunResult with include params
+        result = await Runner.run(agent, user_input, hooks=hooks, include=include_params, **kwargs)
         
         # Capture internal tools from the COMPLETE RunResult (has new_items, raw_responses)
         hooks._capture_internal_tools_from_result(result, agent.name)
