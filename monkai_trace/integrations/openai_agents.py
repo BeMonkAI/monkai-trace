@@ -598,12 +598,42 @@ class MonkAIRunHooks(RunHooks):
         
         if item_type == 'web_search_call':
             action = self._get_attr(item, 'action')
+            result = self._get_attr(item, 'result')
+            
+            # Debug logging to understand structure
+            print(f"[MonkAI DEBUG] web_search_call - action type: {type(action)}")
+            print(f"[MonkAI DEBUG] web_search_call - result type: {type(result)}")
+            if result:
+                if hasattr(result, '__dict__'):
+                    result_attrs = [attr for attr in dir(result) if not attr.startswith('_')]
+                    print(f"[MonkAI DEBUG] web_search_call - result attrs: {result_attrs[:10]}")
+                elif isinstance(result, dict):
+                    print(f"[MonkAI DEBUG] web_search_call - result keys: {list(result.keys())[:10]}")
+                elif isinstance(result, list):
+                    print(f"[MonkAI DEBUG] web_search_call - result is list with {len(result)} items")
+                    if result:
+                        first_item = result[0]
+                        print(f"[MonkAI DEBUG] web_search_call - first item type: {type(first_item)}")
+            
+            # Extract sources from result object (not from action!)
+            sources = None
+            if result:
+                # Try various attribute names where sources might be stored
+                sources = (
+                    self._get_attr(result, 'sources') or 
+                    self._get_attr(result, 'results') or
+                    self._get_attr(result, 'web_results')
+                )
+                # If sources is still None but result is a list, use result directly as sources
+                if sources is None and isinstance(result, list):
+                    sources = result
+            
             return {
                 "arguments": {
                     "query": self._get_attr(action, 'query') if action else None,
-                    "sources": self._get_attr(action, 'sources') if action else None,
+                    "sources": sources,  # From result, not action
                 },
-                "result": self._get_attr(item, 'result')
+                "result": result  # Full result object for detailed view
             }
         
         elif item_type == 'file_search_call':
