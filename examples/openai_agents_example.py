@@ -1,5 +1,13 @@
 """
 Basic example of MonkAI integration with OpenAI Agents
+
+Recommended SDK version: monkai-trace>=0.2.6
+
+v0.2.6+ Features:
+- run_with_tracking() automatically injects include params for internal tools
+- Web search sources captured from action.sources
+- File search results captured automatically
+- No manual configuration needed for source capture
 """
 
 import asyncio

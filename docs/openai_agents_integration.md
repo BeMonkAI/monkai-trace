@@ -5,11 +5,31 @@ This guide shows how to integrate MonkAI tracking into OpenAI Agents application
 ## Installation
 
 ```bash
-pip install monkai-trace>=0.2.4
+pip install monkai-trace>=0.2.6
 pip install openai-agents-python
 ```
 
 > **Compatibility:** This integration is compatible with the latest version of `openai-agents-python` and uses the updated `agents.run_context` module for run context management.
+
+## What's New in v0.2.6
+
+### Auto-Include Parameters
+
+`run_with_tracking()` now automatically requests internal tool data from OpenAI API by injecting include parameters:
+
+- `web_search_call.action.sources` - Full source URLs and titles  
+- `file_search_call.results` - Complete file search results
+
+**No configuration needed** - just use `run_with_tracking()` and sources are captured automatically!
+
+### Sources Extraction Fix
+
+Web search sources are now correctly captured using a dual extraction strategy:
+
+1. **Primary**: `action.sources` (when include parameter is used)
+2. **Fallback**: `result` attributes for edge cases
+
+> ⚠️ **Note:** v0.2.5 is **YANKED** due to incorrect sources extraction logic. Please use v0.2.6+.
 
 ## Breaking Changes in v0.2.4
 
@@ -187,16 +207,18 @@ All tool invocations are tracked with:
 - Output results
 - Execution time
 
-### Internal OpenAI Tools (v0.2.1+, improved in v0.2.4)
+### Internal OpenAI Tools (v0.2.1+, improved in v0.2.4, fixed in v0.2.6)
 
 MonkAI automatically captures OpenAI's built-in internal tools that don't trigger regular `on_tool_start`/`on_tool_end` hooks. These tools are identified from the `RunResult.new_items` and `raw_responses`:
 
-> ⚠️ **v0.2.4 REQUIREMENT:** You MUST use `run_with_tracking()` to capture internal tools. Using `Runner.run()` directly will NOT work because `on_agent_end` only receives the `final_output` string, not the complete `RunResult`.
+> ⚠️ **v0.2.4+ REQUIREMENT:** You MUST use `run_with_tracking()` to capture internal tools. Using `Runner.run()` directly will NOT work because `on_agent_end` only receives the `final_output` string, not the complete `RunResult`.
+
+> ✅ **v0.2.6 Enhancement:** `run_with_tracking()` now automatically injects `include` parameters to request full source data from the OpenAI API. Sources are captured from `action.sources` with fallback to `result` attributes.
 
 | Tool | Type ID | What's Captured |
 |------|---------|-----------------|
-| **Web Search** | `web_search_call` | Query, sources, search results |
-| **File Search** | `file_search_call` | Query, file IDs, matched results |
+| **Web Search** | `web_search_call` | Query, **sources** (v0.2.6+: from action.sources), search results |
+| **File Search** | `file_search_call` | Query, file IDs, **matched results** (v0.2.6+: via include param) |
 | **Code Interpreter** | `code_interpreter_call` | Code, language, execution output |
 | **Computer Use** | `computer_call` | Action type, output |
 

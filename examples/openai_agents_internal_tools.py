@@ -13,14 +13,26 @@ internal tools that don't trigger regular on_tool_start/on_tool_end hooks.
     complete RunResult containing new_items/raw_responses where internal
     tools are stored.
 
+✅ NEW in v0.2.6 - AUTO-INCLUDE PARAMETERS:
+    run_with_tracking() now automatically injects include parameters to request
+    full internal tool data from the OpenAI API:
+    
+    - web_search_call.action.sources → Full URLs and titles
+    - file_search_call.results → Complete file search results
+    
+    No configuration needed - sources are captured automatically!
+
+⚠️ NOTE: v0.2.5 is YANKED due to incorrect sources extraction logic.
+    Please use v0.2.6 or later.
+
 Supported internal tools:
-- web_search_call: Web search queries and results
-- file_search_call: File/document search
+- web_search_call: Web search queries and results (sources from action.sources)
+- file_search_call: File/document search (results via include param)
 - code_interpreter_call: Code execution
 - computer_call: Computer use actions
 
 Requirements:
-    pip install monkai-trace>=0.2.4 openai-agents-python
+    pip install monkai-trace>=0.2.6 openai-agents-python
 
 Usage:
     python openai_agents_internal_tools.py --token tk_your_token --namespace my-agent
@@ -47,13 +59,32 @@ async def main(token: str, namespace: str):
     )
     
     print("=" * 60)
-    print("MonkAI Internal Tools Capture Demo (SDK v0.2.4+)")
+    print("MonkAI Internal Tools Capture Demo (SDK v0.2.6+)")
     print("=" * 60)
+    
+    # ==========================================================
+    # NEW in v0.2.6: Auto-Include Parameters
+    # ==========================================================
+    print("\n📍 NEW: Auto-Include Parameters (v0.2.6+)")
+    print("-" * 40)
+    print("""
+run_with_tracking() now automatically requests:
+• web_search_call.action.sources → Full URLs and titles
+• file_search_call.results → Complete file matches
+
+No configuration needed - sources are captured automatically!
+
+Sources are extracted using dual strategy:
+1. Primary: action.sources (when include param is used)
+2. Fallback: result attributes for edge cases
+
+⚠️ Note: v0.2.5 is YANKED due to incorrect sources extraction.
+""")
     
     # ==========================================================
     # CRITICAL: Why run_with_tracking() is REQUIRED (v0.2.4+)
     # ==========================================================
-    print("\n📋 IMPORTANT: Why run_with_tracking() is required")
+    print("\n📋 Why run_with_tracking() is required")
     print("-" * 40)
     print("""
 Internal tools (web_search, file_search, etc.) are ONLY available
@@ -188,12 +219,17 @@ It runs the agent and then extracts tools from the complete result.
     # Summary
     # ==========================================================
     print("\n" + "=" * 60)
-    print("📊 MonkAI Tracking Summary (SDK v0.2.4+)")
+    print("📊 MonkAI Tracking Summary (SDK v0.2.6+)")
     print("=" * 60)
     print(f"""
 BREAKING CHANGE in v0.2.4:
 • run_with_tracking() is now ASYNC (must use await)
 • run_with_tracking() is REQUIRED for internal tools capture
+
+NEW in v0.2.6:
+• Auto-include params: web_search_call.action.sources, file_search_call.results
+• Sources correctly extracted from action.sources (with fallback to result)
+• v0.2.5 is YANKED - use v0.2.6+
 
 Technical reason:
 • on_agent_end hook only receives final_output (string)
@@ -201,15 +237,10 @@ Technical reason:
 • run_with_tracking() captures the complete RunResult
 
 Internal tools captured by MonkAI:
-• web_search_call  → Query, sources, results
-• file_search_call → Query, file IDs, matches  
+• web_search_call  → Query, sources (from action.sources), results
+• file_search_call → Query, file IDs, matches (via include param)
 • code_interpreter_call → Code, language, output
 • computer_call → Action type, output
-
-Debugging:
-• Look for "[MonkAI DEBUG]" messages in console
-• "_capture_internal_tools_from_result" shows what was found
-• "Added internal tool message" confirms tool was captured
 
 Dashboard: https://monkai.com.br/dashboard/monitoring
 Namespace: {namespace}
@@ -218,7 +249,7 @@ Namespace: {namespace}
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Demo: OpenAI Agents with Internal Tools + MonkAI Tracking (v0.2.4+)"
+        description="Demo: OpenAI Agents with Internal Tools + MonkAI Tracking (v0.2.6+)"
     )
     parser.add_argument(
         "--token",

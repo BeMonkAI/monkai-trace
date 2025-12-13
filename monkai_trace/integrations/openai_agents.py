@@ -750,6 +750,9 @@ class MonkAIRunHooks(RunHooks):
         
         BREAKING CHANGE in v0.2.4: This method is now async and must be awaited.
         
+        v0.2.7: Fixed include params - now passed via RunConfig.model_settings.response_include
+        instead of as a direct kwarg (which was being ignored by Runner.run).
+        
         Usage:
             hooks = MonkAIRunHooks(...)
             result = await MonkAIRunHooks.run_with_tracking(agent, "Hello", hooks)
@@ -757,24 +760,53 @@ class MonkAIRunHooks(RunHooks):
         # Set user input before running
         hooks.set_user_input(user_input)
         
-        # Import Runner here to avoid circular dependency
+        # Import Runner and RunConfig here to avoid circular dependency
         from agents import Runner
         
-        # Ensure we request sources from OpenAI API via include params
-        include_params = kwargs.pop('include', None)
-        include_params = list(include_params) if include_params else []
+        # Get or create RunConfig with model_settings that include response_include
+        run_config = kwargs.pop('run_config', None)
         
-        # Add required includes for capturing tool sources (only if not already present)
+        # Required includes for capturing internal tool sources
         required_includes = [
             "web_search_call.action.sources",
             "file_search_call.results",
         ]
-        for inc in required_includes:
-            if inc not in include_params:
-                include_params.append(inc)
         
-        # Run the agent and get complete RunResult with include params
-        result = await Runner.run(agent, user_input, hooks=hooks, include=include_params, **kwargs)
+        try:
+            # Try to use RunConfig with ModelSettings (agents SDK >= 0.1.0)
+            from agents import RunConfig
+            from agents.model_settings import ModelSettings
+            
+            if run_config is None:
+                # Create new RunConfig with response_include
+                run_config = RunConfig(
+                    model_settings=ModelSettings(
+                        response_include=required_includes
+                    )
+                )
+            else:
+                # Merge with existing RunConfig
+                existing_settings = run_config.model_settings
+                if existing_settings is None:
+                    run_config.model_settings = ModelSettings(
+                        response_include=required_includes
+                    )
+                else:
+                    # Merge response_include lists
+                    existing_includes = existing_settings.response_include or []
+                    merged_includes = list(existing_includes)
+                    for inc in required_includes:
+                        if inc not in merged_includes:
+                            merged_includes.append(inc)
+                    existing_settings.response_include = merged_includes
+            
+            # Run with the updated RunConfig
+            result = await Runner.run(agent, user_input, hooks=hooks, run_config=run_config, **kwargs)
+            
+        except ImportError:
+            # Fallback for older agents SDK versions without RunConfig/ModelSettings
+            print("[MonkAI] Warning: agents SDK doesn't support RunConfig/ModelSettings, sources may be null")
+            result = await Runner.run(agent, user_input, hooks=hooks, **kwargs)
         
         # Capture internal tools from the COMPLETE RunResult (has new_items, raw_responses)
         hooks._capture_internal_tools_from_result(result, agent.name)

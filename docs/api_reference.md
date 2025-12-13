@@ -194,8 +194,31 @@ hooks = MonkAIRunHooks(
     namespace="customer-support"
 )
 
-result = await Runner.run(agent, "Hello", hooks=hooks)
+# ✅ Recommended: Use run_with_tracking() for full internal tools capture
+result = await MonkAIRunHooks.run_with_tracking(agent, "Hello", hooks)
 ```
+
+### run_with_tracking() (v0.2.4+, enhanced in v0.2.6)
+
+Static async method to run agent with full internal tool capture.
+
+```python
+result = await MonkAIRunHooks.run_with_tracking(
+    agent,
+    user_input,
+    hooks,
+    **kwargs  # Additional Runner.run() parameters
+)
+```
+
+**v0.2.6+ Auto-Include Parameters:**
+
+The method automatically injects these parameters to ensure internal tool details are captured:
+
+- `web_search_call.action.sources` - Full URLs and titles for web searches
+- `file_search_call.results` - Complete file search results
+
+**No configuration needed** - sources are captured automatically when using `run_with_tracking()`.
 
 ### Lifecycle Hooks
 
