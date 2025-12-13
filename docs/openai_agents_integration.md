@@ -5,31 +5,39 @@ This guide shows how to integrate MonkAI tracking into OpenAI Agents application
 ## Installation
 
 ```bash
-pip install monkai-trace>=0.2.6
+pip install monkai-trace>=0.2.7
 pip install openai-agents-python
 ```
 
 > **Compatibility:** This integration is compatible with the latest version of `openai-agents-python` and uses the updated `agents.run_context` module for run context management.
 
-## What's New in v0.2.6
+## What's New in v0.2.7
 
-### Auto-Include Parameters
+### Fixed: Sources Capture via RunConfig
 
-`run_with_tracking()` now automatically requests internal tool data from OpenAI API by injecting include parameters:
+v0.2.6 attempted to pass include parameters directly to `Runner.run()`, but these were being ignored. 
 
-- `web_search_call.action.sources` - Full source URLs and titles  
-- `file_search_call.results` - Complete file search results
+**v0.2.7 fixes this** by correctly passing include params via `RunConfig.model_settings.response_include`:
+
+```python
+# Now internally uses:
+RunConfig(
+    model_settings=ModelSettings(
+        response_include=["web_search_call.action.sources", "file_search_call.results"]
+    )
+)
+```
 
 **No configuration needed** - just use `run_with_tracking()` and sources are captured automatically!
 
-### Sources Extraction Fix
+### Sources Extraction
 
-Web search sources are now correctly captured using a dual extraction strategy:
+Web search sources are correctly captured from `action.sources`:
 
-1. **Primary**: `action.sources` (when include parameter is used)
-2. **Fallback**: `result` attributes for edge cases
+- `web_search_call.action.sources` - Full URLs and titles
+- `file_search_call.results` - Complete file search results
 
-> ⚠️ **Note:** v0.2.5 is **YANKED** due to incorrect sources extraction logic. Please use v0.2.6+.
+> ⚠️ **Note:** v0.2.5 and v0.2.6 had issues with sources capture. Please use v0.2.7+.
 
 ## Breaking Changes in v0.2.4
 

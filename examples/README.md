@@ -100,30 +100,30 @@ python examples/openai_agents_multi_agent.py --token tk_your_token --namespace s
 
 ---
 
-### 6. Internal Tools (Web Search, Code Interpreter) ⭐ UPDATED v0.2.6
+### 6. Internal Tools (Web Search, Code Interpreter) ⭐ FIXED v0.2.7
 **File**: `openai_agents_internal_tools.py`
 
 Capture OpenAI's built-in internal tools:
-- ✅ Web search queries and **sources** (v0.2.6: from action.sources)
-- ✅ File search with document retrieval (v0.2.6: via auto-include param)
+- ✅ Web search queries and **sources** (v0.2.7: fixed via RunConfig)
+- ✅ File search with document retrieval (v0.2.7: via RunConfig.model_settings)
 - ✅ Code interpreter execution
 - ✅ Computer use actions
 - ✅ Multi-tool agent patterns
-- ✅ **NEW:** Auto-include parameters for full source capture
+- ✅ **FIXED:** Sources now captured via `RunConfig.model_settings.response_include`
 
 **Run:**
 ```bash
-pip install monkai-trace>=0.2.6  # Ensure latest version
+pip install monkai-trace>=0.2.7  # Ensure latest version
 python examples/openai_agents_internal_tools.py --token tk_your_token --namespace internal-tools-demo
 ```
 
 **What you'll see:**
 - Internal tools automatically captured from `response.raw_items`
-- **Sources captured automatically** via auto-include params (v0.2.6+)
+- **Sources captured correctly** via RunConfig (v0.2.7+)
 - Tools displayed alongside custom tools in MonkAI dashboard
 - Query, arguments, and results tracked for each tool type
 
-> ⚠️ **Note:** v0.2.5 is YANKED. Use v0.2.6+ for correct sources capture.
+> ⚠️ **Note:** v0.2.5 and v0.2.6 had issues with sources. Use v0.2.7+.
 
 ---
 
@@ -151,7 +151,7 @@ python examples/openai_agents_internal_tools.py --token tk_your_token --namespac
 
 ### Install Dependencies
 ```bash
-pip install monkai-trace>=0.2.6 openai-agents-python
+pip install monkai-trace>=0.2.7 openai-agents-python
 ```
 
 ### Set Environment Variables (Optional)

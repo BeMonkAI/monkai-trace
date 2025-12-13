@@ -198,7 +198,7 @@ hooks = MonkAIRunHooks(
 result = await MonkAIRunHooks.run_with_tracking(agent, "Hello", hooks)
 ```
 
-### run_with_tracking() (v0.2.4+, enhanced in v0.2.6)
+### run_with_tracking() (v0.2.4+, fixed in v0.2.7)
 
 Static async method to run agent with full internal tool capture.
 
@@ -211,12 +211,21 @@ result = await MonkAIRunHooks.run_with_tracking(
 )
 ```
 
-**v0.2.6+ Auto-Include Parameters:**
+**v0.2.7 Fix: Correct RunConfig Usage**
 
-The method automatically injects these parameters to ensure internal tool details are captured:
+The method now correctly passes include parameters via `RunConfig.model_settings.response_include`:
 
-- `web_search_call.action.sources` - Full URLs and titles for web searches
-- `file_search_call.results` - Complete file search results
+```python
+# Internally creates:
+RunConfig(
+    model_settings=ModelSettings(
+        response_include=[
+            "web_search_call.action.sources",
+            "file_search_call.results"
+        ]
+    )
+)
+```
 
 **No configuration needed** - sources are captured automatically when using `run_with_tracking()`.
 

@@ -13,17 +13,19 @@ internal tools that don't trigger regular on_tool_start/on_tool_end hooks.
     complete RunResult containing new_items/raw_responses where internal
     tools are stored.
 
-✅ NEW in v0.2.6 - AUTO-INCLUDE PARAMETERS:
-    run_with_tracking() now automatically injects include parameters to request
-    full internal tool data from the OpenAI API:
+✅ FIXED in v0.2.7 - SOURCES NOW CAPTURED CORRECTLY:
+    v0.2.6 attempted to pass include params as a kwarg to Runner.run(), but
+    Runner.run() ignores unknown kwargs! 
     
-    - web_search_call.action.sources → Full URLs and titles
-    - file_search_call.results → Complete file search results
+    v0.2.7 fixes this by correctly using RunConfig.model_settings.response_include:
     
-    No configuration needed - sources are captured automatically!
+    RunConfig(
+        model_settings=ModelSettings(
+            response_include=["web_search_call.action.sources", "file_search_call.results"]
+        )
+    )
 
-⚠️ NOTE: v0.2.5 is YANKED due to incorrect sources extraction logic.
-    Please use v0.2.6 or later.
+⚠️ NOTE: v0.2.5 and v0.2.6 have issues with sources capture. Use v0.2.7+.
 
 Supported internal tools:
 - web_search_call: Web search queries and results (sources from action.sources)
@@ -32,7 +34,7 @@ Supported internal tools:
 - computer_call: Computer use actions
 
 Requirements:
-    pip install monkai-trace>=0.2.6 openai-agents-python
+    pip install monkai-trace>=0.2.7 openai-agents-python
 
 Usage:
     python openai_agents_internal_tools.py --token tk_your_token --namespace my-agent
@@ -59,26 +61,32 @@ async def main(token: str, namespace: str):
     )
     
     print("=" * 60)
-    print("MonkAI Internal Tools Capture Demo (SDK v0.2.6+)")
+    print("MonkAI Internal Tools Capture Demo (SDK v0.2.7+)")
     print("=" * 60)
     
     # ==========================================================
-    # NEW in v0.2.6: Auto-Include Parameters
+    # FIXED in v0.2.7: RunConfig.model_settings.response_include
     # ==========================================================
-    print("\n📍 NEW: Auto-Include Parameters (v0.2.6+)")
+    print("\n📍 FIXED: Sources Capture via RunConfig (v0.2.7+)")
     print("-" * 40)
     print("""
-run_with_tracking() now automatically requests:
-• web_search_call.action.sources → Full URLs and titles
-• file_search_call.results → Complete file matches
+v0.2.6 attempted to pass include params as a kwarg to Runner.run(),
+but Runner.run() IGNORES unknown kwargs!
 
-No configuration needed - sources are captured automatically!
+v0.2.7 fixes this by correctly using RunConfig.model_settings.response_include:
 
-Sources are extracted using dual strategy:
-1. Primary: action.sources (when include param is used)
-2. Fallback: result attributes for edge cases
+    RunConfig(
+        model_settings=ModelSettings(
+            response_include=[
+                "web_search_call.action.sources",
+                "file_search_call.results"
+            ]
+        )
+    )
 
-⚠️ Note: v0.2.5 is YANKED due to incorrect sources extraction.
+No configuration needed - run_with_tracking() handles this automatically!
+
+⚠️ Note: v0.2.5 and v0.2.6 have issues with sources. Use v0.2.7+.
 """)
     
     # ==========================================================
@@ -219,17 +227,17 @@ It runs the agent and then extracts tools from the complete result.
     # Summary
     # ==========================================================
     print("\n" + "=" * 60)
-    print("📊 MonkAI Tracking Summary (SDK v0.2.6+)")
+    print("📊 MonkAI Tracking Summary (SDK v0.2.7+)")
     print("=" * 60)
     print(f"""
 BREAKING CHANGE in v0.2.4:
 • run_with_tracking() is now ASYNC (must use await)
 • run_with_tracking() is REQUIRED for internal tools capture
 
-NEW in v0.2.6:
-• Auto-include params: web_search_call.action.sources, file_search_call.results
-• Sources correctly extracted from action.sources (with fallback to result)
-• v0.2.5 is YANKED - use v0.2.6+
+FIXED in v0.2.7:
+• Include params now passed via RunConfig.model_settings.response_include
+• v0.2.6 passed include as kwarg but Runner.run() ignores unknown kwargs
+• Sources are now correctly captured from action.sources
 
 Technical reason:
 • on_agent_end hook only receives final_output (string)
@@ -238,7 +246,7 @@ Technical reason:
 
 Internal tools captured by MonkAI:
 • web_search_call  → Query, sources (from action.sources), results
-• file_search_call → Query, file IDs, matches (via include param)
+• file_search_call → Query, file IDs, matches (via response_include)
 • code_interpreter_call → Code, language, output
 • computer_call → Action type, output
 
@@ -249,7 +257,7 @@ Namespace: {namespace}
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Demo: OpenAI Agents with Internal Tools + MonkAI Tracking (v0.2.6+)"
+        description="Demo: OpenAI Agents with Internal Tools + MonkAI Tracking (v0.2.7+)"
     )
     parser.add_argument(
         "--token",
