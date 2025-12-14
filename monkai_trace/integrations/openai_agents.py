@@ -393,53 +393,6 @@ class MonkAIRunHooks(RunHooks):
         4. new_items array on output (RunResult)
         5. Nested in output.output for streaming results
         """
-        # DEBUG: Detailed logging to investigate structure
-        print(f"\n[MonkAI DEBUG] ========== _capture_internal_tools START ==========")
-        print(f"[MonkAI DEBUG] agent_name: {agent_name}")
-        print(f"[MonkAI DEBUG] output type: {type(output)}")
-        print(f"[MonkAI DEBUG] output class name: {output.__class__.__name__ if output else 'None'}")
-        
-        # Log all attributes of output
-        if output:
-            output_attrs = [attr for attr in dir(output) if not attr.startswith('_')]
-            print(f"[MonkAI DEBUG] output public attrs: {output_attrs}")
-            
-            # Log specific interesting attributes
-            for attr in ['raw_items', 'new_items', 'items', 'output', 'final_output', 'messages', 'raw_response', 'data']:
-                if hasattr(output, attr):
-                    val = getattr(output, attr, None)
-                    val_type = type(val).__name__ if val is not None else 'None'
-                    val_len = len(val) if hasattr(val, '__len__') and not isinstance(val, str) else 'N/A'
-                    print(f"[MonkAI DEBUG] output.{attr}: type={val_type}, len={val_len}")
-                    # If it's a list, log first few items
-                    if isinstance(val, (list, tuple)) and len(val) > 0:
-                        for i, item in enumerate(val[:5]):
-                            item_type = getattr(item, 'type', 'no_type_attr')
-                            item_class = item.__class__.__name__
-                            print(f"[MonkAI DEBUG]   output.{attr}[{i}]: class={item_class}, type={item_type}")
-                            # Check for raw_item nested structure
-                            if hasattr(item, 'raw_item'):
-                                raw_item = item.raw_item
-                                raw_type = self._get_attr(raw_item, 'type')
-                                raw_class = raw_item.__class__.__name__ if raw_item else 'None'
-                                print(f"[MonkAI DEBUG]     raw_item: class={raw_class}, type={raw_type}")
-        
-        # Log context attributes
-        if context:
-            print(f"[MonkAI DEBUG] context type: {type(context)}")
-            context_attrs = [attr for attr in dir(context) if not attr.startswith('_')]
-            print(f"[MonkAI DEBUG] context public attrs (first 20): {context_attrs[:20]}")
-            
-            if hasattr(context, 'response'):
-                resp = context.response
-                if resp:
-                    print(f"[MonkAI DEBUG] context.response type: {type(resp)}")
-                    if hasattr(resp, 'raw_items'):
-                        print(f"[MonkAI DEBUG] context.response.raw_items exists, len={len(resp.raw_items) if resp.raw_items else 0}")
-        
-        print(f"[MonkAI DEBUG] ========== END DEBUG INFO ==========\n")
-        
-        # Map of internal tool types
         internal_tool_types = {
             'web_search_call': 'web_search',
             'file_search_call': 'file_search',
@@ -448,82 +401,55 @@ class MonkAIRunHooks(RunHooks):
         }
         
         raw_items = None
-        source = None
         
         # Try to get raw_items from various locations
-        # Location 1: output.raw_items
         if hasattr(output, 'raw_items') and output.raw_items:
             raw_items = output.raw_items
-            source = 'output.raw_items'
-        # Location 2: output.new_items (RunResult structure)
         elif hasattr(output, 'new_items') and output.new_items:
             raw_items = output.new_items
-            source = 'output.new_items'
-        # Location 3: output.items
         elif hasattr(output, 'items') and output.items:
             raw_items = output.items
-            source = 'output.items'
-        # Location 4: context.response.raw_items
         elif hasattr(context, 'response') and context.response and hasattr(context.response, 'raw_items') and context.response.raw_items:
             raw_items = context.response.raw_items
-            source = 'context.response.raw_items'
-        # Location 5: output.output (nested for streaming)
         elif hasattr(output, 'output') and output.output:
             nested = output.output
             if hasattr(nested, 'raw_items') and nested.raw_items:
                 raw_items = nested.raw_items
-                source = 'output.output.raw_items'
             elif hasattr(nested, 'new_items') and nested.new_items:
                 raw_items = nested.new_items
-                source = 'output.output.new_items'
-        # Location 6: output as iterable (last resort)
         elif hasattr(output, '__iter__') and not isinstance(output, str):
             try:
                 raw_items = list(output)
-                source = 'output (iterable)'
             except:
                 pass
-        
-        if raw_items:
-            print(f"[MonkAI DEBUG] Found raw_items from {source}, count={len(raw_items)}")
-        else:
-            print(f"[MonkAI DEBUG] No raw_items found in any location")
         
         captured_count = 0
         
         # Process raw_items if found
         if raw_items:
-            for idx, item in enumerate(raw_items):
+            for item in raw_items:
                 item_type = getattr(item, 'type', None)
-                item_class = item.__class__.__name__
-                print(f"[MonkAI DEBUG] Processing item[{idx}]: class={item_class}, type={item_type}")
                 
-                # Case 1: Direct internal tool type (item.type == 'web_search_call')
+                # Case 1: Direct internal tool type
                 if item_type in internal_tool_types:
                     tool_name = internal_tool_types[item_type]
                     tool_details = self._parse_internal_tool_details(item, item_type)
                     self._add_internal_tool_message(agent_name, item, item_type, tool_name, tool_details)
                     captured_count += 1
-                    print(f"[MonkAI DEBUG] Captured direct internal tool: {tool_name}")
                 
-                # Case 2: Wrapped in tool_call_item (item.type == 'tool_call_item')
+                # Case 2: Wrapped in tool_call_item
                 elif item_type == 'tool_call_item':
                     raw_item = getattr(item, 'raw_item', None)
                     if raw_item:
-                        # Get the actual type from raw_item (can be object or dict)
                         actual_type = self._get_attr(raw_item, 'type')
-                        print(f"[MonkAI DEBUG] tool_call_item raw_item.type={actual_type}")
-                        
                         if actual_type in internal_tool_types:
                             tool_name = internal_tool_types[actual_type]
                             tool_details = self._parse_internal_tool_details(raw_item, actual_type)
                             self._add_internal_tool_message(agent_name, raw_item, actual_type, tool_name, tool_details)
                             captured_count += 1
-                            print(f"[MonkAI DEBUG] Captured wrapped internal tool: {tool_name}")
                 
-                # Case 3: Check if item itself has nested structure we haven't checked
+                # Case 3: Check nested structure
                 else:
-                    # Check for any nested items that might contain internal tools
                     for nested_attr in ['raw_item', 'item', 'data', 'content']:
                         if hasattr(item, nested_attr):
                             nested = getattr(item, nested_attr)
@@ -534,24 +460,20 @@ class MonkAIRunHooks(RunHooks):
                                     tool_details = self._parse_internal_tool_details(nested, nested_type)
                                     self._add_internal_tool_message(agent_name, nested, nested_type, tool_name, tool_details)
                                     captured_count += 1
-                                    print(f"[MonkAI DEBUG] Captured nested ({nested_attr}) internal tool: {tool_name}")
         
-        # Case 4: Check for web_searches array directly on output (fallback)
+        # Case 4: Check for web_searches array directly on output
         if hasattr(output, 'web_searches') and output.web_searches:
-            print(f"[MonkAI DEBUG] Found output.web_searches, count={len(output.web_searches)}")
             for ws in output.web_searches:
                 ws_type = self._get_attr(ws, 'type')
                 if ws_type == 'web_search_call':
                     tool_details = self._parse_internal_tool_details(ws, 'web_search_call')
                     self._add_internal_tool_message(agent_name, ws, 'web_search_call', 'web_search', tool_details)
                     captured_count += 1
-                    print(f"[MonkAI DEBUG] Captured web_search from web_searches array")
         
-        # Case 5: Check output.data for RunResult with nested data
+        # Case 5: Check output.data for nested data
         if hasattr(output, 'data') and output.data:
             data = output.data
             if hasattr(data, 'raw_items') and data.raw_items:
-                print(f"[MonkAI DEBUG] Found output.data.raw_items, processing...")
                 for item in data.raw_items:
                     item_type = getattr(item, 'type', None)
                     if item_type in internal_tool_types:
@@ -559,12 +481,9 @@ class MonkAIRunHooks(RunHooks):
                         tool_details = self._parse_internal_tool_details(item, item_type)
                         self._add_internal_tool_message(agent_name, item, item_type, tool_name, tool_details)
                         captured_count += 1
-                        print(f"[MonkAI DEBUG] Captured from output.data.raw_items: {tool_name}")
         
         if captured_count > 0:
             print(f"[MonkAI] Captured {captured_count} internal tool(s)")
-        else:
-            print(f"[MonkAI DEBUG] No internal tools captured - may need to check different structure")
     
     def _get_attr(self, obj: Any, attr: str, default: Any = None) -> Any:
         """Get attribute from object or dict safely"""
@@ -772,27 +691,24 @@ class MonkAIRunHooks(RunHooks):
             "file_search_call.results",
         ]
         
+        result = None
         try:
             # Try to use RunConfig with ModelSettings (agents SDK >= 0.1.0)
-            from agents import RunConfig
-            from agents.model_settings import ModelSettings
+            from agents import RunConfig, ModelSettings
             
             if run_config is None:
-                # Create new RunConfig with response_include
                 run_config = RunConfig(
                     model_settings=ModelSettings(
                         response_include=required_includes
                     )
                 )
             else:
-                # Merge with existing RunConfig
                 existing_settings = run_config.model_settings
                 if existing_settings is None:
                     run_config.model_settings = ModelSettings(
                         response_include=required_includes
                     )
                 else:
-                    # Merge response_include lists
                     existing_includes = existing_settings.response_include or []
                     merged_includes = list(existing_includes)
                     for inc in required_includes:
@@ -800,7 +716,6 @@ class MonkAIRunHooks(RunHooks):
                             merged_includes.append(inc)
                     existing_settings.response_include = merged_includes
             
-            # Run with the updated RunConfig
             result = await Runner.run(agent, user_input, hooks=hooks, run_config=run_config, **kwargs)
             
         except ImportError:
@@ -808,11 +723,31 @@ class MonkAIRunHooks(RunHooks):
             print("[MonkAI] Warning: agents SDK doesn't support RunConfig/ModelSettings, sources may be null")
             result = await Runner.run(agent, user_input, hooks=hooks, **kwargs)
         
-        # Capture internal tools from the COMPLETE RunResult (has new_items, raw_responses)
-        hooks._capture_internal_tools_from_result(result, agent.name)
+        except Exception as e:
+            print(f"[MonkAI] Error in run_with_tracking: {e}")
+            raise
         
-        # Force flush any remaining buffered records that now include the internal tools
-        if hooks._batch_buffer:
-            await hooks._flush_batch()
+        finally:
+            # ALWAYS flush records, even on error
+            if hooks._batch_buffer:
+                try:
+                    await hooks._flush_batch()
+                except Exception as flush_error:
+                    print(f"[MonkAI] Flush error: {flush_error}")
+        
+        # Capture internal tools from the COMPLETE RunResult (has new_items, raw_responses)
+        if result:
+            hooks._capture_internal_tools_from_result(result, agent.name)
         
         return result
+    
+    async def flush(self) -> None:
+        """
+        Force flush all buffered records immediately.
+        Call this after your agent run if using Runner.run() directly.
+        
+        Usage:
+            result = await Runner.run(agent, input, hooks=hooks)
+            await hooks.flush()  # Ensure records are uploaded
+        """
+        await self._flush_batch()

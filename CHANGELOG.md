@@ -5,6 +5,24 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.8] - 2025-12-13
+
+### Fixed
+- **Critical fix for record upload**: Records now guaranteed to upload via `finally` block in `run_with_tracking()`. Fixes "0 records uploaded" issue in v0.2.7.
+- **Fixed ModelSettings import**: Changed from `from agents.model_settings import ModelSettings` to `from agents import RunConfig, ModelSettings` for SDK compatibility.
+- **Removed debug logs**: Cleaned up excessive `[MonkAI DEBUG]` print statements from `_capture_internal_tools()`.
+
+### Added
+- **`flush()` method**: Public async method to force upload of buffered records immediately. Useful for users calling `Runner.run()` directly instead of `run_with_tracking()`.
+
+### Changed
+- Exception handling in `run_with_tracking()` now catches broader `Exception` types and re-raises after ensuring flush.
+- Internal tool capture moved to after successful result, before return.
+
+### Notes
+- v0.2.5, v0.2.6, v0.2.7 had issues with sources capture and/or record upload
+- Users should upgrade directly to v0.2.8 for reliable operation
+
 ## [0.2.7] - 2025-12-13
 
 ### Fixed

@@ -100,30 +100,31 @@ python examples/openai_agents_multi_agent.py --token tk_your_token --namespace s
 
 ---
 
-### 6. Internal Tools (Web Search, Code Interpreter) ⭐ FIXED v0.2.7
+### 6. Internal Tools (Web Search, Code Interpreter) ⭐ FIXED v0.2.8
 **File**: `openai_agents_internal_tools.py`
 
 Capture OpenAI's built-in internal tools:
-- ✅ Web search queries and **sources** (v0.2.7: fixed via RunConfig)
-- ✅ File search with document retrieval (v0.2.7: via RunConfig.model_settings)
+- ✅ Web search queries and **sources** (v0.2.7+: fixed via RunConfig)
+- ✅ File search with document retrieval (via RunConfig.model_settings)
 - ✅ Code interpreter execution
 - ✅ Computer use actions
 - ✅ Multi-tool agent patterns
-- ✅ **FIXED:** Sources now captured via `RunConfig.model_settings.response_include`
+- ✅ **v0.2.8:** Fixed record upload issues, added `flush()` method
 
 **Run:**
 ```bash
-pip install monkai-trace>=0.2.7  # Ensure latest version
+pip install monkai-trace>=0.2.8  # Ensure latest version
 python examples/openai_agents_internal_tools.py --token tk_your_token --namespace internal-tools-demo
 ```
 
 **What you'll see:**
 - Internal tools automatically captured from `response.raw_items`
 - **Sources captured correctly** via RunConfig (v0.2.7+)
+- **Records uploaded reliably** (v0.2.8+)
 - Tools displayed alongside custom tools in MonkAI dashboard
 - Query, arguments, and results tracked for each tool type
 
-> ⚠️ **Note:** v0.2.5 and v0.2.6 had issues with sources. Use v0.2.7+.
+> ⚠️ **Note:** v0.2.5, v0.2.6, v0.2.7 had various issues. Use v0.2.8+.
 
 ---
 

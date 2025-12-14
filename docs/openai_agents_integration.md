@@ -5,39 +5,36 @@ This guide shows how to integrate MonkAI tracking into OpenAI Agents application
 ## Installation
 
 ```bash
-pip install monkai-trace>=0.2.7
+pip install monkai-trace>=0.2.8
 pip install openai-agents-python
 ```
 
 > **Compatibility:** This integration is compatible with the latest version of `openai-agents-python` and uses the updated `agents.run_context` module for run context management.
 
-## What's New in v0.2.7
+## What's New in v0.2.8
 
-### Fixed: Sources Capture via RunConfig
+### Fixed: Record Upload and ModelSettings Import
 
-v0.2.6 attempted to pass include parameters directly to `Runner.run()`, but these were being ignored. 
+v0.2.7 had issues with record upload ("0 records uploaded") due to:
+1. Incorrect `ModelSettings` import path
+2. Exceptions preventing record flush
 
-**v0.2.7 fixes this** by correctly passing include params via `RunConfig.model_settings.response_include`:
+**v0.2.8 fixes these issues:**
+- Changed import to `from agents import RunConfig, ModelSettings`
+- Added `finally` block to guarantee record flush even on errors
+- Removed excessive debug logs
+
+### New: `flush()` Method
+
+For users calling `Runner.run()` directly, a new public `flush()` method is available:
 
 ```python
-# Now internally uses:
-RunConfig(
-    model_settings=ModelSettings(
-        response_include=["web_search_call.action.sources", "file_search_call.results"]
-    )
-)
+hooks = MonkAIRunHooks(...)
+result = await Runner.run(agent, "query", hooks=hooks)
+await hooks.flush()  # Ensure records are uploaded
 ```
 
-**No configuration needed** - just use `run_with_tracking()` and sources are captured automatically!
-
-### Sources Extraction
-
-Web search sources are correctly captured from `action.sources`:
-
-- `web_search_call.action.sources` - Full URLs and titles
-- `file_search_call.results` - Complete file search results
-
-> ⚠️ **Note:** v0.2.5 and v0.2.6 had issues with sources capture. Please use v0.2.7+.
+> ⚠️ **Note:** v0.2.5, v0.2.6, v0.2.7 had issues with sources capture and/or record upload. Please use v0.2.8+.
 
 ## Breaking Changes in v0.2.4
 
