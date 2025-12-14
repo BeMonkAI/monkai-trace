@@ -1,15 +1,20 @@
 """
 Basic example of MonkAI integration with OpenAI Agents
 
-Recommended SDK version: monkai-trace>=0.2.7
+Recommended SDK version: monkai-trace>=0.2.10
+
+v0.2.10 Features:
+- batch_size=1 now works correctly for real-time monitoring
+- Internal tools (web_search, file_search) properly captured before flush
+- Sources serialized correctly (fixes ActionSearchSource JSON error)
+- run_with_tracking() uses _skip_auto_flush for correct execution order
 
 v0.2.7 Features:
 - run_with_tracking() correctly passes include params via RunConfig.model_settings
 - Web search sources captured from action.sources
 - File search results captured automatically
-- No manual configuration needed for source capture
 
-Note: v0.2.6 attempted to pass include as a kwarg but Runner.run() ignores unknown kwargs.
+Note: v0.2.5-v0.2.9 have various issues. Use v0.2.10+.
 """
 
 import asyncio
@@ -28,7 +33,8 @@ async def main(token=None, namespace=None):
     hooks = MonkAIRunHooks(
         tracer_token=tracer_token,
         namespace=tracer_namespace,
-        auto_upload=True
+        auto_upload=True,
+        batch_size=1  # v0.2.10+: Upload immediately (recommended for real-time monitoring)
     )
     
     # Create your agent

@@ -5,36 +5,50 @@ This guide shows how to integrate MonkAI tracking into OpenAI Agents application
 ## Installation
 
 ```bash
-pip install monkai-trace>=0.2.8
+pip install monkai-trace>=0.2.10
 pip install openai-agents-python
 ```
 
 > **Compatibility:** This integration is compatible with the latest version of `openai-agents-python` and uses the updated `agents.run_context` module for run context management.
 
-## What's New in v0.2.8
+## What's New in v0.2.10
 
-### Fixed: Record Upload and ModelSettings Import
+### Fixed: Internal Tools with batch_size=1
 
-v0.2.7 had issues with record upload ("0 records uploaded") due to:
-1. Incorrect `ModelSettings` import path
-2. Exceptions preventing record flush
+v0.2.9 had a critical bug where internal tools (web_search, file_search, etc.) were not captured when using `batch_size=1`:
 
-**v0.2.8 fixes these issues:**
-- Changed import to `from agents import RunConfig, ModelSettings`
-- Added `finally` block to guarantee record flush even on errors
-- Removed excessive debug logs
+**The Problem:**
+1. `on_agent_end` was flushing immediately when `batch_size=1`
+2. `_capture_internal_tools_from_result()` was called AFTER flush
+3. Internal tools were never included in the uploaded record
 
-### New: `flush()` Method
+**v0.2.10 fixes this:**
+- New `_skip_auto_flush` flag prevents auto-flush during `run_with_tracking()`
+- Internal tools are now captured BEFORE flush
+- Sources are properly serialized to JSON (fixes `ActionSearchSource` error)
 
-For users calling `Runner.run()` directly, a new public `flush()` method is available:
+### Fixed: JSON Serialization of Sources
 
-```python
-hooks = MonkAIRunHooks(...)
-result = await Runner.run(agent, "query", hooks=hooks)
-await hooks.flush()  # Ensure records are uploaded
+v0.2.9 failed to upload records with sources due to:
+```
+Error: Object of type ActionSearchSource is not JSON serializable
 ```
 
-> ⚠️ **Note:** v0.2.5, v0.2.6, v0.2.7 had issues with sources capture and/or record upload. Please use v0.2.8+.
+**v0.2.10 adds `_serialize_to_dict()` method** that properly converts Pydantic objects to JSON-serializable dictionaries.
+
+### Recommended: Use batch_size=1
+
+For real-time monitoring, we now recommend `batch_size=1`:
+
+```python
+hooks = MonkAIRunHooks(
+    tracer_token="tk_your_token",
+    namespace="my-agent",
+    batch_size=1  # Upload immediately - fully supported in v0.2.10
+)
+```
+
+> ⚠️ **Note:** v0.2.5-v0.2.9 had various issues with internal tool capture and serialization. Please use v0.2.10+.
 
 ## Breaking Changes in v0.2.4
 

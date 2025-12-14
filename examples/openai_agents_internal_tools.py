@@ -13,19 +13,22 @@ internal tools that don't trigger regular on_tool_start/on_tool_end hooks.
     complete RunResult containing new_items/raw_responses where internal
     tools are stored.
 
-✅ FIXED in v0.2.7 - SOURCES NOW CAPTURED CORRECTLY:
-    v0.2.6 attempted to pass include params as a kwarg to Runner.run(), but
-    Runner.run() ignores unknown kwargs! 
+✅ FIXED in v0.2.10 - INTERNAL TOOLS NOW WORK WITH batch_size=1:
+    v0.2.9 had a bug where on_agent_end flushed BEFORE internal tools were captured.
     
-    v0.2.7 fixes this by correctly using RunConfig.model_settings.response_include:
-    
+    v0.2.10 fixes this with:
+    - _skip_auto_flush flag to prevent premature flush
+    - _serialize_to_dict() to handle Pydantic objects (ActionSearchSource, etc.)
+    - Proper execution order: capture → flush
+
+✅ FIXED in v0.2.7 - SOURCES CAPTURED VIA RunConfig:
     RunConfig(
         model_settings=ModelSettings(
             response_include=["web_search_call.action.sources", "file_search_call.results"]
         )
     )
 
-⚠️ NOTE: v0.2.5 and v0.2.6 have issues with sources capture. Use v0.2.7+.
+⚠️ NOTE: v0.2.5-v0.2.9 have various issues. Use v0.2.10+.
 
 Supported internal tools:
 - web_search_call: Web search queries and results (sources from action.sources)
@@ -34,7 +37,7 @@ Supported internal tools:
 - computer_call: Computer use actions
 
 Requirements:
-    pip install monkai-trace>=0.2.7 openai-agents-python
+    pip install monkai-trace>=0.2.10 openai-agents-python
 
 Usage:
     python openai_agents_internal_tools.py --token tk_your_token --namespace my-agent
@@ -61,32 +64,29 @@ async def main(token: str, namespace: str):
     )
     
     print("=" * 60)
-    print("MonkAI Internal Tools Capture Demo (SDK v0.2.7+)")
+    print("MonkAI Internal Tools Capture Demo (SDK v0.2.10+)")
     print("=" * 60)
     
     # ==========================================================
-    # FIXED in v0.2.7: RunConfig.model_settings.response_include
+    # FIXED in v0.2.10: batch_size=1 now works correctly
     # ==========================================================
-    print("\n📍 FIXED: Sources Capture via RunConfig (v0.2.7+)")
+    print("\n📍 FIXED: Internal Tools with batch_size=1 (v0.2.10+)")
     print("-" * 40)
     print("""
-v0.2.6 attempted to pass include params as a kwarg to Runner.run(),
-but Runner.run() IGNORES unknown kwargs!
+v0.2.9 had a bug where on_agent_end would flush BEFORE internal tools
+were captured when using batch_size=1.
 
-v0.2.7 fixes this by correctly using RunConfig.model_settings.response_include:
+v0.2.10 fixes this with:
+1. _skip_auto_flush flag prevents premature flush in run_with_tracking()
+2. _serialize_to_dict() handles Pydantic objects (ActionSearchSource)
+3. Correct order: capture internal tools → then flush
 
-    RunConfig(
-        model_settings=ModelSettings(
-            response_include=[
-                "web_search_call.action.sources",
-                "file_search_call.results"
-            ]
-        )
-    )
+batch_size=1 is now RECOMMENDED for real-time monitoring!
 
-No configuration needed - run_with_tracking() handles this automatically!
+Sources are captured via RunConfig.model_settings.response_include
+(automatically handled by run_with_tracking()).
 
-⚠️ Note: v0.2.5 and v0.2.6 have issues with sources. Use v0.2.7+.
+⚠️ Note: v0.2.5-v0.2.9 have various issues. Use v0.2.10+.
 """)
     
     # ==========================================================
@@ -227,17 +227,22 @@ It runs the agent and then extracts tools from the complete result.
     # Summary
     # ==========================================================
     print("\n" + "=" * 60)
-    print("📊 MonkAI Tracking Summary (SDK v0.2.7+)")
+    print("📊 MonkAI Tracking Summary (SDK v0.2.10+)")
     print("=" * 60)
     print(f"""
 BREAKING CHANGE in v0.2.4:
 • run_with_tracking() is now ASYNC (must use await)
 • run_with_tracking() is REQUIRED for internal tools capture
 
+FIXED in v0.2.10:
+• batch_size=1 now works correctly (recommended for real-time)
+• Internal tools captured BEFORE flush via _skip_auto_flush flag
+• Sources properly serialized via _serialize_to_dict()
+• Fixed: "Object of type ActionSearchSource is not JSON serializable"
+
 FIXED in v0.2.7:
-• Include params now passed via RunConfig.model_settings.response_include
-• v0.2.6 passed include as kwarg but Runner.run() ignores unknown kwargs
-• Sources are now correctly captured from action.sources
+• Include params passed via RunConfig.model_settings.response_include
+• Sources captured from action.sources
 
 Technical reason:
 • on_agent_end hook only receives final_output (string)
@@ -245,8 +250,8 @@ Technical reason:
 • run_with_tracking() captures the complete RunResult
 
 Internal tools captured by MonkAI:
-• web_search_call  → Query, sources (from action.sources), results
-• file_search_call → Query, file IDs, matches (via response_include)
+• web_search_call  → Query, sources (with URLs/titles), results
+• file_search_call → Query, file IDs, matches
 • code_interpreter_call → Code, language, output
 • computer_call → Action type, output
 
@@ -257,7 +262,7 @@ Namespace: {namespace}
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Demo: OpenAI Agents with Internal Tools + MonkAI Tracking (v0.2.7+)"
+        description="Demo: OpenAI Agents with Internal Tools + MonkAI Tracking (v0.2.10+)"
     )
     parser.add_argument(
         "--token",

@@ -2,6 +2,68 @@
 
 This guide helps you migrate your code when upgrading between major versions of monkai-trace-python.
 
+## From v0.2.9 to v0.2.10
+
+### Fixed: Internal Tools with batch_size=1
+
+**Problem in v0.2.9:**
+If you used `batch_size=1` for real-time monitoring, internal tools (web_search, file_search, code_interpreter) were **NOT** captured because `on_agent_end` flushed the record BEFORE `_capture_internal_tools_from_result()` could add them.
+
+**Solution in v0.2.10:**
+A new `_skip_auto_flush` flag prevents auto-flush during `run_with_tracking()`, ensuring internal tools are captured before flush.
+
+**No code changes required** - just upgrade to v0.2.10:
+```bash
+pip install monkai-trace>=0.2.10
+```
+
+### Fixed: JSON Serialization Error
+
+**Problem in v0.2.9:**
+```
+Error: Object of type ActionSearchSource is not JSON serializable
+```
+
+**Solution in v0.2.10:**
+New `_serialize_to_dict()` method properly converts Pydantic objects to JSON-serializable dictionaries.
+
+**No code changes required.**
+
+### Recommended: Use batch_size=1
+
+With v0.2.10, `batch_size=1` is now fully supported and **recommended** for real-time monitoring:
+
+```python
+hooks = MonkAIRunHooks(
+    tracer_token="tk_your_token",
+    namespace="my-agent",
+    batch_size=1  # ✅ Now works correctly in v0.2.10!
+)
+```
+
+---
+
+## From v0.2.5-v0.2.8 to v0.2.10
+
+### Skip Intermediate Versions
+
+**Recommendation:** Skip directly to v0.2.10. Versions v0.2.5-v0.2.9 had various issues:
+
+| Version | Issue |
+|---------|-------|
+| v0.2.5 | Incorrect sources extraction logic |
+| v0.2.6 | include param passed as kwarg (ignored by Runner.run) |
+| v0.2.7 | Fixed sources, but record upload issues |
+| v0.2.8 | Fixed upload, but debug logs excessive |
+| v0.2.9 | Fixed order, but batch_size=1 broken |
+| **v0.2.10** | ✅ All issues fixed |
+
+```bash
+pip install monkai-trace>=0.2.10
+```
+
+---
+
 ## From v0.1.x to Current (Commit fc7764e)
 
 ### Breaking Changes

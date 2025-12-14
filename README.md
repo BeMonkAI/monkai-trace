@@ -109,33 +109,32 @@ result = agent.run("Help me with my order")
 ### OpenAI Agents Integration
 
 ```python
-from agents import Agent, Runner
+from agents import Agent, WebSearchTool
 from monkai_trace.integrations.openai_agents import MonkAIRunHooks
 
-# Create tracking hooks
+# Create tracking hooks (batch_size=1 recommended for real-time monitoring)
 hooks = MonkAIRunHooks(
     tracer_token="tk_your_token",
-    namespace="my-agent"
+    namespace="my-agent",
+    batch_size=1  # v0.2.10+: Upload immediately
 )
 
-# Create agent
+# Create agent with web search
 agent = Agent(
     name="Assistant",
-    instructions="You are helpful"
+    instructions="You are helpful",
+    tools=[WebSearchTool()]
 )
 
-# Automatic tracking (works out of the box!)
-result = await Runner.run(agent, "Hello!", hooks=hooks)
-# ✅ User messages captured automatically via on_llm_start hook
+# ✅ RECOMMENDED: Use run_with_tracking() for internal tools capture
+result = await MonkAIRunHooks.run_with_tracking(agent, "Hello!", hooks)
+# Captures: user message, web_search_call with sources, assistant response
 
-# OR explicit capture (recommended for reliability):
+# OR explicit capture (for custom flows):
 hooks.set_user_input("Hello!")
 result = await Runner.run(agent, "Hello!", hooks=hooks)
 
-# OR use convenience wrapper:
-result = await MonkAIRunHooks.run_with_tracking(agent, "Hello!", hooks)
-
-# ✅ Multiple capture methods + final guarantee = reliable user message tracking!
+# ✅ v0.2.10: Internal tools (web_search, file_search) now properly captured!
 ```
 
 ### HTTP REST API (Language-Agnostic)

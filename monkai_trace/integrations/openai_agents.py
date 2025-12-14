@@ -86,6 +86,7 @@ class MonkAIRunHooks(RunHooks):
         self._batch_buffer: List[ConversationRecord] = []
         self._pending_user_input: Optional[str] = None  # Store user input before agent starts
         self._user_input: Optional[str] = None  # Store user input captured from hooks (on_llm_start, etc.)
+        self._skip_auto_flush: bool = False  # Skip auto-flush in on_agent_end when using run_with_tracking
     
     async def on_agent_start(
         self,
@@ -260,7 +261,8 @@ class MonkAIRunHooks(RunHooks):
         # Upload or batch
         if self.auto_upload:
             self._batch_buffer.append(record)
-            if len(self._batch_buffer) >= self.batch_size:
+            # Skip auto-flush if using run_with_tracking (will flush after capturing internal tools)
+            if not self._skip_auto_flush and len(self._batch_buffer) >= self.batch_size:
                 await self._flush_batch()
         
         # Reset state for next conversation
@@ -512,6 +514,25 @@ class MonkAIRunHooks(RunHooks):
             }]
         ))
     
+    def _serialize_to_dict(self, obj: Any) -> Any:
+        """Serialize Pydantic objects or other complex types to JSON-serializable dicts."""
+        if obj is None:
+            return None
+        if isinstance(obj, (str, int, float, bool)):
+            return obj
+        if isinstance(obj, dict):
+            return {k: self._serialize_to_dict(v) for k, v in obj.items()}
+        if isinstance(obj, (list, tuple)):
+            return [self._serialize_to_dict(item) for item in obj]
+        # Pydantic model
+        if hasattr(obj, 'model_dump'):
+            return obj.model_dump()
+        # Dataclass or other object with __dict__
+        if hasattr(obj, '__dict__'):
+            return {k: self._serialize_to_dict(v) for k, v in obj.__dict__.items() if not k.startswith('_')}
+        # Fallback to string
+        return str(obj)
+    
     def _parse_internal_tool_details(self, item: Any, item_type: str) -> Dict:
         """Parse specific details for each internal tool type. Supports both objects and dicts."""
         
@@ -532,12 +553,15 @@ class MonkAIRunHooks(RunHooks):
                 if sources is None and isinstance(result, list):
                     sources = result
             
+            # Serialize sources to JSON-serializable format
+            serialized_sources = self._serialize_to_dict(sources) if sources else None
+            
             return {
                 "arguments": {
                     "query": self._get_attr(action, 'query') if action else None,
-                    "sources": sources,
+                    "sources": serialized_sources,
                 },
-                "result": result
+                "result": self._serialize_to_dict(result)
             }
         
         elif item_type == 'file_search_call':
@@ -679,6 +703,9 @@ class MonkAIRunHooks(RunHooks):
         # Set user input before running
         hooks.set_user_input(user_input)
         
+        # Skip auto-flush in on_agent_end - we'll flush after capturing internal tools
+        hooks._skip_auto_flush = True
+        
         # Import Runner and RunConfig here to avoid circular dependency
         from agents import Runner
         
@@ -736,6 +763,9 @@ class MonkAIRunHooks(RunHooks):
             raise
         
         finally:
+            # Reset skip flag
+            hooks._skip_auto_flush = False
+            
             # ALWAYS flush records AFTER capturing internal tools
             if hooks._batch_buffer:
                 try:

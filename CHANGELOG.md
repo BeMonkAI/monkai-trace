@@ -5,6 +5,42 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.10] - 2025-12-14
+
+### Fixed
+- **Critical fix for internal tools with batch_size=1**: The `on_agent_end` hook was calling `_flush_batch()` immediately when `batch_size=1`, BEFORE `_capture_internal_tools_from_result()` could add internal tools to the record. This caused internal tools (web_search, file_search, etc.) to never be included in uploaded records.
+- **JSON serialization fix for sources**: `ActionSearchSource` and other Pydantic objects from OpenAI SDK were not JSON serializable, causing upload failures with error "Object of type ActionSearchSource is not JSON serializable".
+
+### Added
+- **`_skip_auto_flush` flag**: New internal flag to prevent `on_agent_end` from auto-flushing when using `run_with_tracking()`. This ensures internal tools are captured before flush.
+- **`_serialize_to_dict()` method**: New helper method to recursively serialize Pydantic objects, dataclasses, and other complex types to JSON-serializable dictionaries. Handles `model_dump()` for Pydantic models with fallbacks for other types.
+
+### Changed
+- `run_with_tracking()` now sets `_skip_auto_flush=True` before running and resets it in the `finally` block.
+- `on_agent_end` now checks `_skip_auto_flush` flag before auto-flushing, ensuring `run_with_tracking()` controls the flush timing.
+- `_parse_internal_tool_details()` now uses `_serialize_to_dict()` for sources and results to ensure JSON serialization.
+
+### Technical Details
+The fix addresses the following execution order issue:
+```
+# BEFORE (v0.2.9 - broken with batch_size=1):
+1. Runner.run() calls on_agent_end internally
+2. on_agent_end adds record to buffer AND flushes (buffer now empty)
+3. _capture_internal_tools_from_result() called - buffer is empty, tools lost!
+
+# AFTER (v0.2.10 - fixed):
+1. run_with_tracking() sets _skip_auto_flush=True
+2. Runner.run() calls on_agent_end
+3. on_agent_end adds record to buffer (no flush due to flag)
+4. _capture_internal_tools_from_result() adds internal tools to record
+5. finally block flushes with complete record including internal tools
+```
+
+### Notes
+- v0.2.5-v0.2.9 had various issues with internal tool capture timing and serialization
+- Users should upgrade to v0.2.10 for reliable internal tool capture with sources
+- `batch_size=1` is now fully supported and recommended for real-time monitoring
+
 ## [0.2.9] - 2025-12-14
 
 ### Fixed
@@ -18,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Notes
 - v0.2.5-v0.2.8 had various issues with internal tool capture timing
 - Users should upgrade to v0.2.9 for reliable internal tool capture
+- **⚠️ Bug**: Still had issues with `batch_size=1` - fixed in v0.2.10
 
 ## [0.2.8] - 2025-12-13
 
