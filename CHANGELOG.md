@@ -5,6 +5,20 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.9] - 2025-12-14
+
+### Fixed
+- **Critical fix for internal tools capture**: Moved `_capture_internal_tools_from_result()` to execute BEFORE `_flush_batch()`. Previously, internal tools were captured AFTER flush, meaning the buffer was already cleared and internal tool messages were never saved.
+- This ensures `web_search`, `file_search`, `code_interpreter`, and `computer_use` tool calls are correctly included in uploaded records.
+
+### Changed
+- Internal tool capture now happens in both main try block and ImportError fallback, ensuring coverage for all SDK versions.
+- Flush now correctly happens AFTER internal tools are added to the buffer.
+
+### Notes
+- v0.2.5-v0.2.8 had various issues with internal tool capture timing
+- Users should upgrade to v0.2.9 for reliable internal tool capture
+
 ## [0.2.8] - 2025-12-13
 
 ### Fixed

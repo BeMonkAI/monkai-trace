@@ -718,26 +718,30 @@ class MonkAIRunHooks(RunHooks):
             
             result = await Runner.run(agent, user_input, hooks=hooks, run_config=run_config, **kwargs)
             
+            # Capture internal tools BEFORE flush (while buffer still has records)
+            if result:
+                hooks._capture_internal_tools_from_result(result, agent.name)
+            
         except ImportError:
             # Fallback for older agents SDK versions without RunConfig/ModelSettings
             print("[MonkAI] Warning: agents SDK doesn't support RunConfig/ModelSettings, sources may be null")
             result = await Runner.run(agent, user_input, hooks=hooks, **kwargs)
+            
+            # Capture internal tools in fallback path too
+            if result:
+                hooks._capture_internal_tools_from_result(result, agent.name)
         
         except Exception as e:
             print(f"[MonkAI] Error in run_with_tracking: {e}")
             raise
         
         finally:
-            # ALWAYS flush records, even on error
+            # ALWAYS flush records AFTER capturing internal tools
             if hooks._batch_buffer:
                 try:
                     await hooks._flush_batch()
                 except Exception as flush_error:
                     print(f"[MonkAI] Flush error: {flush_error}")
-        
-        # Capture internal tools from the COMPLETE RunResult (has new_items, raw_responses)
-        if result:
-            hooks._capture_internal_tools_from_result(result, agent.name)
         
         return result
     
