@@ -5,7 +5,7 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.10] - 2025-12-14
+## [0.2.10] - 2025-12-14 ✅ STABLE RELEASE
 
 ### Fixed
 - **Critical fix for internal tools with batch_size=1**: The `on_agent_end` hook was calling `_flush_batch()` immediately when `batch_size=1`, BEFORE `_capture_internal_tools_from_result()` could add internal tools to the record. This caused internal tools (web_search, file_search, etc.) to never be included in uploaded records.

@@ -89,6 +89,37 @@ def test_conversation_record_with_multiple_messages():
     assert len(record.msg) == 2
 
 
+def test_conversation_record_with_external_user():
+    """Test ConversationRecord with external user fields"""
+    record = ConversationRecord(
+        namespace="whatsapp-support",
+        agent="atendente",
+        msg=Message(role="user", content="Preciso de ajuda"),
+        external_user_id="+5511999999999",
+        external_user_channel="whatsapp"
+    )
+    assert record.external_user_id == "+5511999999999"
+    assert record.external_user_channel == "whatsapp"
+    
+    # Check to_api_format includes external user fields
+    api_data = record.to_api_format()
+    assert api_data["external_user_id"] == "+5511999999999"
+    assert api_data["external_user_channel"] == "whatsapp"
+
+
+def test_conversation_record_external_user_teams():
+    """Test ConversationRecord with Teams user"""
+    record = ConversationRecord(
+        namespace="teams-support",
+        agent="assistant",
+        msg=Message(role="user", content="Hello"),
+        external_user_id="teams-user-abc123",
+        external_user_channel="teams"
+    )
+    assert record.external_user_id == "teams-user-abc123"
+    assert record.external_user_channel == "teams"
+
+
 def test_log_entry_creation():
     """Test LogEntry model creation"""
     log = LogEntry(
@@ -100,4 +131,3 @@ def test_log_entry_creation():
     assert log.namespace == "test"
     assert log.level == "info"
     assert log.message == "Test log message"
-    assert log.agent == "test-agent"

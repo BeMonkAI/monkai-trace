@@ -128,6 +128,16 @@ class ConversationRecord(BaseModel):
     replied_whatsapp: Optional[str] = None
     attachments: Optional[List[Any]] = None
     
+    # External user identification (for WhatsApp, Teams, Telegram, etc.)
+    external_user_id: Optional[str] = Field(
+        None, 
+        description="End-user identifier (e.g., +5511999999999 for WhatsApp, teams-user-abc for Teams)"
+    )
+    external_user_channel: Optional[str] = Field(
+        None, 
+        description="Channel of origin: whatsapp, teams, telegram, web, email, etc."
+    )
+    
     def to_api_format(self) -> Dict:
         """Convert to API request format"""
         data = {
@@ -152,6 +162,10 @@ class ConversationRecord(BaseModel):
             data["user_id"] = self.user_id
         if self.user_whatsapp:
             data["user_whatsapp"] = self.user_whatsapp
+        if self.external_user_id:
+            data["external_user_id"] = self.external_user_id
+        if self.external_user_channel:
+            data["external_user_channel"] = self.external_user_channel
             
         return data
     
