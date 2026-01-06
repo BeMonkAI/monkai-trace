@@ -50,6 +50,7 @@ hooks = MonkAIRunHooks(
 
 > ⚠️ **Note:** v0.2.5-v0.2.9 had various issues with internal tool capture and serialization. **v0.2.10 is the minimum recommended version** for reliable web_search, file_search, and other internal tools capture with sources.
 
+
 ## Breaking Changes in v0.2.4
 
 ### `run_with_tracking()` is now async

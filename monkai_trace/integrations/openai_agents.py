@@ -76,6 +76,7 @@ class MonkAIRunHooks(RunHooks):
         # Session management
         self.session_manager = session_manager or SessionManager(inactivity_timeout)
         self._current_user_id: Optional[str] = None
+        self._external_user_channel: Optional[str] = None
         
         # Track conversation state
         self._current_session: Optional[str] = None
@@ -178,15 +179,29 @@ class MonkAIRunHooks(RunHooks):
     
     def set_user_id(self, user_id: str) -> None:
         """
-        Define user_id para gerenciamento de sessão.
+        Define user_id para gerenciamento de sessão e identificação no dashboard.
+        Este ID será salvo como external_user_id e exibido no painel de conversas.
         Deve ser chamado ANTES de agent_start.
         
         Usage:
             hooks = MonkAIRunHooks(...)
-            hooks.set_user_id("user-12345")
+            hooks.set_user_id("user-12345")  # ID do MongoDB, WhatsApp, etc.
             result = await Runner.run(agent, "Hello", hooks=hooks)
         """
         self._current_user_id = user_id
+    
+    def set_user_channel(self, channel: str) -> None:
+        """
+        Define o canal de origem do usuário (whatsapp, web, telegram, etc.).
+        Será exibido no dashboard de conversas junto ao external_user_id.
+        
+        Usage:
+            hooks = MonkAIRunHooks(...)
+            hooks.set_user_id("user-12345")
+            hooks.set_user_channel("whatsapp")
+            result = await Runner.run(agent, "Hello", hooks=hooks)
+        """
+        self._external_user_channel = channel
     
     async def on_agent_end(
         self,
@@ -243,7 +258,7 @@ class MonkAIRunHooks(RunHooks):
         if not has_assistant_message:
             messages.append(Message(role="assistant", content=str(output), sender=agent.name))
         
-        # Create conversation record
+        # Create conversation record with external_user_id from set_user_id()
         record = ConversationRecord(
             namespace=self.namespace,
             agent=agent.name,
@@ -255,7 +270,9 @@ class MonkAIRunHooks(RunHooks):
             memory_tokens=token_usage.memory_tokens,
             total_tokens=token_usage.total_tokens,
             transfers=self._transfers.copy() if self._transfers else None,
-            inserted_at=datetime.utcnow().isoformat()
+            inserted_at=datetime.utcnow().isoformat(),
+            external_user_id=self._current_user_id,  # ID do usuário definido via set_user_id()
+            external_user_channel=self._external_user_channel  # Canal definido via set_user_channel()
         )
         
         # Upload or batch
