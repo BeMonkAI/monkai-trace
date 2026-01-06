@@ -5,23 +5,6 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.11] - 2026-01-05
-
-### Added
-- **External User Tracking**: New `external_user_id` and `external_user_channel` parameters for tracking end-users from external channels (WhatsApp, Teams, Telegram, web, etc.)
-- Dashboard now displays channel and user ID in conversation details
-
-### Usage Example
-```python
-client.upload_record(
-    namespace="support",
-    agent="bot",
-    messages=[{"role": "user", "content": "Oi!"}],
-    external_user_id="+5511999999999",    # WhatsApp number
-    external_user_channel="whatsapp"       # Channel identifier
-)
-```
-
 ## [0.2.10] - 2025-12-14 ✅ STABLE RELEASE
 
 ### Fixed

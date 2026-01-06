@@ -10,7 +10,6 @@ Official Python client for [MonkAI](https://monkai.ai) - Monitor, analyze, and o
 - 🔄 **Batch processing** with automatic chunking and improved error handling
 - 🛡️ **Graceful optional dependencies** - Import without dependencies, error only on use
 - 🌐 **HTTP REST API** - Language-agnostic tracing for any runtime (Deno, Go, Node.js, etc.)
-- 👤 **External User Tracking** - Identify end-users from WhatsApp, Teams, Telegram, etc.
 - 🔌 **Framework Integrations**:
   - ✅ **MonkAI Agent** - Native framework with automatic tracking
   - ✅ **LangChain** - Full callback handler support (v0.2+)
@@ -82,38 +81,6 @@ client.upload_record(
     process_tokens=100,
     memory_tokens=20
 )
-```
-
-### External User Tracking (WhatsApp, Teams, etc.)
-
-Track conversations from external channels with user identification:
-
-```python
-from monkai_trace import MonkAIClient
-
-client = MonkAIClient(tracer_token="tk_your_token")
-
-# Track WhatsApp conversation
-client.upload_record(
-    namespace="customer-support",
-    agent="support-bot",
-    messages=[{"role": "user", "content": "Oi!"}],
-    external_user_id="+5511999999999",    # WhatsApp number
-    external_user_channel="whatsapp",      # Channel: whatsapp, teams, telegram, web, etc.
-    session_id="session-123"
-)
-
-# Track Microsoft Teams conversation
-client.upload_record(
-    namespace="enterprise-support",
-    agent="it-helpdesk",
-    messages=[{"role": "user", "content": "Help with VPN"}],
-    external_user_id="john.doe@company.com",
-    external_user_channel="teams"
-)
-```
-
-The dashboard displays the channel and end-user ID in conversation details.
 ```
 
 ### MonkAI Agent Framework (Native)
