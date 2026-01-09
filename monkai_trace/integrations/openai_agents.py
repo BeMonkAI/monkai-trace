@@ -76,6 +76,7 @@ class MonkAIRunHooks(RunHooks):
         # Session management
         self.session_manager = session_manager or SessionManager(inactivity_timeout)
         self._current_user_id: Optional[str] = None
+        self._external_user_name: Optional[str] = None
         self._external_user_channel: Optional[str] = None
         
         # Track conversation state
@@ -190,6 +191,21 @@ class MonkAIRunHooks(RunHooks):
         """
         self._current_user_id = user_id
     
+    def set_user_name(self, user_name: str) -> None:
+        """
+        Define o nome legível do usuário (ex: João Silva).
+        Este nome será exibido no dashboard de conversas ao invés de "Usuário".
+        Deve ser chamado ANTES de agent_start.
+        
+        Usage:
+            hooks = MonkAIRunHooks(...)
+            hooks.set_user_id("user-12345")
+            hooks.set_user_name("João Silva")
+            hooks.set_user_channel("whatsapp")
+            result = await Runner.run(agent, "Hello", hooks=hooks)
+        """
+        self._external_user_name = user_name
+    
     def set_user_channel(self, channel: str) -> None:
         """
         Define o canal de origem do usuário (whatsapp, web, telegram, etc.).
@@ -272,6 +288,7 @@ class MonkAIRunHooks(RunHooks):
             transfers=self._transfers.copy() if self._transfers else None,
             inserted_at=datetime.utcnow().isoformat(),
             external_user_id=self._current_user_id,  # ID do usuário definido via set_user_id()
+            external_user_name=self._external_user_name,  # Nome do usuário definido via set_user_name()
             external_user_channel=self._external_user_channel  # Canal definido via set_user_channel()
         )
         

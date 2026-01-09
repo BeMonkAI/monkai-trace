@@ -58,13 +58,18 @@ async def main():
         namespace="my-assistant"
     )
     
-    # 2. Create your agent
+    # 2. Set user identification (optional but recommended)
+    hooks.set_user_id("user-12345")       # Unique ID for session
+    hooks.set_user_name("João Silva")     # Display name in dashboard
+    hooks.set_user_channel("whatsapp")    # Communication channel
+    
+    # 3. Create your agent
     agent = Agent(
         name="Assistant",
         instructions="You are a helpful AI assistant."
     )
     
-    # 3. Run with automatic tracking
+    # 4. Run with automatic tracking
     result = await Runner.run(
         agent,
         "What's the weather like?",
@@ -73,6 +78,7 @@ async def main():
     
     print(result.final_output)
     # ✅ Automatically tracked in MonkAI!
+    # Dashboard shows "👤 João Silva" instead of "👤 Usuário"
 
 if __name__ == "__main__":
     asyncio.run(main())

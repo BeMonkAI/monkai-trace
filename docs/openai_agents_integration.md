@@ -324,6 +324,61 @@ In the MonkAI dashboard, web search calls appear with:
 
 ## Advanced Features
 
+### User Identification (v0.2.11+)
+
+Track end-user IDs, names, and channels for better analytics:
+
+```python
+hooks = MonkAIRunHooks(
+    tracer_token="tk_your_token",
+    namespace="my-agent"
+)
+
+# Set the end-user ID (e.g., MongoDB ID, database ID, phone number)
+hooks.set_user_id("user_abc123")
+
+# Set the end-user display name (NEW in v0.2.12)
+hooks.set_user_name("João Silva")
+
+# Set the communication channel (optional)
+hooks.set_user_channel("whatsapp")  # Options: whatsapp, web, telegram, etc.
+
+result = await MonkAIRunHooks.run_with_tracking(agent, "Hello!", hooks)
+```
+
+**In the MonkAI dashboard:**
+- Users with `external_user_id` show a **green badge** for easy identification
+- Users with `external_user_name` show their **real name** in messages instead of "Usuário"
+- Filter conversations by user ID or **user name** using the search fields
+- See which channel each conversation came from
+
+### User Name Display (v0.2.12+)
+
+When you set a user name, the MonkAI dashboard will:
+1. **Replace "Usuário"** with the actual user name in conversation messages
+2. **Show a name badge** on each session for quick identification
+3. **Allow filtering** by user name in the monitoring panel
+
+```python
+# Example: WhatsApp integration with user name
+hooks = MonkAIRunHooks(
+    tracer_token="tk_your_token",
+    namespace="whatsapp-support"
+)
+
+# Set user identification
+hooks.set_user_id("5511999999999")           # WhatsApp phone number
+hooks.set_user_name("Maria Santos")           # User's display name
+hooks.set_user_channel("whatsapp")
+
+result = await MonkAIRunHooks.run_with_tracking(agent, "Olá!", hooks)
+
+# In the dashboard:
+# - Messages show "👤 Maria Santos" instead of "👤 Usuário"
+# - Session has a badge with "Maria Santos"
+# - You can search by "Maria" in the filters
+```
+
 ### Batch Upload
 Control when data is sent:
 

@@ -67,6 +67,7 @@ class MonkAIClient:
         session_id: Optional[str] = None,
         transfers: Optional[List[Dict]] = None,
         external_user_id: Optional[str] = None,
+        external_user_name: Optional[str] = None,
         external_user_channel: Optional[str] = None,
         **kwargs
     ) -> Dict:
@@ -84,6 +85,7 @@ class MonkAIClient:
             session_id: Optional session identifier
             transfers: Optional list of agent transfers
             external_user_id: End-user identifier (e.g., +5511999999999 for WhatsApp)
+            external_user_name: Human-readable name of the end user (e.g., João Silva)
             external_user_channel: Channel of origin (whatsapp, teams, telegram, web, etc.)
             **kwargs: Additional fields (user_id, user_whatsapp, etc.)
         
@@ -101,6 +103,7 @@ class MonkAIClient:
             session_id=session_id,
             transfers=transfers,
             external_user_id=external_user_id,
+            external_user_name=external_user_name,
             external_user_channel=external_user_channel,
             **kwargs
         )

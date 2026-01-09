@@ -133,6 +133,10 @@ class ConversationRecord(BaseModel):
         None, 
         description="End-user identifier (e.g., +5511999999999 for WhatsApp, teams-user-abc for Teams)"
     )
+    external_user_name: Optional[str] = Field(
+        None,
+        description="Human-readable name of the end user (e.g., João Silva)"
+    )
     external_user_channel: Optional[str] = Field(
         None, 
         description="Channel of origin: whatsapp, teams, telegram, web, email, etc."
@@ -164,6 +168,8 @@ class ConversationRecord(BaseModel):
             data["user_whatsapp"] = self.user_whatsapp
         if self.external_user_id:
             data["external_user_id"] = self.external_user_id
+        if self.external_user_name:
+            data["external_user_name"] = self.external_user_name
         if self.external_user_channel:
             data["external_user_channel"] = self.external_user_channel
             

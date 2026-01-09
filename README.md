@@ -126,15 +126,18 @@ agent = Agent(
     tools=[WebSearchTool()]
 )
 
+# Set user identification (v0.2.12+)
+hooks.set_user_id("user_abc123")         # Unique ID for session tracking
+hooks.set_user_name("João Silva")        # Display name in dashboard
+hooks.set_user_channel("whatsapp")       # Communication channel
+
 # ✅ RECOMMENDED: Use run_with_tracking() for internal tools capture
 result = await MonkAIRunHooks.run_with_tracking(agent, "Hello!", hooks)
 # Captures: user message, web_search_call with sources, assistant response
 
-# OR explicit capture (for custom flows):
-hooks.set_user_input("Hello!")
-result = await Runner.run(agent, "Hello!", hooks=hooks)
-
-# ✅ v0.2.10: Internal tools (web_search, file_search) now properly captured!
+# Dashboard shows:
+# - "👤 João Silva" instead of "👤 Usuário" in messages
+# - Filter by user name in monitoring panel
 ```
 
 ### HTTP REST API (Language-Agnostic)

@@ -148,11 +148,12 @@ The MonkAI dashboard automatically groups conversations by `(session_id, user_id
 
 ## Best Practices
 
-### 1. Always Set User ID
+### 1. Always Set User ID and Name
 
 ```python
-# ✅ GOOD: Explicit user ID
+# ✅ GOOD: Explicit user ID and name
 hooks.set_user_id("user-12345")
+hooks.set_user_name("João Silva")  # NEW: Readable name for dashboard
 await Runner.run(agent, "Hello", hooks=hooks)
 
 # ❌ BAD: No user ID (defaults to "anonymous")
@@ -175,9 +176,13 @@ inactivity_timeout=60  # 1 minute
 ### 3. WhatsApp/Messaging Apps
 
 ```python
-# Use the platform's user ID directly
+# Use the platform's user ID and contact name
 whatsapp_id = message['from']
+contact_name = message.get('pushName', 'Unknown')
+
 hooks.set_user_id(whatsapp_id)
+hooks.set_user_name(contact_name)  # Shows real name in dashboard
+hooks.set_user_channel("whatsapp")
 ```
 
 ### 4. Force New Sessions
@@ -229,6 +234,8 @@ class MonkAIRunHooks(RunHooks):
     )
     
     def set_user_id(self, user_id: str) -> None
+    def set_user_name(self, user_name: str) -> None  # NEW in v0.2.12
+    def set_user_channel(self, channel: str) -> None
 ```
 
 ## Troubleshooting
