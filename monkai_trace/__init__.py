@@ -13,7 +13,7 @@ from .models import (
     TokenUsage
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.14"
 __all__ = [
     "MonkAIClient",
     "ConversationRecord",

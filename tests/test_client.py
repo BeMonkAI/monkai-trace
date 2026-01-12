@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import Mock, patch, mock_open
 from monkai_trace import MonkAIClient
 from monkai_trace.models import ConversationRecord, Message, LogEntry
-from monkai_trace.exceptions import MonkAIAPIError, MonkAIValidationError
+from monkai_trace.exceptions import MonkAIError, MonkAIValidationError
 
 
 def test_client_initialization():

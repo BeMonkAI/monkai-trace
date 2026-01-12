@@ -57,14 +57,29 @@ def mock_agent():
 
 @pytest.fixture
 def mock_context():
-    """Mock RunContextWrapper"""
+    """Mock RunContextWrapper with proper attributes"""
     context = Mock()
+    
+    # Usage mock
     usage = Mock()
     usage.input_tokens = 10
     usage.output_tokens = 20
     usage.total_tokens = 30
     usage.requests = 1
     context.usage = usage
+    
+    # Input as actual string (not Mock)
+    context.input = "Test user input"
+    
+    # Messages as None (let tests override if needed)
+    context.messages = None
+    
+    # User ID as None by default (let set_user_id take priority)
+    context.user_id = None
+    
+    # Response mock for internal tools
+    context.response = None
+    
     return context
 
 

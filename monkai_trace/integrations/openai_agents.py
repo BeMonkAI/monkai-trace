@@ -274,6 +274,12 @@ class MonkAIRunHooks(RunHooks):
         if not has_assistant_message:
             messages.append(Message(role="assistant", content=str(output), sender=agent.name))
         
+        # Debug: Log external user data before creating record
+        print(f"[MonkAI Debug] External user data:")
+        print(f"  - external_user_id: {self._current_user_id}")
+        print(f"  - external_user_name: {self._external_user_name}")
+        print(f"  - external_user_channel: {self._external_user_channel}")
+        
         # Create conversation record with external_user_id from set_user_id()
         record = ConversationRecord(
             namespace=self.namespace,

@@ -70,3 +70,7 @@ dmypy.json
 
 # Ruff
 .ruff_cache/
+
+# Test runner with secrets
+run_tests.sh
+test_real_examples.py

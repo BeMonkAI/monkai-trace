@@ -172,6 +172,10 @@ class ConversationRecord(BaseModel):
             data["external_user_name"] = self.external_user_name
         if self.external_user_channel:
             data["external_user_channel"] = self.external_user_channel
+        
+        # Debug: Log external fields being sent to API
+        if self.external_user_id or self.external_user_name or self.external_user_channel:
+            print(f"[MonkAI Debug] Payload external fields: id={self.external_user_id}, name={self.external_user_name}, channel={self.external_user_channel}")
             
         return data
     
