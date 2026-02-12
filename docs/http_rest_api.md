@@ -16,6 +16,23 @@ All requests require a `tracer_token` header with your MonkAI tracer token.
 curl -H "tracer_token: YOUR_TOKEN_HERE" ...
 ```
 
+## User Identification
+
+All trace endpoints support optional user identification fields to track who is interacting with your agent:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `external_user_id` | string | Unique external user identifier (e.g., phone number, email, customer ID) |
+| `external_user_name` | string | Human-readable display name (e.g., "João Silva") |
+| `external_user_channel` | string | Origin channel: `whatsapp`, `web`, `telegram`, `slack`, `email`, etc. |
+
+These fields enable:
+- **User filtering** in the dashboard by phone/email/ID
+- **Name display** showing actual user names instead of IDs
+- **Channel analytics** to track which platforms users prefer
+
+---
+
 ## Endpoints
 
 ### Create Session — `POST /sessions/create`
@@ -30,7 +47,7 @@ Creates a new session for tracking a conversation flow.
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `namespace` | string | Yes | The namespace for this session |
-| `user_id` | string | No | External user identifier (e.g., phone number, email) |
+| `user_id` | string | No | External user identifier (used in session_id generation) |
 | `inactivity_timeout` | integer | No | Seconds of inactivity before session expires (default: 120) |
 | `metadata` | object | No | Custom metadata for the session |
 
@@ -53,9 +70,9 @@ curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/se
   -H "Content-Type: application/json" \
   -d '{
     "namespace": "my-agent",
-    "user_id": "user123",
-    "inactivity_timeout": 120,
-    "metadata": { "platform": "web" }
+    "user_id": "5521999998888",
+    "inactivity_timeout": 300,
+    "metadata": { "platform": "whatsapp" }
   }'
 ```
 
@@ -80,6 +97,9 @@ Records an LLM (Large Language Model) call trace.
 | `latency_ms` | integer | No | Call latency in milliseconds |
 | `metadata` | object | No | Custom metadata |
 | `timestamp` | string | No | ISO-8601 timestamp |
+| `external_user_id` | string | No | External user identifier (e.g., phone, email) |
+| `external_user_name` | string | No | User display name (e.g., "João Silva") |
+| `external_user_channel` | string | No | Channel: whatsapp, web, telegram, etc. |
 
 **Response:**
 ```json
@@ -90,25 +110,28 @@ Records an LLM (Large Language Model) call trace.
 }
 ```
 
-**Example:**
+**Example (with user identification):**
 ```bash
 curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/traces/llm \
   -H "tracer_token: YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json" \
   -d '{
-    "session_id": "my-agent-user123-20251210123456",
+    "session_id": "my-agent-5521999998888-20251210123456",
     "model": "gpt-4",
     "provider": "openai",
     "input": {
       "messages": [
-        { "role": "user", "content": "Hello, how are you?" }
+        { "role": "user", "content": "Qual o preço da gasolina?" }
       ]
     },
     "output": {
-      "content": "I am doing well, thank you!",
-      "usage": { "prompt_tokens": 8, "completion_tokens": 10 }
+      "content": "O preço atual da gasolina é R$ 5,89/L.",
+      "usage": { "prompt_tokens": 12, "completion_tokens": 15 }
     },
-    "latency_ms": 450
+    "latency_ms": 450,
+    "external_user_id": "5521999998888",
+    "external_user_name": "Italo",
+    "external_user_channel": "whatsapp"
   }'
 ```
 
@@ -133,6 +156,9 @@ Records a tool/function call trace.
 | `agent` | string | No | Agent that called the tool |
 | `metadata` | object | No | Custom metadata |
 | `timestamp` | string | No | ISO-8601 timestamp |
+| `external_user_id` | string | No | External user identifier |
+| `external_user_name` | string | No | User display name |
+| `external_user_channel` | string | No | Origin channel |
 
 **Response:**
 ```json
@@ -149,12 +175,15 @@ curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/tr
   -H "tracer_token: YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json" \
   -d '{
-    "session_id": "my-agent-user123-20251210123456",
-    "tool_name": "get_weather",
-    "arguments": { "city": "São Paulo" },
-    "result": { "temperature": 25, "condition": "sunny" },
+    "session_id": "my-agent-5521999998888-20251210123456",
+    "tool_name": "get_fuel_price",
+    "arguments": { "fuel_type": "gasoline", "city": "São Paulo" },
+    "result": { "price": 5.89, "currency": "BRL" },
     "latency_ms": 120,
-    "agent": "weather-assistant"
+    "agent": "fuel-assistant",
+    "external_user_id": "5521999998888",
+    "external_user_name": "Italo",
+    "external_user_channel": "whatsapp"
   }'
 ```
 
@@ -177,6 +206,9 @@ Records an agent-to-agent handoff trace.
 | `reason` | string | No | Handoff reason |
 | `metadata` | object | No | Custom metadata |
 | `timestamp` | string | No | ISO-8601 timestamp |
+| `external_user_id` | string | No | External user identifier |
+| `external_user_name` | string | No | User display name |
+| `external_user_channel` | string | No | Origin channel |
 
 **Response:**
 ```json
@@ -194,10 +226,13 @@ curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/tr
   -H "tracer_token: YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json" \
   -d '{
-    "session_id": "my-agent-user123-20251210123456",
+    "session_id": "my-agent-5521999998888-20251210123456",
     "from_agent": "triage-agent",
     "to_agent": "sales-agent",
-    "reason": "Customer wants to purchase"
+    "reason": "Customer wants to purchase fuel",
+    "external_user_id": "5521999998888",
+    "external_user_name": "Italo",
+    "external_user_channel": "whatsapp"
   }'
 ```
 
@@ -288,10 +323,67 @@ Batch upload conversation records.
       "session_id": "session-abc",
       "msg": { "role": "assistant", "content": "Hello!" },
       "input_tokens": 10,
-      "output_tokens": 5
+      "output_tokens": 5,
+      "external_user_id": "5521999998888",
+      "external_user_name": "João Silva",
+      "external_user_channel": "whatsapp"
     }
   ]
 }
+```
+
+---
+
+## WhatsApp Integration Example
+
+Here's a complete example for integrating with WhatsApp:
+
+```python
+import requests
+
+MONKAI_API = "https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api"
+TRACER_TOKEN = "tk_your_token_here"
+NAMESPACE = "trackfuel"
+
+def process_whatsapp_message(phone: str, name: str, user_msg: str, bot_response: str):
+    """Process and trace a WhatsApp message."""
+    
+    # 1. Create session with user's phone as ID
+    session = requests.post(
+        f"{MONKAI_API}/sessions/create",
+        headers={"tracer_token": TRACER_TOKEN, "Content-Type": "application/json"},
+        json={
+            "namespace": NAMESPACE,
+            "user_id": phone,
+            "inactivity_timeout": 300
+        }
+    ).json()
+    
+    # 2. Trace the LLM call with full user identification
+    requests.post(
+        f"{MONKAI_API}/traces/llm",
+        headers={"tracer_token": TRACER_TOKEN, "Content-Type": "application/json"},
+        json={
+            "session_id": session["session_id"],
+            "model": "gpt-4",
+            "input": {"messages": [{"role": "user", "content": user_msg}]},
+            "output": {"content": bot_response},
+            # IMPORTANT: User identification fields
+            "external_user_id": phone,         # e.g., "5521997772643"
+            "external_user_name": name,        # e.g., "Italo"
+            "external_user_channel": "whatsapp"
+        }
+    )
+    
+    print(f"✓ Traced message from {name} ({phone})")
+
+# Usage
+process_whatsapp_message(
+    phone="5521997772643",
+    name="Italo",
+    user_msg="Qual o preço do combustível?",
+    bot_response="O preço atual da gasolina é R$ 5,89/L."
+)
 ```
 
 ---

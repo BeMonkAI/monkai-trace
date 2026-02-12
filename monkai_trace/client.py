@@ -306,6 +306,205 @@ class MonkAIClient:
         response.raise_for_status()
         return response.json()
     
+    # ==================== QUERY METHODS ====================
+    
+    def query_records(
+        self,
+        namespace: str,
+        agent: Optional[str] = None,
+        session_id: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0
+    ) -> Dict:
+        """
+        Query conversation records with filters
+        
+        Args:
+            namespace: Namespace to query
+            agent: Filter by agent name
+            session_id: Filter by session ID
+            start_date: Filter records after this date (ISO-8601)
+            end_date: Filter records before this date (ISO-8601)
+            limit: Maximum records to return (default: 100)
+            offset: Number of records to skip (default: 0)
+        
+        Returns:
+            Dict with 'records' list and 'count' total
+        """
+        url = f"{self.base_url}/record_query"
+        query = {"limit": limit, "offset": offset}
+        if agent:
+            query["agent"] = agent
+        if session_id:
+            query["session_id"] = session_id
+        if start_date:
+            query["start_date"] = start_date
+        if end_date:
+            query["end_date"] = end_date
+        
+        data = {"namespace": namespace, "query": query}
+        response = self._session.post(url, json=data, timeout=self.timeout)
+        response.raise_for_status()
+        return response.json()
+    
+    def query_logs(
+        self,
+        namespace: str,
+        level: Optional[str] = None,
+        resource_id: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0
+    ) -> Dict:
+        """
+        Query logs with filters
+        
+        Args:
+            namespace: Namespace to query
+            level: Filter by log level (info, warn, error)
+            resource_id: Filter by resource ID
+            start_date: Filter logs after this date (ISO-8601)
+            end_date: Filter logs before this date (ISO-8601)
+            limit: Maximum logs to return (default: 100)
+            offset: Number of logs to skip (default: 0)
+        
+        Returns:
+            Dict with 'logs' list and 'count' total
+        """
+        url = f"{self.base_url}/logs/query"
+        data = {"namespace": namespace, "limit": limit, "offset": offset}
+        if level:
+            data["level"] = level
+        if resource_id:
+            data["resource_id"] = resource_id
+        if start_date:
+            data["start_date"] = start_date
+        if end_date:
+            data["end_date"] = end_date
+        
+        response = self._session.post(url, json=data, timeout=self.timeout)
+        response.raise_for_status()
+        return response.json()
+    
+    # ==================== EXPORT METHODS ====================
+    
+    def export_records(
+        self,
+        namespace: str,
+        agent: Optional[str] = None,
+        session_id: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        format: str = "json",
+        output_file: Optional[str] = None
+    ) -> Union[List[Dict], str]:
+        """
+        Export all records matching filters (handles pagination server-side)
+        
+        Args:
+            namespace: Namespace to export
+            agent: Filter by agent name
+            session_id: Filter by session ID
+            start_date: Filter records after this date (ISO-8601)
+            end_date: Filter records before this date (ISO-8601)
+            format: Output format ('json' or 'csv')
+            output_file: Optional file path to save export
+        
+        Returns:
+            List of record dicts (json) or CSV string (csv)
+        """
+        url = f"{self.base_url}/records/export"
+        data = {"namespace": namespace, "format": format}
+        if agent:
+            data["agent"] = agent
+        if session_id:
+            data["session_id"] = session_id
+        if start_date:
+            data["start_date"] = start_date
+        if end_date:
+            data["end_date"] = end_date
+        
+        response = self._session.post(url, json=data, timeout=max(self.timeout, 120))
+        response.raise_for_status()
+        
+        if format == "csv":
+            content = response.text
+            if output_file:
+                with open(output_file, 'w', encoding='utf-8') as f:
+                    f.write(content)
+                print(f"Exported CSV to {output_file}")
+            return content
+        else:
+            result = response.json()
+            records = result.get("records", [])
+            if output_file:
+                import json
+                with open(output_file, 'w', encoding='utf-8') as f:
+                    json.dump(records, f, ensure_ascii=False, indent=2)
+                print(f"Exported {len(records)} records to {output_file}")
+            return records
+    
+    def export_logs(
+        self,
+        namespace: str,
+        level: Optional[str] = None,
+        resource_id: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        format: str = "json",
+        output_file: Optional[str] = None
+    ) -> Union[List[Dict], str]:
+        """
+        Export all logs matching filters (handles pagination server-side)
+        
+        Args:
+            namespace: Namespace to export
+            level: Filter by log level
+            resource_id: Filter by resource ID
+            start_date: Filter logs after this date (ISO-8601)
+            end_date: Filter logs before this date (ISO-8601)
+            format: Output format ('json' or 'csv')
+            output_file: Optional file path to save export
+        
+        Returns:
+            List of log dicts (json) or CSV string (csv)
+        """
+        url = f"{self.base_url}/logs/export"
+        data = {"namespace": namespace, "format": format}
+        if level:
+            data["level"] = level
+        if resource_id:
+            data["resource_id"] = resource_id
+        if start_date:
+            data["start_date"] = start_date
+        if end_date:
+            data["end_date"] = end_date
+        
+        response = self._session.post(url, json=data, timeout=max(self.timeout, 120))
+        response.raise_for_status()
+        
+        if format == "csv":
+            content = response.text
+            if output_file:
+                with open(output_file, 'w', encoding='utf-8') as f:
+                    f.write(content)
+                print(f"Exported CSV to {output_file}")
+            return content
+        else:
+            result = response.json()
+            logs = result.get("logs", [])
+            if output_file:
+                import json
+                with open(output_file, 'w', encoding='utf-8') as f:
+                    json.dump(logs, f, ensure_ascii=False, indent=2)
+                print(f"Exported {len(logs)} logs to {output_file}")
+            return logs
+    
+    # ==================== UTILITY METHODS ====================
+    
     def test_connection(self) -> bool:
         """Test if token and connection are valid"""
         try:

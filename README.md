@@ -10,6 +10,7 @@ Official Python client for [MonkAI](https://monkai.ai) - Monitor, analyze, and o
 - 🔄 **Batch processing** with automatic chunking and improved error handling
 - 🛡️ **Graceful optional dependencies** - Import without dependencies, error only on use
 - 🌐 **HTTP REST API** - Language-agnostic tracing for any runtime (Deno, Go, Node.js, etc.)
+- 📥 **Data Export** - Query records/logs with filters and export to JSON or CSV
 - 🔌 **Framework Integrations**:
   - ✅ **MonkAI Agent** - Native framework with automatic tracking
   - ✅ **LangChain** - Full callback handler support (v0.2+)
@@ -182,6 +183,34 @@ client.upload_records_from_json("records.json")
 client.upload_logs_from_json("logs.json", namespace="my-agent")
 ```
 
+### Query & Export Data
+
+```python
+# Query conversations with filters
+result = client.query_records(
+    namespace="customer-support",
+    agent="Support Bot",
+    start_date="2025-01-01",
+    limit=50
+)
+
+# Export all records to JSON file
+client.export_records(
+    namespace="customer-support",
+    output_file="conversations.json"
+)
+
+# Export logs as CSV
+client.export_logs(
+    namespace="my-agent",
+    level="error",
+    format="csv",
+    output_file="errors.csv"
+)
+```
+
+See [Data Export Guide](docs/data_export.md) for complete documentation.
+
 ## 📚 Practical Examples
 
 Learn by example! Check out our comprehensive examples:
@@ -200,10 +229,8 @@ Learn by example! Check out our comprehensive examples:
 - **[Async Client](examples/http_rest_async.py)** - High-performance async tracing
 - **[OpenAI + HTTP](examples/http_rest_openai.py)** - Trace OpenAI calls via REST
 
-**Run any example:**
-```bash
-python examples/session_management_basic.py
-```
+### Data Export
+- **[Query & Export](examples/export_data.py)** - Query records/logs and export to JSON/CSV
 
 See [examples/README.md](examples/README.md) for full list and use case guide.
 
@@ -254,6 +281,7 @@ client.upload_record(
 
 - [Quick Start Guide](docs/quickstart.md)
 - [HTTP REST API Guide](docs/http_rest_api.md) ⭐ **NEW**
+- [Data Export Guide](docs/data_export.md) ⭐ **NEW**
 - [Session Management Guide](docs/session_management.md)
 - [MonkAI Agent Integration](docs/monkai_agent_integration.md)
 - [LangChain Integration](docs/langchain_integration.md)
@@ -276,6 +304,7 @@ See the `examples/` directory for:
 - `http_rest_basic.py` - HTTP REST API basic usage ⭐ **NEW**
 - `http_rest_async.py` - Async HTTP REST client ⭐ **NEW**
 - `http_rest_openai.py` - OpenAI + HTTP REST tracing ⭐ **NEW**
+- `export_data.py` - Query and export data to JSON/CSV ⭐ **NEW**
 
 ## Development
 

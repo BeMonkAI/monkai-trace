@@ -128,9 +128,34 @@ python examples/openai_agents_internal_tools.py --token tk_your_token --namespac
 
 ---
 
+## Data Export
+
+### 7. Query & Export Data
+**File**: `export_data.py`
+
+Export your conversation records and logs programmatically:
+- ✅ Query records with filters (namespace, agent, date range)
+- ✅ Pagination for large datasets
+- ✅ Export to JSON or CSV files
+- ✅ Query and export logs by level
+- ✅ Automatic server-side pagination for bulk exports
+
+**Run:**
+```bash
+python examples/export_data.py
+```
+
+**What you'll see:**
+- Records queried with various filters
+- Paginated fetching for large datasets
+- JSON and CSV files exported to disk
+- Error logs filtered and exported
+
+---
+
 ## Other Integrations
 
-### 6. LangChain
+### 8. LangChain
 **File**: `langchain_example.py`
 - Basic LangChain callback integration
 
@@ -201,6 +226,9 @@ python examples/openai_agents_multi_agent.py --token tk_your_token
 
 ### I'm using OpenAI's web search, code interpreter, or file search
 → Start with: `openai_agents_internal_tools.py`
+
+### I want to export my data for analysis
+→ Start with: `export_data.py`
 - 📋 Session IDs
 - 👤 User IDs
 - ⏱️ Session duration

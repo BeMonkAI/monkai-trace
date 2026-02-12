@@ -121,7 +121,99 @@ client.test_connection() -> bool
 
 ---
 
-## AsyncMonkAIClient
+## Query & Export Methods
+
+Available on both `MonkAIClient` (sync) and `AsyncMonkAIClient` (async).
+
+### query_records()
+
+Query conversation records with filters.
+
+```python
+client.query_records(
+    namespace: str,
+    agent: Optional[str] = None,
+    session_id: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0
+) -> Dict
+```
+
+**Returns:**
+```python
+{
+    "records": [...],
+    "count": 42
+}
+```
+
+### query_logs()
+
+Query logs with filters.
+
+```python
+client.query_logs(
+    namespace: str,
+    level: Optional[str] = None,
+    resource_id: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0
+) -> Dict
+```
+
+### export_records()
+
+Export all records matching filters. Handles pagination server-side (up to 50k records).
+
+```python
+client.export_records(
+    namespace: str,
+    agent: Optional[str] = None,
+    session_id: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    format: str = "json",        # "json" or "csv"
+    output_file: Optional[str] = None
+) -> Union[List[Dict], str]
+```
+
+**Example:**
+```python
+# Export to JSON file
+records = client.export_records(
+    namespace="support",
+    output_file="export.json"
+)
+
+# Export to CSV
+csv = client.export_records(
+    namespace="support",
+    format="csv",
+    output_file="export.csv"
+)
+```
+
+### export_logs()
+
+Export all logs matching filters. Same interface as `export_records()`.
+
+```python
+client.export_logs(
+    namespace: str,
+    level: Optional[str] = None,
+    resource_id: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    format: str = "json",
+    output_file: Optional[str] = None
+) -> Union[List[Dict], str]
+```
+
+---
 
 Asynchronous client for high-performance applications.
 
