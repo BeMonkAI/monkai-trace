@@ -5,6 +5,23 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.15] - 2026-02-12
+
+### Changed
+- Version bump for PyPI release.
+
+## [0.2.13] - 2026-02-12
+
+### Added
+- **Programmatic Data Export**: New methods for querying and exporting conversation records and logs
+  - `query_records()` - Query records with filters (namespace, agent, date range, pagination)
+  - `query_logs()` - Query logs with filters (namespace, level, date range, pagination)
+  - `export_records()` - Export records to JSON or CSV files with automatic server-side pagination
+  - `export_logs()` - Export logs to JSON or CSV files with automatic server-side pagination
+- New REST API endpoints: `/records/export` and `/logs/export` for bulk data extraction
+- New example: `examples/export_data.py` demonstrating query and export workflows
+- New documentation: `docs/data_export.md` with complete export guide
+
 ## [0.2.10] - 2025-12-14 ✅ STABLE RELEASE
 
 ### Fixed
