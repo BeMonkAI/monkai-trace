@@ -5,11 +5,6 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.15] - 2026-02-12
-
-### Changed
-- Version bump for PyPI release.
-
 ## [0.2.13] - 2026-02-12
 
 ### Added

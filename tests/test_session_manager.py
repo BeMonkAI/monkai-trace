@@ -121,3 +121,105 @@ def test_session_id_format():
     # Should have timestamp in format YYYYMMDD-HHMMSS
     timestamp_part = session_id.split("-", 2)[2]
     assert len(timestamp_part) == 15  # YYYYMMDD-HHMMSS
+
+
+# ==================== PersistentSessionManager Tests ====================
+
+class MockMonkAIClient:
+    """Mock client for testing PersistentSessionManager"""
+    
+    def __init__(self, responses=None):
+        self.responses = responses or []
+        self._call_count = 0
+        self.calls = []
+    
+    def get_or_create_session(self, namespace, user_id, inactivity_timeout=120, force_new=False):
+        self.calls.append({
+            'namespace': namespace,
+            'user_id': user_id,
+            'inactivity_timeout': inactivity_timeout,
+            'force_new': force_new
+        })
+        if self._call_count < len(self.responses):
+            resp = self.responses[self._call_count]
+            self._call_count += 1
+            if isinstance(resp, Exception):
+                raise resp
+            return resp
+        # Default response
+        self._call_count += 1
+        return {'session_id': f'{namespace}-{user_id}-default', 'reused': False}
+
+
+def test_persistent_session_reuses_from_backend():
+    """Test PersistentSessionManager reuses sessions from backend"""
+    from monkai_trace.session_manager import PersistentSessionManager
+    
+    mock_client = MockMonkAIClient(responses=[
+        {'session_id': 'ns-user1-20260213-100000', 'reused': False},
+        {'session_id': 'ns-user1-20260213-100000', 'reused': True},
+    ])
+    
+    manager = PersistentSessionManager(client=mock_client, inactivity_timeout=300)
+    
+    # First call: creates new session via backend
+    session1 = manager.get_or_create_session("user1", "ns")
+    assert session1 == "ns-user1-20260213-100000"
+    
+    # Second call within timeout: should use local cache (no backend call)
+    session2 = manager.get_or_create_session("user1", "ns")
+    assert session1 == session2
+    assert len(mock_client.calls) == 1  # Only 1 backend call, second used cache
+
+
+def test_persistent_session_fallback_on_error():
+    """Test PersistentSessionManager falls back to in-memory on backend error"""
+    from monkai_trace.session_manager import PersistentSessionManager
+    
+    mock_client = MockMonkAIClient(responses=[
+        Exception("Connection refused"),
+    ])
+    
+    manager = PersistentSessionManager(client=mock_client, inactivity_timeout=60)
+    
+    # Should fallback to in-memory session creation
+    session = manager.get_or_create_session("user1", "ns")
+    assert session.startswith("ns-user1-")
+    assert len(mock_client.calls) == 1
+
+
+def test_persistent_session_force_new():
+    """Test PersistentSessionManager with force_new bypasses cache"""
+    from monkai_trace.session_manager import PersistentSessionManager
+    
+    mock_client = MockMonkAIClient(responses=[
+        {'session_id': 'ns-user1-session1', 'reused': False},
+        {'session_id': 'ns-user1-session2', 'reused': False},
+    ])
+    
+    manager = PersistentSessionManager(client=mock_client, inactivity_timeout=300)
+    
+    session1 = manager.get_or_create_session("user1", "ns")
+    session2 = manager.get_or_create_session("user1", "ns", force_new=True)
+    
+    assert session1 != session2
+    assert len(mock_client.calls) == 2  # Both hit backend
+
+
+def test_persistent_session_expired_cache_hits_backend():
+    """Test PersistentSessionManager queries backend when local cache expires"""
+    from monkai_trace.session_manager import PersistentSessionManager
+    
+    mock_client = MockMonkAIClient(responses=[
+        {'session_id': 'ns-user1-session1', 'reused': False},
+        {'session_id': 'ns-user1-session1', 'reused': True},
+    ])
+    
+    manager = PersistentSessionManager(client=mock_client, inactivity_timeout=1)
+    
+    session1 = manager.get_or_create_session("user1", "ns")
+    time.sleep(2)  # Wait for local cache to expire
+    
+    session2 = manager.get_or_create_session("user1", "ns")
+    assert session2 == "ns-user1-session1"  # Backend returned same session
+    assert len(mock_client.calls) == 2  # Both hit backend

@@ -17,6 +17,7 @@ except ImportError:
 
 from ..client import MonkAIClient
 from ..models import ConversationRecord, Message, Transfer, TokenUsage
+from ..session_manager import SessionManager, PersistentSessionManager
 from ..session_manager import SessionManager
 from functools import wraps
 
@@ -47,7 +48,8 @@ class MonkAIRunHooks(RunHooks):
         estimate_system_tokens: bool = True,
         batch_size: int = 10,
         session_manager: Optional[SessionManager] = None,
-        inactivity_timeout: int = 120
+        inactivity_timeout: int = 120,
+        persistent_sessions: bool = False
     ):
         """
         Initialize MonkAI tracking hooks.
@@ -60,6 +62,9 @@ class MonkAIRunHooks(RunHooks):
             batch_size: Number of records to batch before upload
             session_manager: Custom SessionManager instance (optional)
             inactivity_timeout: Seconds of inactivity before new session (default: 120)
+            persistent_sessions: Use server-side session persistence (default: False).
+                When True, sessions are resolved via the MonkAI backend database,
+                ensuring continuity across stateless environments (REST APIs, serverless).
         """
         if not OPENAI_AGENTS_AVAILABLE:
             raise ImportError(
@@ -74,7 +79,17 @@ class MonkAIRunHooks(RunHooks):
         self.batch_size = batch_size
         
         # Session management
-        self.session_manager = session_manager or SessionManager(inactivity_timeout)
+        if session_manager:
+            self.session_manager = session_manager
+        elif persistent_sessions:
+            self.session_manager = PersistentSessionManager(
+                client=self.client,
+                inactivity_timeout=inactivity_timeout
+            )
+            print(f"[MonkAI] Using PersistentSessionManager (timeout: {inactivity_timeout}s)")
+        else:
+            self.session_manager = SessionManager(inactivity_timeout)
+        
         self._current_user_id: Optional[str] = None
         self._external_user_name: Optional[str] = None
         self._external_user_channel: Optional[str] = None
@@ -86,9 +101,9 @@ class MonkAIRunHooks(RunHooks):
         self._system_prompt_tokens: int = 0
         self._context_tokens: int = 0
         self._batch_buffer: List[ConversationRecord] = []
-        self._pending_user_input: Optional[str] = None  # Store user input before agent starts
-        self._user_input: Optional[str] = None  # Store user input captured from hooks (on_llm_start, etc.)
-        self._skip_auto_flush: bool = False  # Skip auto-flush in on_agent_end when using run_with_tracking
+        self._pending_user_input: Optional[str] = None
+        self._user_input: Optional[str] = None
+        self._skip_auto_flush: bool = False
     
     async def on_agent_start(
         self,

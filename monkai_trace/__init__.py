@@ -12,8 +12,9 @@ from .models import (
     Transfer,
     TokenUsage
 )
+from .session_manager import SessionManager, PersistentSessionManager
 
-__version__ = "0.2.14"
+__version__ = "0.2.15"
 __all__ = [
     "MonkAIClient",
     "ConversationRecord",
@@ -21,4 +22,6 @@ __all__ = [
     "Message",
     "Transfer",
     "TokenUsage",
+    "SessionManager",
+    "PersistentSessionManager",
 ]

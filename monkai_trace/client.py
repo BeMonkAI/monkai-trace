@@ -503,6 +503,42 @@ class MonkAIClient:
                 print(f"Exported {len(logs)} logs to {output_file}")
             return logs
     
+    # ==================== SESSION METHODS ====================
+    
+    def get_or_create_session(
+        self,
+        namespace: str,
+        user_id: str,
+        inactivity_timeout: int = 120,
+        force_new: bool = False
+    ) -> Dict:
+        """
+        Get an existing active session or create a new one (server-side persistent).
+        
+        This queries the backend database for recent activity within the
+        inactivity_timeout window, ensuring session continuity across
+        stateless environments (REST APIs, serverless, etc.).
+        
+        Args:
+            namespace: Agent namespace
+            user_id: External user identifier
+            inactivity_timeout: Seconds of inactivity before new session
+            force_new: Force creation of a new session
+        
+        Returns:
+            Dict with session_id, reused (bool), and metadata
+        """
+        url = f"{self.base_url}/sessions/get-or-create"
+        data = {
+            "namespace": namespace,
+            "user_id": user_id,
+            "inactivity_timeout": inactivity_timeout,
+            "force_new": force_new
+        }
+        response = self._session.post(url, json=data, timeout=self.timeout)
+        response.raise_for_status()
+        return response.json()
+    
     # ==================== UTILITY METHODS ====================
     
     def test_connection(self) -> bool:

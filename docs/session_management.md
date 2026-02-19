@@ -87,6 +87,36 @@ hooks.set_user_id(whatsapp_user_id)
 await Runner.run(agent, message['text'], hooks=hooks)
 ```
 
+### Persistent Sessions (REST APIs / Serverless)
+
+**Problem**: In stateless environments (FastAPI, Flask, serverless), each request may create a new `MonkAIRunHooks` instance, losing the in-memory session state. This causes every interaction to generate a new `session_id`.
+
+**Solution**: Enable `persistent_sessions=True` to resolve sessions via the MonkAI backend database:
+
+```python
+hooks = MonkAIRunHooks(
+    tracer_token="tk_your_token",
+    namespace="customer-support",
+    inactivity_timeout=300,
+    persistent_sessions=True  # Queries backend for active sessions
+)
+
+# Each request will check the database for an existing session
+hooks.set_user_id(user_id)
+result = await MonkAIRunHooks.run_with_tracking(agent, user_message, hooks=hooks)
+```
+
+**How it works**:
+1. First checks a local in-memory cache (fast path for sequential calls in the same process)
+2. If not found locally, queries the MonkAI backend for the most recent session within the `inactivity_timeout` window
+3. If the backend is unreachable, falls back to in-memory behavior
+
+**When to use**:
+- ✅ REST APIs (FastAPI, Flask, Django)
+- ✅ Serverless functions (AWS Lambda, Google Cloud Functions)
+- ✅ Multi-worker deployments (Gunicorn, uWSGI)
+- ❌ Not needed for long-running processes (WhatsApp bots, Discord bots) — standard in-memory sessions work fine
+
 ### Custom Session Manager
 
 You can provide your own `SessionManager` for advanced control:

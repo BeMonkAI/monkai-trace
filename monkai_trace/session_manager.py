@@ -107,3 +107,90 @@ class SessionManager:
                     'inactive_for': time.time() - data['last_activity']
                 }
             return None
+
+
+class PersistentSessionManager(SessionManager):
+    """
+    SessionManager com persistência server-side.
+    
+    Consulta o backend MonkAI para verificar sessões ativas,
+    garantindo continuidade de sessão em ambientes stateless
+    (REST APIs, serverless, workers, etc.).
+    
+    Features:
+    - Cache local para chamadas rápidas no mesmo processo
+    - Fallback para backend quando cache local não tem a sessão
+    - Fallback para comportamento in-memory se o backend falhar
+    - Backward-compatible com SessionManager
+    
+    Usage:
+        from monkai_trace import MonkAIClient
+        from monkai_trace.session_manager import PersistentSessionManager
+        
+        client = MonkAIClient(tracer_token="tk_xxx")
+        manager = PersistentSessionManager(client, inactivity_timeout=300)
+        
+        session_id = manager.get_or_create_session("user-123", "my-namespace")
+    """
+    
+    def __init__(self, client: 'MonkAIClient', inactivity_timeout: int = 120):
+        """
+        Args:
+            client: MonkAIClient instance (used for HTTP calls to backend)
+            inactivity_timeout: Seconds of inactivity before new session
+        """
+        super().__init__(inactivity_timeout)
+        self._client = client
+    
+    def get_or_create_session(
+        self,
+        user_id: str,
+        namespace: str,
+        force_new: bool = False
+    ) -> str:
+        """
+        Retorna session_id existente ou cria nova, consultando o backend.
+        
+        Fluxo:
+        1. Checar cache local (rápido, evita HTTP em chamadas sequenciais)
+        2. Se não encontrar no cache: consultar backend (persistente)
+        3. Se backend falhar: fallback para comportamento in-memory
+        
+        Returns:
+            session_id no formato: {namespace}-{user_id}-{timestamp}
+        """
+        # Step 1: Check local cache first (fast path)
+        with self._lock:
+            if user_id in self._sessions and not force_new:
+                data = self._sessions[user_id]
+                if time.time() - data['last_activity'] < self.inactivity_timeout:
+                    data['last_activity'] = time.time()
+                    return data['session_id']
+        
+        # Step 2: Query backend for persistent session
+        try:
+            result = self._client.get_or_create_session(
+                namespace=namespace,
+                user_id=user_id,
+                inactivity_timeout=self.inactivity_timeout,
+                force_new=force_new
+            )
+            session_id = result['session_id']
+            reused = result.get('reused', False)
+            
+            # Update local cache
+            with self._lock:
+                self._sessions[user_id] = {
+                    'session_id': session_id,
+                    'last_activity': time.time(),
+                    'created_at': time.time()
+                }
+            
+            action = "Reused" if reused else "Created"
+            print(f"[PersistentSessionManager] {action} session: {session_id}")
+            return session_id
+            
+        except Exception as e:
+            # Step 3: Fallback to in-memory behavior
+            print(f"[PersistentSessionManager] Server lookup failed, using local fallback: {e}")
+            return super().get_or_create_session(user_id, namespace, force_new)
