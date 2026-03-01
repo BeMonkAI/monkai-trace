@@ -1,9 +1,12 @@
 """Session management with timeout support"""
 
 import time
+import logging
 from typing import Optional, Dict
-from threading import Lock
+from threading import Lock, Thread, Event
 from datetime import datetime, timedelta
+
+logger = logging.getLogger(__name__)
 
 
 class SessionManager:
@@ -13,18 +16,39 @@ class SessionManager:
     Features:
     - Timeout configurável (default: 120 segundos)
     - Thread-safe para ambientes multi-threaded
-    - Auto-limpeza de sessões expiradas
+    - Auto-limpeza de sessões expiradas via daemon thread
     - Suporte a user_id customizado
     """
     
-    def __init__(self, inactivity_timeout: int = 120):
+    def __init__(self, inactivity_timeout: int = 120, auto_cleanup_interval: int = 300):
         """
         Args:
             inactivity_timeout: Segundos de inatividade para considerar sessão fechada
+            auto_cleanup_interval: Intervalo em segundos para limpeza automática (0 = desabilitado)
         """
         self.inactivity_timeout = inactivity_timeout
-        self._sessions: Dict[str, Dict] = {}  # user_id -> {session_id, last_activity}
+        self._sessions: Dict[str, Dict] = {}
         self._lock = Lock()
+        self._shutdown_event = Event()
+        
+        if auto_cleanup_interval > 0:
+            self._cleanup_thread = Thread(
+                target=self._auto_cleanup_loop,
+                args=(auto_cleanup_interval,),
+                daemon=True
+            )
+            self._cleanup_thread.start()
+    
+    def _auto_cleanup_loop(self, interval: int) -> None:
+        """Background loop that periodically cleans up expired sessions."""
+        while not self._shutdown_event.wait(timeout=interval):
+            removed = self.cleanup_expired()
+            if removed > 0:
+                logger.debug(f"Auto-cleanup removed {removed} expired sessions")
+    
+    def shutdown(self) -> None:
+        """Signal the cleanup thread to stop."""
+        self._shutdown_event.set()
     
     def get_or_create_session(
         self, 
@@ -55,10 +79,9 @@ class SessionManager:
                     return session_data['session_id']
                 else:
                     # Sessão expirou
-                    print(f"[SessionManager] Session expired for {user_id} (inactive for {int(time_since_last)}s)")
+                    logger.info(f"Session expired for {user_id} (inactive for {int(time_since_last)}s)")
             
-            # Criar nova sessão
-            timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+            timestamp = datetime.now().strftime('%Y%m%d-%H%M%S-%f')
             session_id = f"{namespace}-{user_id}-{timestamp}"
             
             self._sessions[user_id] = {
@@ -187,10 +210,9 @@ class PersistentSessionManager(SessionManager):
                 }
             
             action = "Reused" if reused else "Created"
-            print(f"[PersistentSessionManager] {action} session: {session_id}")
+            logger.info(f"PersistentSessionManager {action} session: {session_id}")
             return session_id
             
         except Exception as e:
-            # Step 3: Fallback to in-memory behavior
-            print(f"[PersistentSessionManager] Server lookup failed, using local fallback: {e}")
+            logger.warning(f"PersistentSessionManager server lookup failed, using local fallback: {e}")
             return super().get_or_create_session(user_id, namespace, force_new)

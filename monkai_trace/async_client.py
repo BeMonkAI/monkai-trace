@@ -27,10 +27,12 @@ class AsyncMonkAIClient:
             )
     """
     
+    BASE_URL = "https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api"
+    
     def __init__(
         self,
         tracer_token: str,
-        base_url: str = "https://monkai.ai/api",
+        base_url: Optional[str] = None,
         timeout: int = 30,
         max_retries: int = 3
     ):
@@ -39,7 +41,7 @@ class AsyncMonkAIClient:
         
         Args:
             tracer_token: Your MonkAI tracer token (required)
-            base_url: API base URL (default: https://monkai.ai/api)
+            base_url: Optional custom API base URL
             timeout: Request timeout in seconds
             max_retries: Maximum number of retry attempts
         """
@@ -47,7 +49,7 @@ class AsyncMonkAIClient:
             raise MonkAIValidationError("Invalid tracer_token format. Must start with 'tk_'")
         
         self.tracer_token = tracer_token
-        self.base_url = base_url.rstrip("/")
+        self.base_url = (base_url or self.BASE_URL).rstrip("/")
         self.timeout = aiohttp.ClientTimeout(total=timeout)
         self.max_retries = max_retries
         self._session: Optional[aiohttp.ClientSession] = None
@@ -65,7 +67,7 @@ class AsyncMonkAIClient:
         """Ensure aiohttp session exists"""
         if self._session is None or self._session.closed:
             headers = {
-                "Authorization": f"Bearer {self.tracer_token}",
+                "tracer_token": self.tracer_token,
                 "Content-Type": "application/json"
             }
             self._session = aiohttp.ClientSession(
@@ -151,8 +153,8 @@ class AsyncMonkAIClient:
         """Upload a single record"""
         return await self._make_request(
             "POST",
-            "record_query",
-            data=record.model_dump(exclude_none=True, by_alias=True)
+            "records/upload",
+            data={"records": [record.to_api_format()]}
         )
     
     async def upload_records_batch(
@@ -206,9 +208,8 @@ class AsyncMonkAIClient:
     
     async def _upload_records_chunk(self, records: List[ConversationRecord]) -> Dict[str, Any]:
         """Upload a chunk of records"""
-        records_data = [r.model_dump(exclude_none=True, by_alias=True) for r in records]
-        response = await self._make_request("POST", "record_query/batch", data={"records": records_data})
-        return {"total_inserted": len(records)}
+        records_data = [r.to_api_format() for r in records]
+        return await self._make_request("POST", "records/upload", data={"records": records_data})
     
     async def upload_records_from_json(
         self,
@@ -227,7 +228,7 @@ class AsyncMonkAIClient:
         Returns:
             Upload summary
         """
-        records = FileHandler.load_records(file_path)
+        records = FileHandler.load_records_from_json(file_path)
         return await self.upload_records_batch(records, chunk_size, parallel)
     
     async def upload_log(
@@ -268,8 +269,8 @@ class AsyncMonkAIClient:
         """Upload a single log entry"""
         return await self._make_request(
             "POST",
-            "logs",
-            data=log.model_dump(exclude_none=True, by_alias=True)
+            "logs/upload",
+            data={"logs": [log.to_api_format()]}
         )
     
     async def upload_logs_batch(
@@ -320,9 +321,8 @@ class AsyncMonkAIClient:
     
     async def _upload_logs_chunk(self, logs: List[LogEntry]) -> Dict[str, Any]:
         """Upload a chunk of logs"""
-        logs_data = [log.model_dump(exclude_none=True, by_alias=True) for log in logs]
-        response = await self._make_request("POST", "logs/batch", data={"logs": logs_data})
-        return {"total_inserted": len(logs)}
+        logs_data = [log.to_api_format() for log in logs]
+        return await self._make_request("POST", "logs/upload", data={"logs": logs_data})
     
     async def upload_logs_from_json(
         self,
@@ -343,7 +343,10 @@ class AsyncMonkAIClient:
         Returns:
             Upload summary
         """
-        logs = FileHandler.load_logs(file_path, namespace)
+        logs = FileHandler.load_logs_from_json(file_path)
+        for log in logs:
+            if not log.namespace:
+                log.namespace = namespace
         return await self.upload_logs_batch(logs, chunk_size, parallel)
     
     # ==================== QUERY METHODS ====================

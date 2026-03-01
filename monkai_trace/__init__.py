@@ -14,9 +14,15 @@ from .models import (
 )
 from .session_manager import SessionManager, PersistentSessionManager
 
-__version__ = "0.2.15"
+try:
+    from .async_client import AsyncMonkAIClient
+except ImportError:
+    AsyncMonkAIClient = None
+
+__version__ = "0.2.17"
 __all__ = [
     "MonkAIClient",
+    "AsyncMonkAIClient",
     "ConversationRecord",
     "LogEntry",
     "Message",

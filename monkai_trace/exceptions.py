@@ -24,3 +24,8 @@ class MonkAIServerError(MonkAIError):
 class MonkAINetworkError(MonkAIError):
     """Network/connection error"""
     pass
+
+
+class MonkAIAPIError(MonkAIError):
+    """API request error (after retries exhausted)"""
+    pass

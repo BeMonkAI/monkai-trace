@@ -1,6 +1,6 @@
 """Pydantic models for MonkAI data structures"""
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import List, Optional, Dict, Any, Union
 from datetime import datetime
 
@@ -46,18 +46,17 @@ class TokenUsage(BaseModel):
     # OpenAI Agents specific fields (for compatibility)
     requests: Optional[int] = Field(None, description="Number of API requests made")
     
-    @field_validator('total_tokens', mode='after')
-    @classmethod
-    def calculate_total(cls, v, info):
+    @model_validator(mode='after')
+    def calculate_total(self):
         """Auto-calculate total_tokens if not provided"""
-        if v is None:
-            return (
-                info.data.get('input_tokens', 0) +
-                info.data.get('output_tokens', 0) +
-                info.data.get('process_tokens', 0) +
-                info.data.get('memory_tokens', 0)
+        if self.total_tokens is None:
+            self.total_tokens = (
+                self.input_tokens +
+                self.output_tokens +
+                self.process_tokens +
+                self.memory_tokens
             )
-        return v
+        return self
     
     @classmethod
     def from_openai_agents_usage(
@@ -74,20 +73,16 @@ class TokenUsage(BaseModel):
             system_prompt_tokens: Estimated tokens in system prompts/instructions
             context_tokens: Estimated tokens in conversation history
         """
-        # Extract tokens from usage object
         input_tokens = getattr(usage, 'input_tokens', 0) or 0
         output_tokens = getattr(usage, 'output_tokens', 0) or 0
         requests = getattr(usage, 'requests', None)
-        
-        # Try to get total_tokens from usage if available, otherwise it will be auto-calculated
-        total_tokens = getattr(usage, 'total_tokens', None)
         
         return cls(
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             process_tokens=system_prompt_tokens,
             memory_tokens=context_tokens,
-            total_tokens=total_tokens,  # Will auto-calculate if None
+            total_tokens=None,
             requests=requests
         )
 
@@ -173,10 +168,6 @@ class ConversationRecord(BaseModel):
         if self.external_user_channel:
             data["external_user_channel"] = self.external_user_channel
         
-        # Debug: Log external fields being sent to API
-        if self.external_user_id or self.external_user_name or self.external_user_channel:
-            print(f"[MonkAI Debug] Payload external fields: id={self.external_user_id}, name={self.external_user_name}, channel={self.external_user_channel}")
-            
         return data
     
     def _format_messages(self):

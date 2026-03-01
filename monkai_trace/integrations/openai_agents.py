@@ -1,7 +1,10 @@
 """OpenAI Agents framework integration for MonkAI"""
 
+import logging
 from typing import Any, Optional, Dict, List
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 try:
     from agents import RunHooks, Agent, Tool
@@ -18,7 +21,6 @@ except ImportError:
 from ..client import MonkAIClient
 from ..models import ConversationRecord, Message, Transfer, TokenUsage
 from ..session_manager import SessionManager, PersistentSessionManager
-from ..session_manager import SessionManager
 from functools import wraps
 
 
@@ -86,7 +88,7 @@ class MonkAIRunHooks(RunHooks):
                 client=self.client,
                 inactivity_timeout=inactivity_timeout
             )
-            print(f"[MonkAI] Using PersistentSessionManager (timeout: {inactivity_timeout}s)")
+            logger.info(f"Using PersistentSessionManager (timeout: {inactivity_timeout}s)")
         else:
             self.session_manager = SessionManager(inactivity_timeout)
         
@@ -111,7 +113,7 @@ class MonkAIRunHooks(RunHooks):
         agent: Agent
     ) -> None:
         """Called when agent starts processing"""
-        print(f"[MonkAI] Agent '{agent.name}' started")
+        logger.debug(f"Agent '{agent.name}' started")
         
         # Estimate system prompt tokens if enabled
         if self.estimate_system_tokens and hasattr(agent, 'instructions') and agent.instructions:
@@ -133,7 +135,7 @@ class MonkAIRunHooks(RunHooks):
             namespace=self.namespace
         )
         
-        print(f"[MonkAI] Session: {self._current_session} (user: {user_id})")
+        logger.debug(f"Session: {self._current_session} (user: {user_id})")
         
         # Extract user message - most efficient approach
         user_message_content = None
@@ -177,9 +179,9 @@ class MonkAIRunHooks(RunHooks):
                 content=user_message_content,
                 sender="user"
             ))
-            print(f"[MonkAI] Captured user message: {user_message_content[:50]}...")
+            logger.debug(f"Captured user message: {user_message_content[:50]}...")
         else:
-            print("[MonkAI] ⚠️ WARNING: No user message captured. Consider using hooks.set_user_input() or MonkAIRunHooks.run_with_tracking()")
+            logger.warning("No user message captured. Consider using hooks.set_user_input() or MonkAIRunHooks.run_with_tracking()")
     
     def set_user_input(self, user_input: str) -> None:
         """
@@ -241,7 +243,7 @@ class MonkAIRunHooks(RunHooks):
         output: Any
     ) -> None:
         """Called when agent completes - upload conversation to MonkAI"""
-        print(f"[MonkAI] Agent '{agent.name}' ended")
+        logger.debug(f"Agent '{agent.name}' ended")
         
         # Capture internal tools from response raw_items (web_search, file_search, etc.)
         self._capture_internal_tools(output, context, agent.name)
@@ -249,7 +251,7 @@ class MonkAIRunHooks(RunHooks):
         # Extract usage statistics
         usage = getattr(context, 'usage', None)
         if usage is None:
-            print(f"[MonkAI] Warning: context.usage is None for '{agent.name}'")
+            logger.warning(f"context.usage is None for '{agent.name}'")
             # Create token usage with defaults
             token_usage = TokenUsage(
                 input_tokens=0,
@@ -277,7 +279,7 @@ class MonkAIRunHooks(RunHooks):
         # Add user message if not present but we have _user_input
         if not has_user_message and self._user_input:
             messages.insert(0, Message(role="user", content=self._user_input, sender="user"))
-            print(f"[MonkAI] Added user message from backup: {self._user_input[:50]}...")
+            logger.debug(f"Added user message from backup: {self._user_input[:50]}...")
         
         # Ensure we have assistant message
         has_assistant_message = any(
@@ -288,12 +290,6 @@ class MonkAIRunHooks(RunHooks):
         
         if not has_assistant_message:
             messages.append(Message(role="assistant", content=str(output), sender=agent.name))
-        
-        # Debug: Log external user data before creating record
-        print(f"[MonkAI Debug] External user data:")
-        print(f"  - external_user_id: {self._current_user_id}")
-        print(f"  - external_user_name: {self._external_user_name}")
-        print(f"  - external_user_channel: {self._external_user_channel}")
         
         # Create conversation record with external_user_id from set_user_id()
         record = ConversationRecord(
@@ -327,7 +323,7 @@ class MonkAIRunHooks(RunHooks):
         self._context_tokens = 0
         self._user_input = None
         
-        print(f"[MonkAI] Tracked {token_usage.total_tokens} tokens for '{agent.name}'")
+        logger.info(f"Tracked {token_usage.total_tokens} tokens for '{agent.name}'")
     
     async def on_handoff(
         self,
@@ -336,7 +332,7 @@ class MonkAIRunHooks(RunHooks):
         to_agent: Agent
     ) -> None:
         """Called when agent hands off to another agent"""
-        print(f"[MonkAI] Handoff: {from_agent.name} → {to_agent.name}")
+        logger.info(f"Handoff: {from_agent.name} -> {to_agent.name}")
         
         timestamp = datetime.utcnow().isoformat()
         
@@ -371,7 +367,7 @@ class MonkAIRunHooks(RunHooks):
         tool: Tool
     ) -> None:
         """Called when tool execution starts"""
-        print(f"[MonkAI] Tool '{tool.name}' started by {agent.name}")
+        logger.debug(f"Tool '{tool.name}' started by {agent.name}")
         
         # Track as a message
         self._messages.append(Message(
@@ -389,7 +385,7 @@ class MonkAIRunHooks(RunHooks):
         result: str
     ) -> None:
         """Called when tool execution completes"""
-        print(f"[MonkAI] Tool '{tool.name}' completed")
+        logger.debug(f"Tool '{tool.name}' completed")
         
         # Track tool result
         self._messages.append(Message(
@@ -436,7 +432,7 @@ class MonkAIRunHooks(RunHooks):
                 )
                 if not has_user:
                     self._messages.append(Message(role="user", content=self._user_input, sender="user"))
-                    print(f"[MonkAI] Captured user message from on_llm_start: {self._user_input[:50]}...")
+                    logger.debug(f"Captured user message from on_llm_start: {self._user_input[:50]}...")
     
     def _capture_internal_tools(self, output: Any, context: RunContextWrapper, agent_name: str) -> None:
         """
@@ -477,7 +473,7 @@ class MonkAIRunHooks(RunHooks):
         elif hasattr(output, '__iter__') and not isinstance(output, str):
             try:
                 raw_items = list(output)
-            except:
+            except Exception:
                 pass
         
         captured_count = 0
@@ -540,7 +536,7 @@ class MonkAIRunHooks(RunHooks):
                         captured_count += 1
         
         if captured_count > 0:
-            print(f"[MonkAI] Captured {captured_count} internal tool(s)")
+            logger.info(f"Captured {captured_count} internal tool(s)")
     
     def _get_attr(self, obj: Any, attr: str, default: Any = None) -> Any:
         """Get attribute from object or dict safely"""
@@ -655,10 +651,10 @@ class MonkAIRunHooks(RunHooks):
         
         try:
             result = self.client.upload_records_batch(self._batch_buffer)
-            print(f"[MonkAI] Uploaded {result['total_inserted']} records")
+            logger.info(f"Uploaded {result['total_inserted']} records")
             self._batch_buffer.clear()
         except Exception as e:
-            print(f"[MonkAI] Upload failed: {e}")
+            logger.error(f"Upload failed: {e}")
     
     def __del__(self):
         """Flush remaining batch on cleanup"""
@@ -666,7 +662,7 @@ class MonkAIRunHooks(RunHooks):
             import asyncio
             try:
                 asyncio.create_task(self._flush_batch())
-            except:
+            except Exception:
                 pass
     
     def _capture_internal_tools_from_result(self, result: Any, agent_name: str) -> None:
@@ -806,7 +802,7 @@ class MonkAIRunHooks(RunHooks):
             
         except ImportError:
             # Fallback for older agents SDK versions without RunConfig/ModelSettings
-            print("[MonkAI] Warning: agents SDK doesn't support RunConfig/ModelSettings, sources may be null")
+            logger.warning("agents SDK doesn't support RunConfig/ModelSettings, sources may be null")
             result = await Runner.run(agent, user_input, hooks=hooks, **kwargs)
             
             # Capture internal tools in fallback path too
@@ -814,7 +810,7 @@ class MonkAIRunHooks(RunHooks):
                 hooks._capture_internal_tools_from_result(result, agent.name)
         
         except Exception as e:
-            print(f"[MonkAI] Error in run_with_tracking: {e}")
+            logger.error(f"Error in run_with_tracking: {e}")
             raise
         
         finally:
@@ -826,7 +822,7 @@ class MonkAIRunHooks(RunHooks):
                 try:
                     await hooks._flush_batch()
                 except Exception as flush_error:
-                    print(f"[MonkAI] Flush error: {flush_error}")
+                    logger.error(f"Flush error: {flush_error}")
         
         return result
     

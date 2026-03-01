@@ -1,9 +1,12 @@
 """Handle JSON file parsing and validation"""
 
 import json
+import logging
 from typing import List, Union
 from pathlib import Path
 from .models import ConversationRecord, LogEntry
+
+logger = logging.getLogger(__name__)
 
 
 class FileHandler:
@@ -39,7 +42,7 @@ class FileHandler:
                 record = ConversationRecord(**record_data)
                 records.append(record)
             except Exception as e:
-                print(f"Warning: Skipping invalid record: {e}")
+                logger.warning(f"Skipping invalid record: {e}")
                 continue
         
         return records
@@ -76,7 +79,7 @@ class FileHandler:
                 log = LogEntry(**log_data)
                 logs.append(log)
             except Exception as e:
-                print(f"Warning: Skipping invalid log: {e}")
+                logger.warning(f"Skipping invalid log: {e}")
                 continue
         
         return logs

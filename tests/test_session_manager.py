@@ -115,12 +115,13 @@ def test_session_id_format():
     
     session_id = manager.get_or_create_session("user123", "my-namespace")
     
-    # Format: {namespace}-{user_id}-{timestamp}
+    # Format: {namespace}-{user_id}-{YYYYMMDD}-{HHMMSS}-{ffffff}
     assert session_id.startswith("my-namespace-user123-")
     
-    # Should have timestamp in format YYYYMMDD-HHMMSS
-    timestamp_part = session_id.split("-", 2)[2]
-    assert len(timestamp_part) == 15  # YYYYMMDD-HHMMSS
+    # Extract timestamp portion after prefix
+    prefix = "my-namespace-user123-"
+    timestamp_part = session_id[len(prefix):]
+    assert len(timestamp_part) == 22  # YYYYMMDD-HHMMSS-ffffff
 
 
 # ==================== PersistentSessionManager Tests ====================

@@ -71,6 +71,13 @@ dmypy.json
 # Ruff
 .ruff_cache/
 
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
 # Test runner with secrets
 run_tests.sh
 test_real_examples.py

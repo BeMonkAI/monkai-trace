@@ -19,8 +19,11 @@ Example:
 """
 
 import uuid
+import logging
 from typing import Any, Dict, List, Optional, Union
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 try:
     from langchain.callbacks.base import BaseCallbackHandler
@@ -253,10 +256,10 @@ class MonkAICallbackHandler(BaseCallbackHandler):
         
         try:
             result = self.client.upload_records_batch(self.conversation_buffer)
-            print(f"✅ Uploaded {result.get('total_inserted', 0)} records to MonkAI")
+            logger.info(f"Uploaded {result.get('total_inserted', 0)} records to MonkAI")
             self.conversation_buffer.clear()
         except Exception as e:
-            print(f"❌ Failed to upload to MonkAI: {e}")
+            logger.error(f"Failed to upload to MonkAI: {e}")
     
     def flush(self) -> None:
         """

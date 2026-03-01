@@ -1,5 +1,7 @@
 """Synchronous client for MonkAI API"""
 
+import time
+import logging
 import requests
 from typing import List, Optional, Union, Dict
 from pathlib import Path
@@ -9,8 +11,11 @@ from .exceptions import (
     MonkAIAuthError,
     MonkAIValidationError,
     MonkAIServerError,
-    MonkAINetworkError
+    MonkAINetworkError,
+    MonkAIAPIError
 )
+
+logger = logging.getLogger(__name__)
 
 
 class MonkAIClient:
@@ -161,7 +166,7 @@ class MonkAIClient:
             Upload summary dict
         """
         records = FileHandler.load_records_from_json(file_path)
-        print(f"Loaded {len(records)} records from {file_path}")
+        logger.info(f"Loaded {len(records)} records from {file_path}")
         return self.upload_records_batch(records, chunk_size=chunk_size)
     
     # ==================== LOG METHODS ====================
@@ -259,51 +264,62 @@ class MonkAIClient:
             if not log.namespace:
                 log.namespace = namespace
         
-        print(f"Loaded {len(logs)} logs from {file_path}")
+        logger.info(f"Loaded {len(logs)} logs from {file_path}")
         return self.upload_logs_batch(logs, chunk_size=chunk_size)
     
     # ==================== INTERNAL METHODS ====================
+    
+    def _request_with_retry(self, method: str, url: str, **kwargs) -> requests.Response:
+        """Execute HTTP request with exponential backoff retry."""
+        kwargs.setdefault("timeout", self.timeout)
+        for attempt in range(self.max_retries):
+            try:
+                response = self._session.request(method, url, **kwargs)
+                if response.status_code == 401:
+                    raise MonkAIAuthError("Invalid tracer token")
+                if response.status_code >= 500 and attempt < self.max_retries - 1:
+                    time.sleep(2 ** attempt)
+                    continue
+                if response.status_code not in (200, 201):
+                    error_msg = f"{response.status_code} {response.reason}"
+                    try:
+                        error_msg += f": {response.json()}"
+                    except Exception:
+                        error_msg += f": {response.text[:200]}"
+                    raise MonkAIAPIError(error_msg)
+                return response
+            except (requests.ConnectionError, requests.Timeout) as e:
+                if attempt == self.max_retries - 1:
+                    raise MonkAINetworkError(f"Request failed after {self.max_retries} attempts: {e}")
+                time.sleep(2 ** attempt)
+        raise MonkAIAPIError("Request failed after all retries")
     
     def _upload_single_record(self, record: ConversationRecord) -> Dict:
         """Internal: Upload single record"""
         url = f"{self.base_url}/records/upload"
         data = {"records": [record.to_api_format()]}
-        response = self._session.post(url, json=data, timeout=self.timeout)
-        response.raise_for_status()
+        response = self._request_with_retry("POST", url, json=data)
         return response.json()
     
     def _upload_records_chunk(self, records: List[ConversationRecord]) -> Dict:
         """Internal: Upload chunk of records"""
         url = f"{self.base_url}/records/upload"
         data = {"records": [r.to_api_format() for r in records]}
-        response = self._session.post(url, json=data, timeout=self.timeout)
-        
-        # Better error handling
-        if response.status_code != 200 and response.status_code != 201:
-            error_msg = f"{response.status_code} {response.reason}"
-            try:
-                error_detail = response.json()
-                error_msg += f": {error_detail}"
-            except:
-                error_msg += f": {response.text[:200]}"
-            raise requests.HTTPError(error_msg, response=response)
-        
+        response = self._request_with_retry("POST", url, json=data)
         return response.json()
     
     def _upload_single_log(self, log: LogEntry) -> Dict:
         """Internal: Upload single log"""
         url = f"{self.base_url}/logs/upload"
         data = {"logs": [log.to_api_format()]}
-        response = self._session.post(url, json=data, timeout=self.timeout)
-        response.raise_for_status()
+        response = self._request_with_retry("POST", url, json=data)
         return response.json()
     
     def _upload_logs_chunk(self, logs: List[LogEntry]) -> Dict:
         """Internal: Upload chunk of logs"""
         url = f"{self.base_url}/logs/upload"
         data = {"logs": [l.to_api_format() for l in logs]}
-        response = self._session.post(url, json=data, timeout=self.timeout)
-        response.raise_for_status()
+        response = self._request_with_retry("POST", url, json=data)
         return response.json()
     
     # ==================== QUERY METHODS ====================
@@ -345,8 +361,7 @@ class MonkAIClient:
             query["end_date"] = end_date
         
         data = {"namespace": namespace, "query": query}
-        response = self._session.post(url, json=data, timeout=self.timeout)
-        response.raise_for_status()
+        response = self._request_with_retry("POST", url, json=data)
         return response.json()
     
     def query_logs(
@@ -385,8 +400,7 @@ class MonkAIClient:
         if end_date:
             data["end_date"] = end_date
         
-        response = self._session.post(url, json=data, timeout=self.timeout)
-        response.raise_for_status()
+        response = self._request_with_retry("POST", url, json=data)
         return response.json()
     
     # ==================== EXPORT METHODS ====================
@@ -427,15 +441,14 @@ class MonkAIClient:
         if end_date:
             data["end_date"] = end_date
         
-        response = self._session.post(url, json=data, timeout=max(self.timeout, 120))
-        response.raise_for_status()
+        response = self._request_with_retry("POST", url, json=data, timeout=max(self.timeout, 120))
         
         if format == "csv":
             content = response.text
             if output_file:
                 with open(output_file, 'w', encoding='utf-8') as f:
                     f.write(content)
-                print(f"Exported CSV to {output_file}")
+                logger.info(f"Exported CSV to {output_file}")
             return content
         else:
             result = response.json()
@@ -444,7 +457,7 @@ class MonkAIClient:
                 import json
                 with open(output_file, 'w', encoding='utf-8') as f:
                     json.dump(records, f, ensure_ascii=False, indent=2)
-                print(f"Exported {len(records)} records to {output_file}")
+                logger.info(f"Exported {len(records)} records to {output_file}")
             return records
     
     def export_logs(
@@ -483,15 +496,14 @@ class MonkAIClient:
         if end_date:
             data["end_date"] = end_date
         
-        response = self._session.post(url, json=data, timeout=max(self.timeout, 120))
-        response.raise_for_status()
+        response = self._request_with_retry("POST", url, json=data, timeout=max(self.timeout, 120))
         
         if format == "csv":
             content = response.text
             if output_file:
                 with open(output_file, 'w', encoding='utf-8') as f:
                     f.write(content)
-                print(f"Exported CSV to {output_file}")
+                logger.info(f"Exported CSV to {output_file}")
             return content
         else:
             result = response.json()
@@ -500,7 +512,7 @@ class MonkAIClient:
                 import json
                 with open(output_file, 'w', encoding='utf-8') as f:
                     json.dump(logs, f, ensure_ascii=False, indent=2)
-                print(f"Exported {len(logs)} logs to {output_file}")
+                logger.info(f"Exported {len(logs)} logs to {output_file}")
             return logs
     
     # ==================== SESSION METHODS ====================
@@ -535,8 +547,7 @@ class MonkAIClient:
             "inactivity_timeout": inactivity_timeout,
             "force_new": force_new
         }
-        response = self._session.post(url, json=data, timeout=self.timeout)
-        response.raise_for_status()
+        response = self._request_with_retry("POST", url, json=data)
         return response.json()
     
     # ==================== UTILITY METHODS ====================
