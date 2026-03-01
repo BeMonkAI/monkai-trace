@@ -92,11 +92,11 @@ def test_metadata_inclusion(mock_client):
     log_entry = handler._log_buffer[0]
     
     assert log_entry.message == "User action"
-    assert log_entry.metadata is not None
-    assert log_entry.metadata["user_id"] == "123"
-    assert log_entry.metadata["action"] == "login"
-    assert log_entry.metadata["count"] == 5
-    assert log_entry.metadata["logger"] == "test.module"
+    assert log_entry.custom_object is not None
+    assert log_entry.custom_object["user_id"] == "123"
+    assert log_entry.custom_object["action"] == "login"
+    assert log_entry.custom_object["count"] == 5
+    assert log_entry.custom_object["logger"] == "test.module"
 
 
 def test_exception_logging(mock_client):
@@ -119,8 +119,8 @@ def test_exception_logging(mock_client):
     assert len(handler._log_buffer) == 1
     log_entry = handler._log_buffer[0]
     
-    assert "exception" in log_entry.metadata
-    assert "ValueError: Test error" in log_entry.metadata["exception"]
+    assert "exception" in log_entry.custom_object
+    assert "ValueError: Test error" in log_entry.custom_object["exception"]
 
 
 def test_auto_upload_threshold(mock_client):
@@ -215,7 +215,7 @@ def test_no_metadata_mode(mock_client):
     log_entry = handler._log_buffer[0]
     
     # Metadata should be None when disabled
-    assert log_entry.metadata is None or log_entry.metadata == {}
+    assert log_entry.custom_object is None or log_entry.custom_object == {}
 
 
 # ============================================================================
@@ -417,9 +417,9 @@ def test_service_logger_exception_handling(mock_client):
     log_entry = service_logger.handler._log_buffer[0]
     
     assert log_entry.level == "error"
-    assert "exception" in log_entry.metadata
-    assert "RuntimeError: Service error" in log_entry.metadata["exception"]
-    assert log_entry.metadata["task_id"] == 123
+    assert "exception" in log_entry.custom_object
+    assert "RuntimeError: Service error" in log_entry.custom_object["exception"]
+    assert log_entry.custom_object["task_id"] == 123
     
     # Cleanup
     service_logger.shutdown()
