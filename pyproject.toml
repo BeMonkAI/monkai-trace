@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "monkai-trace"
-version = "0.2.17"
+version = "0.2.18"
 description = "Official Python SDK for MonkAI - Track and analyze your AI agent conversations"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -47,8 +47,8 @@ dev = [
 [project.urls]
 Homepage = "https://monkai.ai"
 Documentation = "https://docs.monkai.ai"
-Repository = "https://github.com/monkai/monkai-trace-python"
-Issues = "https://github.com/monkai/monkai-trace-python/issues"
+Repository = "https://github.com/BeMonkAI/monkai-trace"
+Issues = "https://github.com/BeMonkAI/monkai-trace/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
