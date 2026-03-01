@@ -79,6 +79,7 @@ def test_metadata_inclusion(mock_client):
     )
     
     logger = logging.getLogger("test.module")
+    logger.setLevel(logging.DEBUG)
     logger.addHandler(handler)
     
     # Log with extra metadata
