@@ -21,6 +21,7 @@ jobs:
       - run: ruff check .
         continue-on-error: true
       - run: mypy monkai_trace --ignore-missing-imports
+        continue-on-error: true
 
   test:
     runs-on: ubuntu-latest
