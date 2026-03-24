@@ -347,7 +347,8 @@ ConversationRecord(
     output_tokens: Optional[int] = None,
     process_tokens: Optional[int] = None,
     memory_tokens: Optional[int] = None,
-    transfers: Optional[List[Transfer]] = None
+    transfers: Optional[List[Transfer]] = None,
+    source: Optional[str] = None  # "claude-code", "cline", "copilot", etc.
 )
 ```
 
@@ -386,12 +387,16 @@ TokenUsage(
 )
 ```
 
-**Factory Method:**
+**Factory Methods:**
 ```python
 TokenUsage.from_openai_agents_usage(
     usage: agents.Usage,
     system_prompt_tokens: int = 0,
     context_tokens: int = 0
+) -> TokenUsage
+
+TokenUsage.from_anthropic_usage(
+    usage: Dict  # {input_tokens, output_tokens, cache_creation_input_tokens, cache_read_input_tokens}
 ) -> TokenUsage
 ```
 
@@ -406,6 +411,89 @@ LogEntry(
     session_id: Optional[str] = None
 )
 ```
+
+---
+
+## Coding Assistant Tracers
+
+### ClaudeCodeTracer
+
+Parse Claude Code CLI session logs.
+
+```python
+from monkai_trace import ClaudeCodeTracer
+
+tracer = ClaudeCodeTracer(
+    tracer_token: str,
+    namespace: str,
+    agent_name: str = "claude-code",
+    auto_upload: bool = True,
+    base_url: Optional[str] = None
+)
+```
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `upload_session(path)` | Upload a single `.jsonl` session file |
+| `upload_project(dir)` | Upload all sessions in a project directory |
+| `upload_all_projects()` | Upload all projects from `~/.claude/projects/` |
+| `list_projects()` | List all projects with session counts |
+| `flush()` | Upload buffered records (when `auto_upload=False`) |
+| `decode_project_path(encoded)` | `-Users-me` → `/Users/me` |
+| `encode_project_path(path)` | `/Users/me` → `-Users-me` |
+
+### ClineTracer
+
+Parse Cline (OpenClaw) VS Code extension task history.
+
+```python
+from monkai_trace import ClineTracer
+
+tracer = ClineTracer(
+    tracer_token: str,
+    namespace: str,
+    agent_name: str = "cline",
+    storage_dir: Optional[str] = None,  # Auto-detected
+    auto_upload: bool = True,
+    base_url: Optional[str] = None
+)
+```
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `upload_all_tasks()` | Upload all Cline tasks |
+| `upload_task(dir)` | Upload a specific task directory |
+| `list_tasks()` | List all tasks with metadata |
+| `flush()` | Upload buffered records |
+
+### CopilotTracer
+
+Track GitHub Copilot usage from multiple sources.
+
+```python
+from monkai_trace import CopilotTracer
+
+tracer = CopilotTracer(
+    tracer_token: str,
+    namespace: str,
+    agent_name: str = "copilot",
+    auto_upload: bool = True,
+    base_url: Optional[str] = None
+)
+```
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `upload_chat_history(storage_dir=None)` | Upload local Copilot Chat conversations |
+| `upload_org_usage(github_token, org, since=None, until=None)` | Fetch and upload org usage from GitHub API |
+| `upload_from_csv(csv_path)` | Import from admin dashboard CSV export |
+| `flush()` | Upload buffered records |
 
 ---
 

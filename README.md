@@ -23,6 +23,10 @@ Official Python client for [MonkAI](https://monkai.ai) - Monitor, analyze, and o
   - **LangChain** - Full callback handler support (v0.2+)
   - **OpenAI Agents** - RunHooks integration
   - **Python Logging** - Standard logging handler with `custom_object` metadata
+- **Coding Assistant Integrations**:
+  - **Claude Code** - Parse CLI session logs from `~/.claude/`
+  - **Cline / OpenClaw** - Parse VS Code extension task history (also Cursor, Windsurf)
+  - **GitHub Copilot** - Chat history, org usage API, CSV imports
 
 ## Installation
 
@@ -144,6 +148,48 @@ agent = Agent(
 )
 
 result = agent.run("Help me with my order")
+```
+
+### Claude Code Integration
+
+```python
+from monkai_trace import ClaudeCodeTracer
+
+tracer = ClaudeCodeTracer(tracer_token="tk_your_token", namespace="dev-productivity")
+
+# Upload all Claude Code sessions
+tracer.upload_all_projects()
+
+# Or a specific project
+tracer.upload_project("~/.claude/projects/-Users-me-myproject/")
+```
+
+### Cline / OpenClaw Integration
+
+```python
+from monkai_trace import ClineTracer
+
+tracer = ClineTracer(tracer_token="tk_your_token", namespace="dev-productivity")
+
+# Auto-detects VS Code, Cursor, or Windsurf
+tracer.upload_all_tasks()
+```
+
+### GitHub Copilot Integration
+
+```python
+from monkai_trace import CopilotTracer
+
+tracer = CopilotTracer(tracer_token="tk_your_token", namespace="dev-productivity")
+
+# Local chat history
+tracer.upload_chat_history()
+
+# Org usage API (Business/Enterprise)
+tracer.upload_org_usage(github_token="ghp_xxx", org="MyOrg")
+
+# CSV import
+tracer.upload_from_csv("copilot_export.csv")
 ```
 
 ### Upload from JSON Files
@@ -270,6 +316,9 @@ See the [`examples/`](examples/) directory:
 | `http_rest_openai.py` | OpenAI + HTTP REST tracing |
 | `export_data.py` | Query and export data to JSON/CSV |
 | `send_json_files.py` | Upload from JSON files |
+| `claude_code_example.py` | Parse Claude Code session logs |
+| `cline_example.py` | Parse Cline/OpenClaw task history |
+| `copilot_example.py` | Track GitHub Copilot usage |
 
 See [examples/README.md](examples/README.md) for the full guide.
 
@@ -279,6 +328,7 @@ See [examples/README.md](examples/README.md) for the full guide.
 - [HTTP REST API Guide](docs/http_rest_api.md)
 - [Data Export Guide](docs/data_export.md)
 - [Session Management Guide](docs/session_management.md)
+- [Coding Assistants Integration](docs/coding_assistants_integration.md) ⭐ NEW
 - [MonkAI Agent Integration](docs/monkai_agent_integration.md)
 - [LangChain Integration](docs/langchain_integration.md)
 - [OpenAI Agents Integration](docs/openai_agents_integration.md)

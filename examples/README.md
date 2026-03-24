@@ -153,6 +153,63 @@ python examples/export_data.py
 
 ---
 
+## Coding Assistant Integrations
+
+### Claude Code
+**File**: `claude_code_example.py`
+
+Parse Claude Code CLI session logs and upload to MonkAI:
+- ✅ List all projects and sessions
+- ✅ Upload single session, project, or everything
+- ✅ Exact token tracking from Anthropic API usage
+- ✅ Tool call tracking (Read, Edit, Bash, Agent, etc.)
+
+**Run:**
+```bash
+python examples/claude_code_example.py --token tk_your_token --namespace dev-productivity
+```
+
+---
+
+### Cline / OpenClaw
+**File**: `cline_example.py`
+
+Parse Cline VS Code extension task history:
+- ✅ Auto-detects VS Code, Cursor, and Windsurf
+- ✅ Tracks tool usage (execute_command, read_file, write_to_file, etc.)
+- ✅ Groups conversations by task
+- ✅ Custom storage path support
+
+**Run:**
+```bash
+python examples/cline_example.py --token tk_your_token --namespace dev-productivity
+```
+
+---
+
+### GitHub Copilot
+**File**: `copilot_example.py`
+
+Track Copilot usage from multiple sources:
+- ✅ Local Copilot Chat conversations
+- ✅ GitHub org usage API (Business/Enterprise)
+- ✅ CSV export from admin dashboard
+- ✅ Acceptance rates, lines suggested/accepted
+
+**Run:**
+```bash
+# Local chat history
+python examples/copilot_example.py --token tk_your_token --mode chat
+
+# GitHub API
+python examples/copilot_example.py --token tk_your_token --mode api --github-token ghp_xxx --org MyOrg
+
+# CSV import
+python examples/copilot_example.py --token tk_your_token --mode csv --csv-file export.csv
+```
+
+---
+
 ## Other Integrations
 
 ### 8. LangChain
@@ -226,6 +283,15 @@ python examples/openai_agents_multi_agent.py --token tk_your_token
 
 ### I'm using OpenAI's web search, code interpreter, or file search
 → Start with: `openai_agents_internal_tools.py`
+
+### I want to track Claude Code usage
+→ Start with: `claude_code_example.py`
+
+### I want to track Cline / OpenClaw usage
+→ Start with: `cline_example.py`
+
+### I want to track GitHub Copilot usage
+→ Start with: `copilot_example.py`
 
 ### I want to export my data for analysis
 → Start with: `export_data.py`
