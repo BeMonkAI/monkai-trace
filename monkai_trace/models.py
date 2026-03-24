@@ -86,6 +86,27 @@ class TokenUsage(BaseModel):
             requests=requests
         )
 
+    @classmethod
+    def from_anthropic_usage(cls, usage: Dict) -> "TokenUsage":
+        """
+        Create TokenUsage from Anthropic API usage dict.
+
+        Handles Claude Code / Anthropic SDK usage format:
+        {input_tokens, output_tokens, cache_creation_input_tokens, cache_read_input_tokens}
+        """
+        input_tokens = usage.get("input_tokens", 0) or 0
+        output_tokens = usage.get("output_tokens", 0) or 0
+        cache_creation = usage.get("cache_creation_input_tokens", 0) or 0
+        cache_read = usage.get("cache_read_input_tokens", 0) or 0
+
+        return cls(
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            process_tokens=cache_creation,
+            memory_tokens=cache_read,
+            total_tokens=None,
+        )
+
 
 class ConversationRecord(BaseModel):
     """
@@ -133,10 +154,16 @@ class ConversationRecord(BaseModel):
         description="Human-readable name of the end user (e.g., João Silva)"
     )
     external_user_channel: Optional[str] = Field(
-        None, 
+        None,
         description="Channel of origin: whatsapp, teams, telegram, web, email, etc."
     )
-    
+
+    # Source tool identification (for coding assistants)
+    source: Optional[str] = Field(
+        None,
+        description="Source tool: claude-code, cline, copilot, openai-agents, langchain, etc."
+    )
+
     def to_api_format(self) -> Dict:
         """Convert to API request format"""
         data = {
@@ -167,7 +194,9 @@ class ConversationRecord(BaseModel):
             data["external_user_name"] = self.external_user_name
         if self.external_user_channel:
             data["external_user_channel"] = self.external_user_channel
-        
+        if self.source:
+            data["source"] = self.source
+
         return data
     
     def _format_messages(self):
