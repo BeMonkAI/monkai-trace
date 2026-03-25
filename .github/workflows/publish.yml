@@ -1,4 +1,6 @@
-name: Publish to PyPI
+# DEPRECATED: PyPI publish is now done manually via `python3 -m build && python3 -m twine upload dist/*`
+# See skill /monkai-trace for the manual publish process.
+name: Version Check
 
 on:
   push:
@@ -6,40 +8,20 @@ on:
       - 'v*'
 
 jobs:
-  publish:
+  check-version:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
+      - name: Check if version is on PyPI
         run: |
-          python -m pip install --upgrade pip
-          pip install build twine
-          pip install -e ".[dev]"
+          VERSION=$(awk '/^\[project\]/{found=1} found && /^version *= *"/{gsub(/.*version *= *"|".*/, ""); print; exit}' pyproject.toml)
+          echo "Version: $VERSION"
 
-      - name: Run tests
-        run: |
-          pytest tests/ -x \
-            --ignore=tests/test_openai_agents_e2e.py \
-            --ignore=tests/test_service_logging_e2e.py \
-            --ignore=tests/test_langchain_integration.py \
-            --ignore=tests/test_monkai_agent_integration.py \
-            --ignore=tests/test_openai_agents_integration.py \
-            --ignore=tests/test_logging_integration.py \
-            -q
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://pypi.org/pypi/monkai-trace/$VERSION/json)
 
-      - name: Build package
-        run: python -m build
-
-      - name: Publish to PyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: twine upload dist/*
+          if [ "$HTTP_STATUS" = "404" ]; then
+            echo "⚠️ Version $VERSION NOT on PyPI — run manual publish: python3 -m build && python3 -m twine upload dist/*"
+          else
+            echo "✅ Version $VERSION already on PyPI"
+          fi
