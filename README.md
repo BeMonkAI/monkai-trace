@@ -372,6 +372,17 @@ pytest tests/ -x -q
 
 ## Changelog
 
+### v0.3.0
+
+- **New: Coding Assistant Integrations**
+  - `ClaudeCodeTracer` — Parse Claude Code CLI session logs from `~/.claude/`
+  - `ClineTracer` — Parse Cline VS Code extension task history (VS Code, Cursor, Windsurf)
+  - `OpenClawTracer` — Parse OpenClaw personal AI assistant transcripts from `~/.openclaw/`
+  - `CopilotTracer` — Track GitHub Copilot via Chat history, org usage API, and CSV imports
+- **New: `source` field** on `ConversationRecord` to identify data origin (claude-code, cline, openclaw, copilot)
+- **New: `TokenUsage.from_anthropic_usage()`** — Parse Anthropic API usage dicts with cache token support
+- Added 4 examples and comprehensive documentation guide
+
 ### v0.2.18
 
 - Updated README and project URLs
