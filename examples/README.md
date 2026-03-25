@@ -171,7 +171,7 @@ python examples/claude_code_example.py --token tk_your_token --namespace dev-pro
 
 ---
 
-### Cline / OpenClaw
+### Cline
 **File**: `cline_example.py`
 
 Parse Cline VS Code extension task history:
@@ -183,6 +183,22 @@ Parse Cline VS Code extension task history:
 **Run:**
 ```bash
 python examples/cline_example.py --token tk_your_token --namespace dev-productivity
+```
+
+---
+
+### OpenClaw
+**File**: `openclaw_example.py`
+
+Parse OpenClaw personal AI assistant session transcripts:
+- ✅ Lists all agents and sessions
+- ✅ JSONL transcript parsing from `~/.openclaw/`
+- ✅ Multi-agent support
+- ✅ Custom state directory (OPENCLAW_STATE_DIR)
+
+**Run:**
+```bash
+python examples/openclaw_example.py --token tk_your_token --namespace dev-productivity
 ```
 
 ---
@@ -287,8 +303,11 @@ python examples/openai_agents_multi_agent.py --token tk_your_token
 ### I want to track Claude Code usage
 → Start with: `claude_code_example.py`
 
-### I want to track Cline / OpenClaw usage
+### I want to track Cline usage
 → Start with: `cline_example.py`
+
+### I want to track OpenClaw usage
+→ Start with: `openclaw_example.py`
 
 ### I want to track GitHub Copilot usage
 → Start with: `copilot_example.py`

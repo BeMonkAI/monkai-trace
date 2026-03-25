@@ -25,7 +25,8 @@ Official Python client for [MonkAI](https://monkai.ai) - Monitor, analyze, and o
   - **Python Logging** - Standard logging handler with `custom_object` metadata
 - **Coding Assistant Integrations**:
   - **Claude Code** - Parse CLI session logs from `~/.claude/`
-  - **Cline / OpenClaw** - Parse VS Code extension task history (also Cursor, Windsurf)
+  - **Cline** - Parse VS Code extension task history (also Cursor, Windsurf)
+  - **OpenClaw** - Parse personal AI assistant session transcripts
   - **GitHub Copilot** - Chat history, org usage API, CSV imports
 
 ## Installation
@@ -164,7 +165,7 @@ tracer.upload_all_projects()
 tracer.upload_project("~/.claude/projects/-Users-me-myproject/")
 ```
 
-### Cline / OpenClaw Integration
+### Cline Integration
 
 ```python
 from monkai_trace import ClineTracer
@@ -173,6 +174,17 @@ tracer = ClineTracer(tracer_token="tk_your_token", namespace="dev-productivity")
 
 # Auto-detects VS Code, Cursor, or Windsurf
 tracer.upload_all_tasks()
+```
+
+### OpenClaw Integration
+
+```python
+from monkai_trace import OpenClawTracer
+
+tracer = OpenClawTracer(tracer_token="tk_your_token", namespace="dev-productivity")
+
+# Upload all sessions from ~/.openclaw/
+tracer.upload_all_sessions()
 ```
 
 ### GitHub Copilot Integration
@@ -318,6 +330,7 @@ See the [`examples/`](examples/) directory:
 | `send_json_files.py` | Upload from JSON files |
 | `claude_code_example.py` | Parse Claude Code session logs |
 | `cline_example.py` | Parse Cline/OpenClaw task history |
+| `openclaw_example.py` | Parse OpenClaw session transcripts |
 | `copilot_example.py` | Track GitHub Copilot usage |
 
 See [examples/README.md](examples/README.md) for the full guide.

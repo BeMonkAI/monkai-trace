@@ -35,6 +35,11 @@ try:
 except ImportError:
     CopilotTracer = None
 
+try:
+    from .integrations.openclaw import OpenClawTracer
+except ImportError:
+    OpenClawTracer = None
+
 __version__ = "0.2.18"
 __all__ = [
     "MonkAIClient",
@@ -49,4 +54,5 @@ __all__ = [
     "ClaudeCodeTracer",
     "ClineTracer",
     "CopilotTracer",
+    "OpenClawTracer",
 ]

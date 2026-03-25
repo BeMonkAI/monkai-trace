@@ -1,5 +1,5 @@
 """
-Cline (formerly Claude Dev / OpenClaw) integration for MonkAI Trace.
+Cline (formerly Claude Dev) integration for MonkAI Trace.
 
 Parses Cline VS Code extension task history and uploads to MonkAI.
 

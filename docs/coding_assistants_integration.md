@@ -7,10 +7,11 @@ MonkAI Trace can parse and upload usage data from popular coding assistants, ena
 | Tool | Class | Data Source | Token Tracking |
 |------|-------|-------------|----------------|
 | **Claude Code** | `ClaudeCodeTracer` | JSONL session logs (`~/.claude/`) | Exact (Anthropic API usage) |
-| **Cline / OpenClaw** | `ClineTracer` | Task history (VS Code extension storage) | Estimated (~4 chars/token) |
+| **Cline** | `ClineTracer` | Task history (VS Code extension storage) | Estimated (~4 chars/token) |
+| **OpenClaw** | `OpenClawTracer` | Session transcripts (`~/.openclaw/`) | Estimated (~4 chars/token) |
 | **GitHub Copilot** | `CopilotTracer` | Chat history + GitHub API + CSV | Estimated / API metrics |
 
-> **Note:** Cline was formerly known as "Claude Dev" and "OpenClaw". The `ClineTracer` handles all variants and auto-detects VS Code, Cursor, and Windsurf installations.
+> **Note:** Cline (formerly "Claude Dev") and OpenClaw are **separate projects**. Cline is a VS Code coding extension. OpenClaw is a personal AI assistant for messaging platforms (WhatsApp, Telegram, Slack, Discord).
 
 ---
 
@@ -129,6 +130,64 @@ On Linux, paths use `~/.config/` instead of `~/Library/Application Support/`.
 
 ---
 
+## OpenClaw
+
+### Overview
+
+[OpenClaw](https://github.com/openclaw/openclaw) is a personal AI assistant you run on your own devices. It integrates with WhatsApp, Telegram, Slack, Discord, and more.
+
+Session transcripts are stored as JSONL at:
+
+```
+~/.openclaw/agents/{agent_id}/sessions/{session_id}.jsonl
+```
+
+Each line: `{"message": {"role": "...", "content": [...]}, "id": "..."}`
+
+### Usage
+
+```python
+from monkai_trace import OpenClawTracer
+
+tracer = OpenClawTracer(
+    tracer_token="tk_your_token",
+    namespace="dev-productivity"
+)
+
+# Upload all sessions from all agents
+tracer.upload_all_sessions()
+
+# Upload from a specific agent
+tracer.upload_agent_sessions("my-agent")
+
+# Upload a single session
+tracer.upload_session("~/.openclaw/agents/default/sessions/abc123.jsonl")
+
+# List agents
+for a in tracer.list_agents():
+    print(f"{a['agent_id']} — {a['session_count']} sessions")
+```
+
+### Custom State Directory
+
+```python
+# Via constructor
+tracer = OpenClawTracer(..., state_dir="~/.openclaw-dev")
+
+# Or via environment variable
+# export OPENCLAW_STATE_DIR=~/.openclaw-dev
+```
+
+### What Gets Tracked
+
+- **Messages**: User prompts and assistant responses across channels
+- **Tool calls**: Any tool_use blocks in assistant content
+- **Compaction**: Session compaction events (context window management)
+- **Tokens**: Estimated from content length (~4 chars per token)
+- **Multi-agent**: Sessions grouped by agent ID
+
+---
+
 ## GitHub Copilot
 
 ### Overview
@@ -215,6 +274,11 @@ claude.upload_all_projects()
 cline = ClineTracer(tracer_token=token, namespace=ns)
 cline.upload_all_tasks()
 
+# OpenClaw
+from monkai_trace import OpenClawTracer
+openclaw = OpenClawTracer(tracer_token=token, namespace=ns)
+openclaw.upload_all_sessions()
+
 # Copilot
 copilot = CopilotTracer(tracer_token=token, namespace=ns)
 copilot.upload_chat_history()
@@ -251,4 +315,5 @@ Use a cron job or scheduled task to upload new data periodically:
 
 - [`examples/claude_code_example.py`](../examples/claude_code_example.py) — Parse and upload Claude Code sessions
 - [`examples/cline_example.py`](../examples/cline_example.py) — Parse and upload Cline tasks
+- [`examples/openclaw_example.py`](../examples/openclaw_example.py) — Parse and upload OpenClaw sessions
 - [`examples/copilot_example.py`](../examples/copilot_example.py) — Upload Copilot data from chat/API/CSV

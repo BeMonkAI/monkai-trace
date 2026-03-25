@@ -470,6 +470,33 @@ tracer = ClineTracer(
 | `list_tasks()` | List all tasks with metadata |
 | `flush()` | Upload buffered records |
 
+### OpenClawTracer
+
+Parse OpenClaw personal AI assistant session transcripts.
+
+```python
+from monkai_trace import OpenClawTracer
+
+tracer = OpenClawTracer(
+    tracer_token: str,
+    namespace: str,
+    agent_name: str = "openclaw",
+    state_dir: Optional[str] = None,  # Default: ~/.openclaw or OPENCLAW_STATE_DIR
+    auto_upload: bool = True,
+    base_url: Optional[str] = None
+)
+```
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `upload_all_sessions()` | Upload all sessions from all agents |
+| `upload_agent_sessions(agent_id)` | Upload sessions from a specific agent |
+| `upload_session(path)` | Upload a single `.jsonl` session file |
+| `list_agents()` | List all agents with session counts |
+| `flush()` | Upload buffered records |
+
 ### CopilotTracer
 
 Track GitHub Copilot usage from multiple sources.
