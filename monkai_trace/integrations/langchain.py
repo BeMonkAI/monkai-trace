@@ -93,11 +93,14 @@ class MonkAICallbackHandler(BaseCallbackHandler):
         self.session_id: Optional[str] = None
         self.current_input: Optional[str] = None
         self.conversation_buffer: List[ConversationRecord] = []
-        
+
         # Track tokens accumulated in current interaction
         self.input_tokens = 0
         self.output_tokens = 0
         self.process_tokens = 0  # For tool/chain execution
+
+        # Track LLM model
+        self._current_model: Optional[str] = None
         
     def _get_or_create_session_id(self) -> str:
         """Get or create a session ID for this conversation."""
@@ -118,6 +121,12 @@ class MonkAICallbackHandler(BaseCallbackHandler):
         **kwargs: Any
     ) -> None:
         """Called when LLM starts."""
+        # Extract model name from serialized LLM config
+        self._current_model = (
+            serialized.get("kwargs", {}).get("model_name")
+            or serialized.get("kwargs", {}).get("model")
+            or serialized.get("id", [None])[-1]
+        )
         # Track input tokens from prompts
         for prompt in prompts:
             self.input_tokens += self._estimate_tokens(prompt)
@@ -175,7 +184,8 @@ class MonkAICallbackHandler(BaseCallbackHandler):
                 input_tokens=self.input_tokens,
                 output_tokens=self.output_tokens,
                 process_tokens=self.process_tokens,
-                total_tokens=self.input_tokens + self.output_tokens + self.process_tokens
+                total_tokens=self.input_tokens + self.output_tokens + self.process_tokens,
+                model=self._current_model
             )
             
             self._handle_record(record)

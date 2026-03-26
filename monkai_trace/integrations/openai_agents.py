@@ -291,6 +291,11 @@ class MonkAIRunHooks(RunHooks):
         if not has_assistant_message:
             messages.append(Message(role="assistant", content=str(output), sender=agent.name))
         
+        # Extract model name from agent
+        model_name = getattr(agent, 'model', None)
+        if model_name and not isinstance(model_name, str):
+            model_name = str(model_name)
+
         # Create conversation record with external_user_id from set_user_id()
         record = ConversationRecord(
             namespace=self.namespace,
@@ -306,7 +311,8 @@ class MonkAIRunHooks(RunHooks):
             inserted_at=datetime.utcnow().isoformat(),
             external_user_id=self._current_user_id,  # ID do usuário definido via set_user_id()
             external_user_name=self._external_user_name,  # Nome do usuário definido via set_user_name()
-            external_user_channel=self._external_user_channel  # Canal definido via set_user_channel()
+            external_user_channel=self._external_user_channel,  # Canal definido via set_user_channel()
+            model=model_name
         )
         
         # Upload or batch

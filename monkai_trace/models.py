@@ -164,6 +164,12 @@ class ConversationRecord(BaseModel):
         description="Source tool: claude-code, cline, copilot, openai-agents, langchain, etc."
     )
 
+    # LLM model identification
+    model: Optional[str] = Field(
+        None,
+        description="LLM model used (e.g., gpt-4o, claude-sonnet-4-6-20250514, gpt-4.1-mini)"
+    )
+
     def to_api_format(self) -> Dict:
         """Convert to API request format"""
         data = {
@@ -196,6 +202,8 @@ class ConversationRecord(BaseModel):
             data["external_user_channel"] = self.external_user_channel
         if self.source:
             data["source"] = self.source
+        if self.model:
+            data["model"] = self.model
 
         return data
     

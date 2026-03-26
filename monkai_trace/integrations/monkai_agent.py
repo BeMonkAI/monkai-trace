@@ -138,6 +138,11 @@ class MonkAIAgentHooks:
             if hasattr(usage, 'process_tokens'):
                 self._token_counts["process"] = usage.process_tokens
         
+        # Extract model name from agent if available
+        model_name = getattr(agent, 'model', None)
+        if model_name and not isinstance(model_name, str):
+            model_name = str(model_name)
+
         # Create conversation record
         record = ConversationRecord(
             namespace=self.namespace,
@@ -148,7 +153,8 @@ class MonkAIAgentHooks:
             output_tokens=self._token_counts["output"],
             process_tokens=self._token_counts["process"],
             memory_tokens=self._token_counts["memory"],
-            transfers=self._transfers if self._transfers else None
+            transfers=self._transfers if self._transfers else None,
+            model=model_name
         )
         
         # Upload or batch

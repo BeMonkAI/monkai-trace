@@ -271,6 +271,11 @@ class ClaudeCodeTracer:
             # Build token usage
             token_usage = TokenUsage.from_anthropic_usage(usage) if usage else TokenUsage()
 
+            # Extract model from the last assistant message
+            model_name = None
+            if assistant_msgs:
+                model_name = assistant_msgs[-1].get("model", "") or None
+
             record = ConversationRecord(
                 namespace=self.namespace,
                 agent=self.agent_name,
@@ -282,6 +287,7 @@ class ClaudeCodeTracer:
                 memory_tokens=token_usage.memory_tokens,
                 total_tokens=token_usage.total_tokens,
                 source="claude-code",
+                model=model_name,
             )
             records.append(record)
 

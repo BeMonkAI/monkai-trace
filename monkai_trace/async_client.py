@@ -116,6 +116,7 @@ class AsyncMonkAIClient:
         output_tokens: Optional[int] = None,
         process_tokens: Optional[int] = None,
         memory_tokens: Optional[int] = None,
+        model: Optional[str] = None,
         **kwargs
     ) -> Dict[str, Any]:
         """
@@ -144,6 +145,7 @@ class AsyncMonkAIClient:
             output_tokens=output_tokens,
             process_tokens=process_tokens,
             memory_tokens=memory_tokens,
+            model=model,
             **kwargs
         )
         

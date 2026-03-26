@@ -74,11 +74,12 @@ class MonkAIClient:
         external_user_id: Optional[str] = None,
         external_user_name: Optional[str] = None,
         external_user_channel: Optional[str] = None,
+        model: Optional[str] = None,
         **kwargs
     ) -> Dict:
         """
         Upload a single conversation record
-        
+
         Args:
             namespace: Agent namespace
             agent: Agent name
@@ -92,6 +93,7 @@ class MonkAIClient:
             external_user_id: End-user identifier (e.g., +5511999999999 for WhatsApp)
             external_user_name: Human-readable name of the end user (e.g., João Silva)
             external_user_channel: Channel of origin (whatsapp, teams, telegram, web, etc.)
+            model: LLM model used (e.g., gpt-4o, claude-sonnet-4-6-20250514)
             **kwargs: Additional fields (user_id, user_whatsapp, etc.)
         
         Returns:
@@ -110,6 +112,7 @@ class MonkAIClient:
             external_user_id=external_user_id,
             external_user_name=external_user_name,
             external_user_channel=external_user_channel,
+            model=model,
             **kwargs
         )
         
