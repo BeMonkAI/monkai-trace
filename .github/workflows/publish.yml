@@ -1,27 +1,71 @@
-# DEPRECATED: PyPI publish is now done manually via `python3 -m build && python3 -m twine upload dist/*`
-# See skill /monkai-trace for the manual publish process.
-name: Version Check
+# Publish monkai-trace to PyPI (pure Python — single py3-none-any wheel).
+#
+# Open source (MIT) — no Cython/cibuildwheel needed.
+# Single wheel works on all platforms including Azure Functions (cp312-manylinux_x86_64).
+#
+# Cost: ~$0.006 per release (1 Linux runner, ~1 min)
+#
+# Triggers:
+#   - Automatic: push to main with pyproject.toml changed (version bump)
+#   - Manual: workflow_dispatch
+name: Publish to PyPI
 
 on:
+  workflow_dispatch:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
+    paths: ['pyproject.toml']
 
 jobs:
-  check-version:
+  publish:
+    name: Build & Publish
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check if version is on PyPI
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Check if version is new
+        id: version
         run: |
-          VERSION=$(awk '/^\[project\]/{found=1} found && /^version *= *"/{gsub(/.*version *= *"|".*/, ""); print; exit}' pyproject.toml)
-          echo "Version: $VERSION"
+          VERSION=$(python -c "
+          import re
+          text = open('pyproject.toml').read()
+          m = re.search(r'version\s*=\s*\"([^\"]+)\"', text)
+          print(m.group(1))
+          ")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://pypi.org/pypi/monkai-trace/$VERSION/json)
-
           if [ "$HTTP_STATUS" = "404" ]; then
-            echo "⚠️ Version $VERSION NOT on PyPI — run manual publish: python3 -m build && python3 -m twine upload dist/*"
+            echo "new=true" >> $GITHUB_OUTPUT
+            echo "Version $VERSION is NEW — will publish"
           else
-            echo "✅ Version $VERSION already on PyPI"
+            echo "new=false" >> $GITHUB_OUTPUT
+            echo "Version $VERSION already on PyPI — skipping"
           fi
+
+      - name: Build wheel
+        if: steps.version.outputs.new == 'true'
+        run: |
+          pip install --upgrade pip build
+          python -m build --wheel --sdist
+          echo "Built:"
+          ls -lh dist/
+
+      - name: Verify wheel
+        if: steps.version.outputs.new == 'true'
+        run: |
+          pip install dist/*.whl
+          python -c "import monkai_trace; print(f'monkai-trace OK')"
+
+      - name: Publish to PyPI
+        if: steps.version.outputs.new == 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
