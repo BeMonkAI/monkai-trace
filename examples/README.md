@@ -169,6 +169,17 @@ Parse Claude Code CLI session logs and upload to MonkAI:
 python examples/claude_code_example.py --token tk_your_token --namespace dev-productivity
 ```
 
+#### Live tracking (Stop hook)
+**File**: `claude_code_hook.py`
+
+Envia a sessão automaticamente ao fim de cada turno do Claude Code:
+- ✅ Hook `Stop` configurado em `~/.claude/settings.json`
+- ✅ Padrão "agente pessoal": `namespace=personal-agents`, `agent=claude-<user>`
+- ✅ Token via `MONKAI_TRACER_TOKEN`; nunca derruba o Claude Code em erro
+- ✅ Complementa (não substitui) o backfill de `claude_code_example.py`
+
+Ver docstring do arquivo para o setup completo (pip install, export do token e snippet do `settings.json`).
+
 ---
 
 ### Cline
