@@ -8,7 +8,15 @@ from datetime import datetime
 class Message(BaseModel):
     """Single message in a conversation"""
     role: str = Field(..., description="Role: user, assistant, tool, system")
-    content: Optional[Union[str, Dict]] = Field(None, description="Message content")
+    # ``content`` may be:
+    #   * ``str`` — legacy / OpenAI chat-completions format
+    #   * ``Dict`` — single structured payload (rare)
+    #   * ``List[Dict]`` — Anthropic / OpenAI tool-use format with text /
+    #     tool_use / tool_result blocks. Accepting it here lets the SDK
+    #     anonymize structured content before transmission (issue #3).
+    content: Optional[Union[str, List[Dict[str, Any]], Dict[str, Any]]] = Field(
+        None, description="Message content"
+    )
     sender: Optional[str] = Field(None, description="Agent/user that sent this")
     tool_calls: Optional[List[Dict]] = None
     tool_call_id: Optional[str] = None

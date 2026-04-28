@@ -1,8 +1,11 @@
 """Hardcoded baseline PII redaction rules. Always applied; no fetch involved."""
 
 from dataclasses import dataclass
-from typing import List, Optional, Pattern
+from typing import Any, List, Optional, Pattern
+import logging
 import re
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -131,3 +134,75 @@ class BaselineAnonymizer:
         # accidentally swallow other numeric IDs.
         text = self._card_pattern.sub(_redact_card, text)
         return text
+
+    def apply_to_messages(self, messages: Any) -> List[Any]:
+        """Anonymize a list of chat messages before transmission.
+
+        Handles two shapes for ``content``:
+          * ``str`` — legacy format; redacted directly via ``apply``.
+          * ``list[dict]`` — Anthropic / OpenAI tool-use format. Each block
+            is inspected and any visible text is redacted: ``text`` blocks,
+            ``tool_use.input`` string values, and ``tool_result.content``
+            (string or nested list of blocks).
+
+        Unknown shapes are passed through unchanged with a single warning
+        emitted, so we get visibility without dropping the record.
+        """
+        if isinstance(messages, dict):
+            messages = [messages]
+        out: List[Any] = []
+        for msg in messages:
+            if not isinstance(msg, dict) or "content" not in msg:
+                out.append(msg)
+                continue
+            content = msg["content"]
+            new_msg = dict(msg)
+            if isinstance(content, str):
+                new_msg["content"] = self.apply(content)
+            elif isinstance(content, list):
+                new_msg["content"] = [self._anonymize_block(b) for b in content]
+            else:
+                logger.warning(
+                    "BaselineAnonymizer: skipping message with unsupported content "
+                    "type %s; PII may be transmitted unredacted",
+                    type(content).__name__,
+                )
+            out.append(new_msg)
+        return out
+
+    def _anonymize_block(self, block: Any) -> Any:
+        """Anonymize a single content block from a tool-use style message."""
+        if not isinstance(block, dict):
+            return block
+        new_block = dict(block)
+        block_type = new_block.get("type")
+        if block_type == "text" and isinstance(new_block.get("text"), str):
+            new_block["text"] = self.apply(new_block["text"])
+        elif block_type == "tool_use" and isinstance(new_block.get("input"), dict):
+            new_block["input"] = self._anonymize_dict(new_block["input"])
+        elif block_type == "tool_result":
+            inner = new_block.get("content")
+            if isinstance(inner, str):
+                new_block["content"] = self.apply(inner)
+            elif isinstance(inner, list):
+                new_block["content"] = [self._anonymize_block(b) for b in inner]
+        return new_block
+
+    def _anonymize_dict(self, d: dict) -> dict:
+        """Recursively redact string values in a dict (e.g. tool_use.input)."""
+        out: dict = {}
+        for k, v in d.items():
+            if isinstance(v, str):
+                out[k] = self.apply(v)
+            elif isinstance(v, dict):
+                out[k] = self._anonymize_dict(v)
+            elif isinstance(v, list):
+                out[k] = [
+                    self.apply(item) if isinstance(item, str)
+                    else self._anonymize_dict(item) if isinstance(item, dict)
+                    else item
+                    for item in v
+                ]
+            else:
+                out[k] = v
+        return out
