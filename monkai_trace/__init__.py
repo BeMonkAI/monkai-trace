@@ -13,6 +13,7 @@ from .models import (
     TokenUsage
 )
 from .session_manager import SessionManager, PersistentSessionManager
+from monkai_trace.anonymizer import BaselineAnonymizer
 
 try:
     from .async_client import AsyncMonkAIClient
@@ -55,4 +56,5 @@ __all__ = [
     "ClineTracer",
     "CopilotTracer",
     "OpenClawTracer",
+    "BaselineAnonymizer",
 ]

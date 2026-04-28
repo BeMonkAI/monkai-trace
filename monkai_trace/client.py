@@ -7,6 +7,7 @@ from typing import List, Optional, Union, Dict
 from pathlib import Path
 from .models import ConversationRecord, LogEntry, TokenUsage
 from .file_handlers import FileHandler
+from .anonymizer import BaselineAnonymizer
 from .exceptions import (
     MonkAIAuthError,
     MonkAIValidationError,
@@ -57,6 +58,7 @@ class MonkAIClient:
             "tracer_token": tracer_token,
             "Content-Type": "application/json"
         })
+        self._anonymizer = BaselineAnonymizer()
     
     # ==================== RECORD METHODS ====================
     
@@ -297,17 +299,38 @@ class MonkAIClient:
                 time.sleep(2 ** attempt)
         raise MonkAIAPIError("Request failed after all retries")
     
+    def _anonymize_messages(self, messages):
+        """Apply BaselineAnonymizer to every message content. Returns a new list."""
+        if isinstance(messages, dict):
+            messages = [messages]
+        out = []
+        for msg in messages:
+            if isinstance(msg, dict) and "content" in msg and isinstance(msg["content"], str):
+                new_msg = dict(msg)
+                new_msg["content"] = self._anonymizer.apply(msg["content"])
+                out.append(new_msg)
+            else:
+                out.append(msg)
+        return out
+
+    def _serialize_record(self, record: ConversationRecord) -> Dict:
+        """Serialize a record and anonymize its message content before transmission."""
+        payload = record.to_api_format()
+        if "msg" in payload and payload["msg"] is not None:
+            payload["msg"] = self._anonymize_messages(payload["msg"])
+        return payload
+
     def _upload_single_record(self, record: ConversationRecord) -> Dict:
         """Internal: Upload single record"""
         url = f"{self.base_url}/records/upload"
-        data = {"records": [record.to_api_format()]}
+        data = {"records": [self._serialize_record(record)]}
         response = self._request_with_retry("POST", url, json=data)
         return response.json()
-    
+
     def _upload_records_chunk(self, records: List[ConversationRecord]) -> Dict:
         """Internal: Upload chunk of records"""
         url = f"{self.base_url}/records/upload"
-        data = {"records": [r.to_api_format() for r in records]}
+        data = {"records": [self._serialize_record(r) for r in records]}
         response = self._request_with_retry("POST", url, json=data)
         return response.json()
     
