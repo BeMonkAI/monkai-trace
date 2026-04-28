@@ -5,6 +5,19 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-04-28
+
+### Added
+- **Baseline PII anonymization**: New `BaselineAnonymizer` (under `monkai_trace.anonymizer`) automatically redacts CPF, CNPJ, email, Brazilian phone, credit card (Luhn-validated), IPv4/IPv6, and RG from string `content` fields before transmission. Wired into both `MonkAIClient` and `AsyncMonkAIClient` via a new `_serialize_record` site that all upload paths converge through. (Phase 1 SDK)
+- **Server dedup observability**: New `strict_dedup` constructor flag on both clients (default `False`) plus a helper that inspects every upload response. Drops emit a `WARNING` log; in strict mode they raise the new `MonkAIRecordDiscardedError` (extends `MonkAIAPIError`) carrying `dropped_count`, `inserted_count`, `total_received`. The batch path (`upload_records_batch`) now propagates the strict-mode exception instead of swallowing it into a `failures` dict. (Fix 2 of dedup incident — `BeMonkAI/monkai-agent-hub#2`)
+- **Bot Framework integration helper**: New `monkai_trace.integrations.bot_framework.infer_channel(payload)` translates a Microsoft Bot Framework activity's `channelId` (`msteams`, `directline`, `webchat`, `emulator`) into the channel string MonkAI's dashboard expects. Unknown values pass through lower-cased; missing returns `"unknown"`. (Fix 3 of dedup incident)
+
+### Changed
+- `aiohttp>=3.9` is now declared as a runtime dependency (was previously imported by `AsyncMonkAIClient` but not listed — fresh installs would `ImportError`).
+
+### Limitations / known gaps
+- `BaselineAnonymizer` only redacts when `msg["content"]` is a `str`. Tool-use messages (Anthropic/OpenAI structured `content` blocks) currently bypass redaction. Tracked at `BeMonkAI/monkai-trace#3` for Phase 1.5.
+
 ## [0.2.16] - 2026-02-12
 
 ### Changed
