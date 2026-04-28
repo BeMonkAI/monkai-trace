@@ -13,6 +13,9 @@ from .models import (
     TokenUsage
 )
 from .session_manager import SessionManager, PersistentSessionManager
+from .exceptions import (
+    MonkAIRecordDiscardedError,
+)
 from monkai_trace.anonymizer import BaselineAnonymizer
 
 try:
@@ -57,4 +60,5 @@ __all__ = [
     "CopilotTracer",
     "OpenClawTracer",
     "BaselineAnonymizer",
+    "MonkAIRecordDiscardedError",
 ]
