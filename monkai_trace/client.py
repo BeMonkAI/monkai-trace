@@ -306,18 +306,12 @@ class MonkAIClient:
         raise MonkAIAPIError("Request failed after all retries")
     
     def _anonymize_messages(self, messages):
-        """Apply BaselineAnonymizer to every message content. Returns a new list."""
-        if isinstance(messages, dict):
-            messages = [messages]
-        out = []
-        for msg in messages:
-            if isinstance(msg, dict) and "content" in msg and isinstance(msg["content"], str):
-                new_msg = dict(msg)
-                new_msg["content"] = self._anonymizer.apply(msg["content"])
-                out.append(new_msg)
-            else:
-                out.append(msg)
-        return out
+        """Apply BaselineAnonymizer to every message content. Returns a new list.
+
+        Supports both string content and Anthropic/OpenAI tool-use list-of-blocks
+        content; see ``BaselineAnonymizer.apply_to_messages``.
+        """
+        return self._anonymizer.apply_to_messages(messages)
 
     def _serialize_record(self, record: ConversationRecord) -> Dict:
         """Serialize a record and anonymize its message content before transmission."""

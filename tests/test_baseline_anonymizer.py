@@ -114,3 +114,117 @@ def test_cpf_check_digits_valid(digits, expected):
 ])
 def test_luhn_valid(digits, expected):
     assert _luhn_valid(digits) is expected
+
+
+# ---------------------------------------------------------------------------
+# apply_to_messages — list-of-blocks content (Anthropic/OpenAI tool-use)
+# ---------------------------------------------------------------------------
+
+
+def test_apply_to_messages_redacts_string_content():
+    a = BaselineAnonymizer()
+    out = a.apply_to_messages([{"role": "user", "content": "CPF 123.456.789-09"}])
+    assert out == [{"role": "user", "content": "CPF [CPF]"}]
+
+
+def test_apply_to_messages_redacts_text_block_in_list_content():
+    a = BaselineAnonymizer()
+    msg = {
+        "role": "assistant",
+        "content": [
+            {"type": "text", "text": "O CPF do cliente e 123.456.789-09"},
+            {"type": "tool_use", "id": "x", "name": "lookup", "input": {"cpf": "12345678909"}},
+        ],
+    }
+    out = a.apply_to_messages([msg])
+    blocks = out[0]["content"]
+    assert blocks[0]["text"] == "O CPF do cliente e [CPF]"
+    # tool_use input is also scrubbed recursively
+    assert blocks[1]["input"]["cpf"] == "[CPF]"
+
+
+def test_apply_to_messages_redacts_tool_result_content_string():
+    a = BaselineAnonymizer()
+    msg = {
+        "role": "user",
+        "content": [
+            {"type": "tool_result", "tool_use_id": "x", "content": "email arthur@monkai.com.br"}
+        ],
+    }
+    out = a.apply_to_messages([msg])
+    assert out[0]["content"][0]["content"] == "email [EMAIL]"
+
+
+def test_apply_to_messages_redacts_tool_result_content_blocks():
+    a = BaselineAnonymizer()
+    msg = {
+        "role": "user",
+        "content": [
+            {
+                "type": "tool_result",
+                "tool_use_id": "x",
+                "content": [{"type": "text", "text": "phone +55 11 91234-5678"}],
+            }
+        ],
+    }
+    out = a.apply_to_messages([msg])
+    inner = out[0]["content"][0]["content"][0]
+    assert inner["text"] == "phone [PHONE]"
+
+
+def test_apply_to_messages_redacts_nested_dict_in_tool_use_input():
+    a = BaselineAnonymizer()
+    msg = {
+        "role": "assistant",
+        "content": [
+            {
+                "type": "tool_use",
+                "id": "x",
+                "name": "search",
+                "input": {
+                    "query": "find CPF 123.456.789-09",
+                    "filters": {"email": "arthur@monkai.com.br"},
+                    "tags": ["12.345.678/0001-95"],
+                },
+            }
+        ],
+    }
+    out = a.apply_to_messages([msg])
+    inp = out[0]["content"][0]["input"]
+    assert inp["query"] == "find CPF [CPF]"
+    assert inp["filters"]["email"] == "[EMAIL]"
+    assert inp["tags"] == ["[CNPJ]"]
+
+
+def test_apply_to_messages_passes_through_unknown_block_types():
+    a = BaselineAnonymizer()
+    msg = {"role": "assistant", "content": [{"type": "image", "source": {"data": "..."}}]}
+    out = a.apply_to_messages([msg])
+    assert out == [msg]
+
+
+def test_apply_to_messages_warns_on_unsupported_content_shape(caplog):
+    a = BaselineAnonymizer()
+    msg = {"role": "user", "content": 42}  # neither str nor list
+    with caplog.at_level("WARNING", logger="monkai_trace.anonymizer.baseline"):
+        out = a.apply_to_messages([msg])
+    # Message is preserved (unchanged) but a warning is emitted
+    assert out[0]["content"] == 42
+    assert any("unsupported content" in rec.message for rec in caplog.records)
+
+
+def test_apply_to_messages_accepts_single_dict():
+    a = BaselineAnonymizer()
+    out = a.apply_to_messages({"role": "user", "content": "CPF 123.456.789-09"})
+    assert out == [{"role": "user", "content": "CPF [CPF]"}]
+
+
+def test_apply_to_messages_does_not_mutate_input():
+    a = BaselineAnonymizer()
+    original = {
+        "role": "assistant",
+        "content": [{"type": "text", "text": "CPF 123.456.789-09"}],
+    }
+    a.apply_to_messages([original])
+    # input untouched
+    assert original["content"][0]["text"] == "CPF 123.456.789-09"
