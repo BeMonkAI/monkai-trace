@@ -29,3 +29,25 @@ class MonkAINetworkError(MonkAIError):
 class MonkAIAPIError(MonkAIError):
     """API request error (after retries exhausted)"""
     pass
+
+
+class MonkAIRecordDiscardedError(MonkAIAPIError):
+    """Raised in strict_dedup mode when the server reports records were deduplicated.
+
+    Attributes:
+        dropped_count: number of records the server dropped as duplicates
+        inserted_count: number of records the server actually inserted
+        total_received: total records sent in the request
+    """
+    def __init__(
+        self,
+        message: str,
+        *,
+        dropped_count: int,
+        inserted_count: int,
+        total_received: int,
+    ):
+        super().__init__(message)
+        self.dropped_count = dropped_count
+        self.inserted_count = inserted_count
+        self.total_received = total_received

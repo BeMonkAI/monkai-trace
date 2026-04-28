@@ -3,14 +3,22 @@ Async MonkAI Client for high-performance applications.
 """
 
 import asyncio
+import logging
 import aiohttp
 from typing import List, Dict, Any, Optional, Union
 from pathlib import Path
 
 from .models import ConversationRecord, LogEntry
-from .exceptions import MonkAIAPIError, MonkAIValidationError, MonkAIAuthError
+from .exceptions import (
+    MonkAIAPIError,
+    MonkAIValidationError,
+    MonkAIAuthError,
+    MonkAIRecordDiscardedError,
+)
 from .file_handlers import FileHandler
 from .anonymizer import BaselineAnonymizer
+
+logger = logging.getLogger(__name__)
 
 
 class AsyncMonkAIClient:
@@ -35,26 +43,30 @@ class AsyncMonkAIClient:
         tracer_token: str,
         base_url: Optional[str] = None,
         timeout: int = 30,
-        max_retries: int = 3
+        max_retries: int = 3,
+        strict_dedup: bool = False,
     ):
         """
         Initialize async MonkAI client.
-        
+
         Args:
             tracer_token: Your MonkAI tracer token (required)
             base_url: Optional custom API base URL
             timeout: Request timeout in seconds
             max_retries: Maximum number of retry attempts
+            strict_dedup: If True, raise MonkAIRecordDiscardedError when the
+                server drops records as duplicates. Default False (warn only).
         """
         if not tracer_token or not tracer_token.startswith("tk_"):
             raise MonkAIValidationError("Invalid tracer_token format. Must start with 'tk_'")
-        
+
         self.tracer_token = tracer_token
         self.base_url = (base_url or self.BASE_URL).rstrip("/")
         self.timeout = aiohttp.ClientTimeout(total=timeout)
         self.max_retries = max_retries
         self._session: Optional[aiohttp.ClientSession] = None
         self._anonymizer = BaselineAnonymizer()
+        self._strict_dedup = strict_dedup
     
     async def __aenter__(self):
         """Async context manager entry"""
@@ -174,13 +186,43 @@ class AsyncMonkAIClient:
             payload["msg"] = self._anonymize_messages(payload["msg"])
         return payload
 
+    def _check_dedup_response(self, response_dict: Dict, total_records: int) -> Dict:
+        """Inspect upload response for server-side dedup drops.
+
+        Logs a warning whenever the server reports drops. In strict_dedup mode,
+        raises MonkAIRecordDiscardedError. Returns the response_dict unchanged.
+        """
+        inserted = response_dict.get("inserted_count", total_records)
+        skipped = response_dict.get("duplicates_skipped", 0)
+        is_all_dup = response_dict.get("duplicate") is True
+
+        if is_all_dup:
+            dropped = total_records
+        else:
+            dropped = skipped
+
+        if dropped > 0:
+            logger.warning(
+                f"MonkAI dropped {dropped}/{total_records} records as duplicates within 60s window"
+            )
+            if self._strict_dedup:
+                raise MonkAIRecordDiscardedError(
+                    f"Server discarded {dropped}/{total_records} records as duplicates",
+                    dropped_count=dropped,
+                    inserted_count=inserted,
+                    total_received=total_records,
+                )
+
+        return response_dict
+
     async def _upload_single_record(self, record: ConversationRecord) -> Dict[str, Any]:
         """Upload a single record"""
-        return await self._make_request(
+        result = await self._make_request(
             "POST",
             "records/upload",
             data={"records": [self._serialize_record(record)]}
         )
+        return self._check_dedup_response(result, total_records=1)
     
     async def upload_records_batch(
         self,
@@ -212,13 +254,19 @@ class AsyncMonkAIClient:
                 try:
                     result = await self._upload_records_chunk(chunk)
                     results.append(result)
+                except MonkAIRecordDiscardedError:
+                    raise  # never swallow strict-mode signal
                 except Exception as e:
                     results.append(e)
-        
-        # Aggregate results
+
+        # Aggregate results — never swallow strict-mode signals from parallel path
+        for result in results:
+            if isinstance(result, MonkAIRecordDiscardedError):
+                raise result
+
         total_inserted = 0
         failures = []
-        
+
         for i, result in enumerate(results):
             if isinstance(result, Exception):
                 failures.append({"chunk": i, "error": str(result)})
@@ -234,7 +282,8 @@ class AsyncMonkAIClient:
     async def _upload_records_chunk(self, records: List[ConversationRecord]) -> Dict[str, Any]:
         """Upload a chunk of records"""
         records_data = [self._serialize_record(r) for r in records]
-        return await self._make_request("POST", "records/upload", data={"records": records_data})
+        result = await self._make_request("POST", "records/upload", data={"records": records_data})
+        return self._check_dedup_response(result, total_records=len(records))
     
     async def upload_records_from_json(
         self,
