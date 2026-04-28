@@ -10,6 +10,7 @@ from pathlib import Path
 from .models import ConversationRecord, LogEntry
 from .exceptions import MonkAIAPIError, MonkAIValidationError, MonkAIAuthError
 from .file_handlers import FileHandler
+from .anonymizer import BaselineAnonymizer
 
 
 class AsyncMonkAIClient:
@@ -53,6 +54,7 @@ class AsyncMonkAIClient:
         self.timeout = aiohttp.ClientTimeout(total=timeout)
         self.max_retries = max_retries
         self._session: Optional[aiohttp.ClientSession] = None
+        self._anonymizer = BaselineAnonymizer()
     
     async def __aenter__(self):
         """Async context manager entry"""
@@ -151,12 +153,33 @@ class AsyncMonkAIClient:
         
         return await self._upload_single_record(record)
     
+    def _anonymize_messages(self, messages):
+        """Apply BaselineAnonymizer to every message content. Returns a new list."""
+        if isinstance(messages, dict):
+            messages = [messages]
+        out = []
+        for msg in messages:
+            if isinstance(msg, dict) and "content" in msg and isinstance(msg["content"], str):
+                new_msg = dict(msg)
+                new_msg["content"] = self._anonymizer.apply(msg["content"])
+                out.append(new_msg)
+            else:
+                out.append(msg)
+        return out
+
+    def _serialize_record(self, record: ConversationRecord) -> Dict[str, Any]:
+        """Serialize a record and anonymize its message content before transmission."""
+        payload = record.to_api_format()
+        if "msg" in payload and payload["msg"] is not None:
+            payload["msg"] = self._anonymize_messages(payload["msg"])
+        return payload
+
     async def _upload_single_record(self, record: ConversationRecord) -> Dict[str, Any]:
         """Upload a single record"""
         return await self._make_request(
             "POST",
             "records/upload",
-            data={"records": [record.to_api_format()]}
+            data={"records": [self._serialize_record(record)]}
         )
     
     async def upload_records_batch(
@@ -210,7 +233,7 @@ class AsyncMonkAIClient:
     
     async def _upload_records_chunk(self, records: List[ConversationRecord]) -> Dict[str, Any]:
         """Upload a chunk of records"""
-        records_data = [r.to_api_format() for r in records]
+        records_data = [self._serialize_record(r) for r in records]
         return await self._make_request("POST", "records/upload", data={"records": records_data})
     
     async def upload_records_from_json(

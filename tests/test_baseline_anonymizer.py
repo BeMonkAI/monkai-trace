@@ -1,7 +1,11 @@
 """Tests for BaselineAnonymizer hardcoded PII rules."""
 
 import pytest
-from monkai_trace.anonymizer.baseline import BaselineAnonymizer
+from monkai_trace.anonymizer.baseline import (
+    BaselineAnonymizer,
+    _cpf_check_digits_valid,
+    _luhn_valid,
+)
 
 
 def test_anonymizer_can_be_instantiated():
@@ -82,3 +86,31 @@ def test_redacts_multiple_pii_in_same_text():
     text = "User arthur@monkai.com.br with CPF 123.456.789-09 from 192.168.1.1"
     expected = "User [EMAIL] with CPF [CPF] from [IP]"
     assert BaselineAnonymizer().apply(text) == expected
+
+
+def test_pipeline_order_cpf_before_card():
+    """Both shapes present; redaction must produce both labels in correct order.
+    Protects the contract: CPF callable runs first, CARD callable runs last.
+    """
+    text = "CPF 12345678909 e card 4111111111111111"
+    expected = "CPF [CPF] e card [CARD]"
+    assert BaselineAnonymizer().apply(text) == expected
+
+
+@pytest.mark.parametrize("digits, expected", [
+    ("12345678909", True),    # canonical Receita example, valid
+    ("11111111111", False),   # all-same-digit rejected
+    ("12345678900", False),   # wrong second check digit
+    ("123", False),           # too short
+])
+def test_cpf_check_digits_valid(digits, expected):
+    assert _cpf_check_digits_valid(digits) is expected
+
+
+@pytest.mark.parametrize("digits, expected", [
+    ("4111111111111111", True),
+    ("4111111111111112", False),
+    ("123", False),
+])
+def test_luhn_valid(digits, expected):
+    assert _luhn_valid(digits) is expected
