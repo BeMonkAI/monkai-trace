@@ -85,3 +85,26 @@ def test_strict_mode_no_raise_on_clean():
             namespace="t", agent="a",
             messages=[{"role": "user", "content": "hi"}],
         )
+
+
+def test_strict_mode_raises_in_batch():
+    """Batch path must propagate MonkAIRecordDiscardedError in strict mode,
+    not swallow it into the failures dict."""
+    from monkai_trace.models import ConversationRecord
+
+    client = MonkAIClient(tracer_token="tk_test", strict_dedup=True)
+    records = [
+        ConversationRecord(namespace="t", agent="a",
+                           msg=[{"role": "user", "content": "hi"}])
+        for _ in range(3)
+    ]
+    payload = {"inserted_count": 1, "duplicates_skipped": 2}
+
+    with patch("requests.Session.request", return_value=_fake_response(payload)):
+        with pytest.raises(MonkAIRecordDiscardedError) as exc_info:
+            client.upload_records_batch(records, chunk_size=3)
+
+    err = exc_info.value
+    assert err.dropped_count == 2
+    assert err.inserted_count == 1
+    assert err.total_received == 3

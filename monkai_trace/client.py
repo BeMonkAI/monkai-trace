@@ -147,12 +147,14 @@ class MonkAIClient:
             try:
                 response = self._upload_records_chunk(chunk)
                 total_inserted += response.get('inserted_count', 0)
+            except MonkAIRecordDiscardedError:
+                raise  # never swallow strict-mode signal
             except Exception as e:
                 failures.append({
                     'chunk_index': i // chunk_size,
                     'error': str(e)
                 })
-        
+
         return {
             'total_inserted': total_inserted,
             'total_records': len(records),
@@ -324,7 +326,7 @@ class MonkAIClient:
             payload["msg"] = self._anonymize_messages(payload["msg"])
         return payload
 
-    def _check_dedup_response(self, response_dict, total_records):
+    def _check_dedup_response(self, response_dict: Dict, total_records: int) -> Dict:
         """Inspect upload response for server-side dedup drops.
 
         Logs a warning whenever the server reports drops. In strict_dedup mode,
