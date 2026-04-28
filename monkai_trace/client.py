@@ -13,7 +13,8 @@ from .exceptions import (
     MonkAIValidationError,
     MonkAIServerError,
     MonkAINetworkError,
-    MonkAIAPIError
+    MonkAIAPIError,
+    MonkAIRecordDiscardedError,
 )
 
 logger = logging.getLogger(__name__)
@@ -38,16 +39,18 @@ class MonkAIClient:
         tracer_token: str,
         base_url: Optional[str] = None,
         timeout: int = 30,
-        max_retries: int = 3
+        max_retries: int = 3,
+        strict_dedup: bool = False,
     ):
         """
         Initialize MonkAI client
-        
+
         Args:
             tracer_token: Your MonkAI tracer token
             base_url: Optional custom API base URL
             timeout: Request timeout in seconds
             max_retries: Maximum number of retry attempts
+            strict_dedup: If True, raise MonkAIRecordDiscardedError when the server reports drops
         """
         self.tracer_token = tracer_token
         self.base_url = base_url or self.BASE_URL
@@ -59,6 +62,7 @@ class MonkAIClient:
             "Content-Type": "application/json"
         })
         self._anonymizer = BaselineAnonymizer()
+        self._strict_dedup = strict_dedup
     
     # ==================== RECORD METHODS ====================
     
@@ -320,19 +324,48 @@ class MonkAIClient:
             payload["msg"] = self._anonymize_messages(payload["msg"])
         return payload
 
+    def _check_dedup_response(self, response_dict, total_records):
+        """Inspect upload response for server-side dedup drops.
+
+        Logs a warning whenever the server reports drops. In strict_dedup mode,
+        raises MonkAIRecordDiscardedError. Returns the response_dict unchanged.
+        """
+        inserted = response_dict.get("inserted_count", total_records)
+        skipped = response_dict.get("duplicates_skipped", 0)
+        is_all_dup = response_dict.get("duplicate") is True
+
+        if is_all_dup:
+            dropped = total_records
+        else:
+            dropped = skipped
+
+        if dropped > 0:
+            logger.warning(
+                f"MonkAI dropped {dropped}/{total_records} records as duplicates within 60s window"
+            )
+            if self._strict_dedup:
+                raise MonkAIRecordDiscardedError(
+                    f"Server discarded {dropped}/{total_records} records as duplicates",
+                    dropped_count=dropped,
+                    inserted_count=inserted,
+                    total_received=total_records,
+                )
+
+        return response_dict
+
     def _upload_single_record(self, record: ConversationRecord) -> Dict:
         """Internal: Upload single record"""
         url = f"{self.base_url}/records/upload"
         data = {"records": [self._serialize_record(record)]}
         response = self._request_with_retry("POST", url, json=data)
-        return response.json()
+        return self._check_dedup_response(response.json(), total_records=1)
 
     def _upload_records_chunk(self, records: List[ConversationRecord]) -> Dict:
         """Internal: Upload chunk of records"""
         url = f"{self.base_url}/records/upload"
         data = {"records": [self._serialize_record(r) for r in records]}
         response = self._request_with_retry("POST", url, json=data)
-        return response.json()
+        return self._check_dedup_response(response.json(), total_records=len(records))
     
     def _upload_single_log(self, log: LogEntry) -> Dict:
         """Internal: Upload single log"""

@@ -42,6 +42,7 @@ class MonkAIRecordDiscardedError(MonkAIAPIError):
     def __init__(
         self,
         message: str,
+        *,
         dropped_count: int,
         inserted_count: int,
         total_received: int,
