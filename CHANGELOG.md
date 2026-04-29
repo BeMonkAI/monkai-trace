@@ -5,6 +5,16 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-04-28
+
+### Added
+- **Per-tenant custom anonymization rules (Phase 2 SDK)**: New `RulesClient` (under `monkai_trace.anonymizer`) fetches `{toggles, custom: [{name, pattern, replacement}], version}` from the Hub at `GET /v1/anonymization-rules` and caches the document in process memory with a configurable TTL (default 300s). Both `MonkAIClient` and `AsyncMonkAIClient` accept opt-in `rules_url=` (or a pre-built `rules_client=`) — when set, the upload pipeline runs the baseline first, then applies tenant-defined custom regex on top, and stamps `anonymization_version=N` on the outbound payload so the edge function can detect drift and re-apply server-side. (Issue #8)
+- **Baseline class toggles**: When the rules document carries `toggles: {<class>: false}` (e.g. `{"email": false}`), the SDK skips that baseline class on outbound content. Lets a B2B tenant preserve emails (or other classes) without forking the SDK.
+- **`MonkAIAnonymizerNotReady` exception**: Raised when `RulesClient.get()` has never succeeded — the upload pipeline blocks instead of transmitting raw content. After the first success, transient fetch failures fall back to the cached document and emit a warning log.
+
+### Compatibility
+- Default behaviour unchanged from 0.4.0: clients constructed without `rules_url=` (or `rules_client=`) skip the fetch entirely, run baseline-only redaction, and do not stamp `anonymization_version` on payloads.
+
 ## [0.4.0] - 2026-04-28
 
 ### Added

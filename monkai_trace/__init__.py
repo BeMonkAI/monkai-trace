@@ -14,9 +14,10 @@ from .models import (
 )
 from .session_manager import SessionManager, PersistentSessionManager
 from .exceptions import (
+    MonkAIAnonymizerNotReady,
     MonkAIRecordDiscardedError,
 )
-from monkai_trace.anonymizer import BaselineAnonymizer
+from monkai_trace.anonymizer import BaselineAnonymizer, RulesClient
 
 try:
     from .async_client import AsyncMonkAIClient
@@ -44,7 +45,7 @@ try:
 except ImportError:
     OpenClawTracer = None
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 __all__ = [
     "MonkAIClient",
     "AsyncMonkAIClient",
@@ -60,5 +61,7 @@ __all__ = [
     "CopilotTracer",
     "OpenClawTracer",
     "BaselineAnonymizer",
+    "RulesClient",
+    "MonkAIAnonymizerNotReady",
     "MonkAIRecordDiscardedError",
 ]

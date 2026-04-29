@@ -1,5 +1,6 @@
 """Synchronous client for MonkAI API"""
 
+import re
 import time
 import logging
 import requests
@@ -7,8 +8,9 @@ from typing import List, Optional, Union, Dict
 from pathlib import Path
 from .models import ConversationRecord, LogEntry, TokenUsage
 from .file_handlers import FileHandler
-from .anonymizer import BaselineAnonymizer
+from .anonymizer import BaselineAnonymizer, RulesClient
 from .exceptions import (
+    MonkAIAnonymizerNotReady,
     MonkAIAuthError,
     MonkAIValidationError,
     MonkAIServerError,
@@ -18,6 +20,87 @@ from .exceptions import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _compile_custom_rules(custom):
+    """Compile custom rule patterns once per call. Skips invalid regex with a warning."""
+    compiled = []
+    for r in custom:
+        if not isinstance(r, dict):
+            continue
+        pattern = r.get("pattern")
+        replacement = r.get("replacement", "[REDACTED]")
+        if not isinstance(pattern, str):
+            continue
+        try:
+            compiled.append((re.compile(pattern), replacement))
+        except re.error:
+            logger.warning(
+                "RulesClient: skipping invalid custom regex %r (%s)",
+                r.get("name", pattern),
+                pattern,
+            )
+    return compiled
+
+
+def _apply_custom_to_text(text, compiled):
+    if not isinstance(text, str) or not text:
+        return text
+    out = text
+    for pattern, replacement in compiled:
+        out = pattern.sub(replacement, out)
+    return out
+
+
+def _apply_custom_rules_to_message(msg, custom):
+    """Apply custom rules over an already-baseline-redacted message."""
+    compiled = _compile_custom_rules(custom)
+    if not compiled or not isinstance(msg, dict) or "content" not in msg:
+        return msg
+    content = msg["content"]
+    new_msg = dict(msg)
+    if isinstance(content, str):
+        new_msg["content"] = _apply_custom_to_text(content, compiled)
+    elif isinstance(content, list):
+        new_msg["content"] = [_apply_custom_to_block(b, compiled) for b in content]
+    return new_msg
+
+
+def _apply_custom_to_block(block, compiled):
+    if not isinstance(block, dict):
+        return block
+    new_block = dict(block)
+    block_type = new_block.get("type")
+    if block_type == "text" and isinstance(new_block.get("text"), str):
+        new_block["text"] = _apply_custom_to_text(new_block["text"], compiled)
+    elif block_type == "tool_use" and isinstance(new_block.get("input"), dict):
+        new_block["input"] = _apply_custom_to_dict(new_block["input"], compiled)
+    elif block_type == "tool_result":
+        inner = new_block.get("content")
+        if isinstance(inner, str):
+            new_block["content"] = _apply_custom_to_text(inner, compiled)
+        elif isinstance(inner, list):
+            new_block["content"] = [_apply_custom_to_block(b, compiled) for b in inner]
+    return new_block
+
+
+def _apply_custom_to_dict(d, compiled):
+    out = {}
+    for k, v in d.items():
+        if isinstance(v, str):
+            out[k] = _apply_custom_to_text(v, compiled)
+        elif isinstance(v, dict):
+            out[k] = _apply_custom_to_dict(v, compiled)
+        elif isinstance(v, list):
+            out[k] = [
+                _apply_custom_to_text(item, compiled) if isinstance(item, str)
+                else _apply_custom_to_dict(item, compiled) if isinstance(item, dict)
+                else item
+                for item in v
+            ]
+        else:
+            out[k] = v
+    return out
 
 
 class MonkAIClient:
@@ -41,6 +124,9 @@ class MonkAIClient:
         timeout: int = 30,
         max_retries: int = 3,
         strict_dedup: bool = False,
+        rules_url: Optional[str] = None,
+        rules_ttl_seconds: int = 300,
+        rules_client: Optional[RulesClient] = None,
     ):
         """
         Initialize MonkAI client
@@ -51,6 +137,14 @@ class MonkAIClient:
             timeout: Request timeout in seconds
             max_retries: Maximum number of retry attempts
             strict_dedup: If True, raise MonkAIRecordDiscardedError when the server reports drops
+            rules_url: Hub URL exposing ``/v1/anonymization-rules``. When set,
+                the SDK fetches per-tenant custom rules and applies them on
+                top of the baseline before transmission. Leave ``None`` to
+                preserve Phase 1 behaviour (baseline only).
+            rules_ttl_seconds: How long a successful rules fetch is reused
+                before being refreshed. Defaults to 300s.
+            rules_client: Optional pre-built ``RulesClient`` (overrides
+                ``rules_url``/``rules_ttl_seconds`` for full control).
         """
         self.tracer_token = tracer_token
         self.base_url = base_url or self.BASE_URL
@@ -63,6 +157,17 @@ class MonkAIClient:
         })
         self._anonymizer = BaselineAnonymizer()
         self._strict_dedup = strict_dedup
+        if rules_client is not None:
+            self._rules_client: Optional[RulesClient] = rules_client
+        elif rules_url is not None:
+            self._rules_client = RulesClient(
+                tracer_token=tracer_token,
+                hub_url=rules_url,
+                ttl_seconds=rules_ttl_seconds,
+            )
+        else:
+            self._rules_client = None
+        self._last_anonymization_version: Optional[int] = None
     
     # ==================== RECORD METHODS ====================
     
@@ -306,18 +411,41 @@ class MonkAIClient:
         raise MonkAIAPIError("Request failed after all retries")
     
     def _anonymize_messages(self, messages):
-        """Apply BaselineAnonymizer to every message content. Returns a new list.
+        """Apply baseline + per-tenant custom rules to every message content.
 
-        Supports both string content and Anthropic/OpenAI tool-use list-of-blocks
-        content; see ``BaselineAnonymizer.apply_to_messages``.
+        When a ``RulesClient`` is configured, ``self._last_anonymization_version``
+        is updated as a side effect so the upload payload can stamp it.
         """
-        return self._anonymizer.apply_to_messages(messages)
+        disabled, custom = self._fetch_rules_state()
+        out = self._anonymizer.apply_to_messages(messages, disabled_classes=disabled)
+        if custom:
+            out = [_apply_custom_rules_to_message(m, custom) for m in out]
+        return out
+
+    def _fetch_rules_state(self):
+        """Return (disabled_classes, custom_rules). Updates ``_last_anonymization_version``.
+
+        When ``RulesClient`` is not configured returns empty values and leaves
+        ``_last_anonymization_version`` as None (no stamp on payload).
+        """
+        if self._rules_client is None:
+            self._last_anonymization_version = None
+            return set(), []
+        rules_doc = self._rules_client.get()  # may raise MonkAIAnonymizerNotReady
+        rules = rules_doc.get("rules", {})
+        toggles = rules.get("toggles", {}) or {}
+        disabled = {name for name, enabled in toggles.items() if enabled is False}
+        custom = rules.get("custom") or []
+        self._last_anonymization_version = int(rules_doc.get("version", 0))
+        return disabled, custom
 
     def _serialize_record(self, record: ConversationRecord) -> Dict:
         """Serialize a record and anonymize its message content before transmission."""
         payload = record.to_api_format()
         if "msg" in payload and payload["msg"] is not None:
             payload["msg"] = self._anonymize_messages(payload["msg"])
+        if self._last_anonymization_version is not None:
+            payload["anonymization_version"] = self._last_anonymization_version
         return payload
 
     def _check_dedup_response(self, response_dict: Dict, total_records: int) -> Dict:

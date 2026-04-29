@@ -31,6 +31,17 @@ class MonkAIAPIError(MonkAIError):
     pass
 
 
+class MonkAIAnonymizerNotReady(MonkAIError):
+    """Raised when custom anonymization rules are required but unavailable.
+
+    This is raised by the upload pipeline when ``RulesClient.get()`` has never
+    succeeded — sending the payload would mean transmitting raw content that
+    only the baseline rules touched. We block to avoid leaking PII the tenant
+    expects to be redacted by their custom rules.
+    """
+    pass
+
+
 class MonkAIRecordDiscardedError(MonkAIAPIError):
     """Raised in strict_dedup mode when the server reports records were deduplicated.
 
