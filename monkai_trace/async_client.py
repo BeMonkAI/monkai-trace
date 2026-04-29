@@ -10,13 +10,15 @@ from pathlib import Path
 
 from .models import ConversationRecord, LogEntry
 from .exceptions import (
+    MonkAIAnonymizerNotReady,
     MonkAIAPIError,
     MonkAIValidationError,
     MonkAIAuthError,
     MonkAIRecordDiscardedError,
 )
 from .file_handlers import FileHandler
-from .anonymizer import BaselineAnonymizer
+from .anonymizer import BaselineAnonymizer, RulesClient
+from .client import _apply_custom_rules_to_message
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +47,9 @@ class AsyncMonkAIClient:
         timeout: int = 30,
         max_retries: int = 3,
         strict_dedup: bool = False,
+        rules_url: Optional[str] = None,
+        rules_ttl_seconds: int = 300,
+        rules_client: Optional[RulesClient] = None,
     ):
         """
         Initialize async MonkAI client.
@@ -56,6 +61,12 @@ class AsyncMonkAIClient:
             max_retries: Maximum number of retry attempts
             strict_dedup: If True, raise MonkAIRecordDiscardedError when the
                 server drops records as duplicates. Default False (warn only).
+            rules_url: Hub URL exposing ``/v1/anonymization-rules``. When set,
+                the SDK fetches per-tenant custom rules and applies them on
+                top of the baseline before transmission.
+            rules_ttl_seconds: How long a successful rules fetch is reused.
+            rules_client: Optional pre-built ``RulesClient`` (overrides
+                ``rules_url``/``rules_ttl_seconds`` for full control).
         """
         if not tracer_token or not tracer_token.startswith("tk_"):
             raise MonkAIValidationError("Invalid tracer_token format. Must start with 'tk_'")
@@ -67,6 +78,17 @@ class AsyncMonkAIClient:
         self._session: Optional[aiohttp.ClientSession] = None
         self._anonymizer = BaselineAnonymizer()
         self._strict_dedup = strict_dedup
+        if rules_client is not None:
+            self._rules_client: Optional[RulesClient] = rules_client
+        elif rules_url is not None:
+            self._rules_client = RulesClient(
+                tracer_token=tracer_token,
+                hub_url=rules_url,
+                ttl_seconds=rules_ttl_seconds,
+            )
+        else:
+            self._rules_client = None
+        self._last_anonymization_version: Optional[int] = None
     
     async def __aenter__(self):
         """Async context manager entry"""
@@ -165,19 +187,34 @@ class AsyncMonkAIClient:
         
         return await self._upload_single_record(record)
     
-    def _anonymize_messages(self, messages):
-        """Apply BaselineAnonymizer to every message content. Returns a new list.
+    async def _fetch_rules_state(self):
+        """Return (disabled_classes, custom_rules). Updates ``_last_anonymization_version``."""
+        if self._rules_client is None:
+            self._last_anonymization_version = None
+            return set(), []
+        rules_doc = await self._rules_client.get_async()
+        rules = rules_doc.get("rules", {})
+        toggles = rules.get("toggles", {}) or {}
+        disabled = {name for name, enabled in toggles.items() if enabled is False}
+        custom = rules.get("custom") or []
+        self._last_anonymization_version = int(rules_doc.get("version", 0))
+        return disabled, custom
 
-        Supports both string content and Anthropic/OpenAI tool-use list-of-blocks
-        content; see ``BaselineAnonymizer.apply_to_messages``.
-        """
-        return self._anonymizer.apply_to_messages(messages)
+    async def _anonymize_messages(self, messages):
+        """Apply baseline + per-tenant custom rules to every message content."""
+        disabled, custom = await self._fetch_rules_state()
+        out = self._anonymizer.apply_to_messages(messages, disabled_classes=disabled)
+        if custom:
+            out = [_apply_custom_rules_to_message(m, custom) for m in out]
+        return out
 
-    def _serialize_record(self, record: ConversationRecord) -> Dict[str, Any]:
+    async def _serialize_record(self, record: ConversationRecord) -> Dict[str, Any]:
         """Serialize a record and anonymize its message content before transmission."""
         payload = record.to_api_format()
         if "msg" in payload and payload["msg"] is not None:
-            payload["msg"] = self._anonymize_messages(payload["msg"])
+            payload["msg"] = await self._anonymize_messages(payload["msg"])
+        if self._last_anonymization_version is not None:
+            payload["anonymization_version"] = self._last_anonymization_version
         return payload
 
     def _check_dedup_response(self, response_dict: Dict, total_records: int) -> Dict:
@@ -211,10 +248,11 @@ class AsyncMonkAIClient:
 
     async def _upload_single_record(self, record: ConversationRecord) -> Dict[str, Any]:
         """Upload a single record"""
+        serialized = await self._serialize_record(record)
         result = await self._make_request(
             "POST",
             "records/upload",
-            data={"records": [self._serialize_record(record)]}
+            data={"records": [serialized]}
         )
         return self._check_dedup_response(result, total_records=1)
     
@@ -275,7 +313,7 @@ class AsyncMonkAIClient:
     
     async def _upload_records_chunk(self, records: List[ConversationRecord]) -> Dict[str, Any]:
         """Upload a chunk of records"""
-        records_data = [self._serialize_record(r) for r in records]
+        records_data = [await self._serialize_record(r) for r in records]
         result = await self._make_request("POST", "records/upload", data={"records": records_data})
         return self._check_dedup_response(result, total_records=len(records))
     

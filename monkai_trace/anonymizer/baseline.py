@@ -1,7 +1,7 @@
 """Hardcoded baseline PII redaction rules. Always applied; no fetch involved."""
 
 from dataclasses import dataclass
-from typing import Any, List, Optional, Pattern
+from typing import Any, Iterable, List, Optional, Pattern, Set
 import logging
 import re
 
@@ -122,20 +122,35 @@ class BaselineAnonymizer:
         self._card_pattern = _CARD_PATTERN
         self._cpf_pattern = _CPF_PATTERN
 
-    def apply(self, text: str) -> str:
+    def apply(self, text: str, disabled_classes: Optional[Iterable[str]] = None) -> str:
         if not text:
             return text
+        disabled = self._coerce_disabled(disabled_classes)
         # CPF runs first via a callable that validates the check digits.
         # This prevents 11-digit phone numbers from being mistaken for CPFs.
-        text = self._cpf_pattern.sub(_redact_cpf, text)
+        if "cpf" not in disabled:
+            text = self._cpf_pattern.sub(_redact_cpf, text)
         for rule in self._rules:
+            if rule.name in disabled:
+                continue
             text = rule.pattern.sub(rule.replacement, text)
         # CARD runs last via a callable that enforces Luhn so it does not
         # accidentally swallow other numeric IDs.
-        text = self._card_pattern.sub(_redact_card, text)
+        if "credit_card" not in disabled and "card" not in disabled:
+            text = self._card_pattern.sub(_redact_card, text)
         return text
 
-    def apply_to_messages(self, messages: Any) -> List[Any]:
+    @staticmethod
+    def _coerce_disabled(disabled_classes: Optional[Iterable[str]]) -> Set[str]:
+        if not disabled_classes:
+            return set()
+        return {c.lower() for c in disabled_classes}
+
+    def apply_to_messages(
+        self,
+        messages: Any,
+        disabled_classes: Optional[Iterable[str]] = None,
+    ) -> List[Any]:
         """Anonymize a list of chat messages before transmission.
 
         Handles two shapes for ``content``:
@@ -148,6 +163,7 @@ class BaselineAnonymizer:
         Unknown shapes are passed through unchanged with a single warning
         emitted, so we get visibility without dropping the record.
         """
+        disabled = self._coerce_disabled(disabled_classes)
         if isinstance(messages, dict):
             messages = [messages]
         out: List[Any] = []
@@ -158,9 +174,9 @@ class BaselineAnonymizer:
             content = msg["content"]
             new_msg = dict(msg)
             if isinstance(content, str):
-                new_msg["content"] = self.apply(content)
+                new_msg["content"] = self.apply(content, disabled)
             elif isinstance(content, list):
-                new_msg["content"] = [self._anonymize_block(b) for b in content]
+                new_msg["content"] = [self._anonymize_block(b, disabled) for b in content]
             else:
                 logger.warning(
                     "BaselineAnonymizer: skipping message with unsupported content "
@@ -170,36 +186,36 @@ class BaselineAnonymizer:
             out.append(new_msg)
         return out
 
-    def _anonymize_block(self, block: Any) -> Any:
+    def _anonymize_block(self, block: Any, disabled: Set[str]) -> Any:
         """Anonymize a single content block from a tool-use style message."""
         if not isinstance(block, dict):
             return block
         new_block = dict(block)
         block_type = new_block.get("type")
         if block_type == "text" and isinstance(new_block.get("text"), str):
-            new_block["text"] = self.apply(new_block["text"])
+            new_block["text"] = self.apply(new_block["text"], disabled)
         elif block_type == "tool_use" and isinstance(new_block.get("input"), dict):
-            new_block["input"] = self._anonymize_dict(new_block["input"])
+            new_block["input"] = self._anonymize_dict(new_block["input"], disabled)
         elif block_type == "tool_result":
             inner = new_block.get("content")
             if isinstance(inner, str):
-                new_block["content"] = self.apply(inner)
+                new_block["content"] = self.apply(inner, disabled)
             elif isinstance(inner, list):
-                new_block["content"] = [self._anonymize_block(b) for b in inner]
+                new_block["content"] = [self._anonymize_block(b, disabled) for b in inner]
         return new_block
 
-    def _anonymize_dict(self, d: dict) -> dict:
+    def _anonymize_dict(self, d: dict, disabled: Set[str]) -> dict:
         """Recursively redact string values in a dict (e.g. tool_use.input)."""
         out: dict = {}
         for k, v in d.items():
             if isinstance(v, str):
-                out[k] = self.apply(v)
+                out[k] = self.apply(v, disabled)
             elif isinstance(v, dict):
-                out[k] = self._anonymize_dict(v)
+                out[k] = self._anonymize_dict(v, disabled)
             elif isinstance(v, list):
                 out[k] = [
-                    self.apply(item) if isinstance(item, str)
-                    else self._anonymize_dict(item) if isinstance(item, dict)
+                    self.apply(item, disabled) if isinstance(item, str)
+                    else self._anonymize_dict(item, disabled) if isinstance(item, dict)
                     else item
                     for item in v
                 ]
