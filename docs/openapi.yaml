@@ -775,6 +775,17 @@ components:
           type: string
           enum: [web_search_call, file_search_call, code_interpreter_call]
 
+    MessageList:
+      type: array
+      description: Ordered list of messages (turn or session segment).
+      items:
+        $ref: "#/components/schemas/Message"
+
+    MessageDict:
+      type: object
+      description: Free-form message-shaped payload (escape hatch for legacy clients).
+      additionalProperties: true
+
     Transfer:
       type: object
       required: [from, to]
@@ -803,11 +814,8 @@ components:
         msg:
           oneOf:
             - $ref: "#/components/schemas/Message"
-            - type: array
-              items:
-                $ref: "#/components/schemas/Message"
-            - type: object
-              additionalProperties: true
+            - $ref: "#/components/schemas/MessageList"
+            - $ref: "#/components/schemas/MessageDict"
         input_tokens:
           type: integer
           minimum: 0
