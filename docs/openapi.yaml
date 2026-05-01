@@ -481,23 +481,6 @@ components:
       examples:
         - error: "Invalid tracer_token"
 
-    UserIdentification:
-      type: object
-      description: Optional fields to identify the end user across channels.
-      properties:
-        external_user_id:
-          type: string
-          description: Unique external identifier (phone, email, customer ID).
-          example: "5521999998888"
-        external_user_name:
-          type: string
-          description: Human-readable display name.
-          example: "João Silva"
-        external_user_channel:
-          type: string
-          description: Origin channel.
-          enum: [whatsapp, web, telegram, slack, email, teams, sms, voice, other]
-          example: whatsapp
 
     # ---------- Sessions ----------
     SessionCreateRequest:
@@ -600,8 +583,19 @@ components:
         timestamp:
           type: string
           format: date-time
-      allOf:
-        - $ref: "#/components/schemas/UserIdentification"
+        external_user_id:
+          type: string
+          description: Optional external user identifier (phone, email, customer ID).
+          example: "5521999998888"
+        external_user_name:
+          type: string
+          description: Optional human-readable user display name.
+          example: "João Silva"
+        external_user_channel:
+          type: string
+          description: Origin channel for the user.
+          enum: [whatsapp, web, telegram, slack, email, teams, sms, voice, other]
+          example: whatsapp
 
     LlmTraceResponse:
       type: object
@@ -643,8 +637,19 @@ components:
         timestamp:
           type: string
           format: date-time
-      allOf:
-        - $ref: "#/components/schemas/UserIdentification"
+        external_user_id:
+          type: string
+          description: Optional external user identifier (phone, email, customer ID).
+          example: "5521999998888"
+        external_user_name:
+          type: string
+          description: Optional human-readable user display name.
+          example: "João Silva"
+        external_user_channel:
+          type: string
+          description: Origin channel for the user.
+          enum: [whatsapp, web, telegram, slack, email, teams, sms, voice, other]
+          example: whatsapp
 
     ToolTraceResponse:
       type: object
@@ -675,8 +680,19 @@ components:
         timestamp:
           type: string
           format: date-time
-      allOf:
-        - $ref: "#/components/schemas/UserIdentification"
+        external_user_id:
+          type: string
+          description: Optional external user identifier (phone, email, customer ID).
+          example: "5521999998888"
+        external_user_name:
+          type: string
+          description: Optional human-readable user display name.
+          example: "João Silva"
+        external_user_channel:
+          type: string
+          description: Origin channel for the user.
+          enum: [whatsapp, web, telegram, slack, email, teams, sms, voice, other]
+          example: whatsapp
 
     HandoffTraceResponse:
       type: object
@@ -830,8 +846,19 @@ components:
           description: Source tool (claude-code, cline, copilot, openai-agents, langchain, ...).
         model:
           type: string
-      allOf:
-        - $ref: "#/components/schemas/UserIdentification"
+        external_user_id:
+          type: string
+          description: Optional external user identifier (phone, email, customer ID).
+          example: "5521999998888"
+        external_user_name:
+          type: string
+          description: Optional human-readable user display name.
+          example: "João Silva"
+        external_user_channel:
+          type: string
+          description: Origin channel for the user.
+          enum: [whatsapp, web, telegram, slack, email, teams, sms, voice, other]
+          example: whatsapp
 
     RecordsUploadRequest:
       type: object
