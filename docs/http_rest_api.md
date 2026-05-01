@@ -2,6 +2,11 @@
 
 The MonkAI Trace HTTP REST API provides a language-agnostic way to send traces from any runtime (Python, Node.js, Go, Deno, etc.) without requiring a specific SDK.
 
+> **Machine-readable contract**: see [`openapi.yaml`](./openapi.yaml) (OpenAPI 3.1).
+> Use it to generate clients (`openapi-generator`, `openapi-typescript`, etc.) and
+> validate requests/responses programmatically. Browse interactively via
+> [`index.html`](./index.html) (Swagger UI) once GitHub Pages is enabled.
+
 ## Base URL
 
 ```

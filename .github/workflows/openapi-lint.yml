@@ -1,0 +1,91 @@
+name: "📜 OpenAPI Lint"
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "docs/openapi.yaml"
+      - ".github/workflows/openapi-lint.yml"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "docs/openapi.yaml"
+      - ".github/workflows/openapi-lint.yml"
+
+jobs:
+  validate:
+    name: Validate OpenAPI 3.1 spec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install openapi-spec-validator
+        run: pip install --quiet 'openapi-spec-validator>=0.7' pyyaml
+
+      - name: Validate spec (OpenAPI 3.1)
+        run: |
+          python - <<'PY'
+          import sys, yaml
+          from openapi_spec_validator import validate
+          with open("docs/openapi.yaml") as f:
+              spec = yaml.safe_load(f)
+          validate(spec)
+          print(f"OK — paths: {len(spec['paths'])}, schemas: {len(spec['components']['schemas'])}")
+          PY
+
+      - name: Setup Node (for Redocly CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Redocly lint
+        run: npx --yes @redocly/cli@latest lint docs/openapi.yaml
+
+  generate-typescript-client:
+    name: Smoke-test TS client generation
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # openapi-typescript proves strict TS types compile from the spec.
+      # This is the authoritative type-check.
+      - name: Generate types (openapi-typescript) and type-check strict
+        run: |
+          npx --yes openapi-typescript@7 docs/openapi.yaml -o /tmp/monkai-trace.d.ts
+          npm install --silent --prefix /tmp/tsc-check typescript@5
+          /tmp/tsc-check/node_modules/.bin/tsc --noEmit --strict \
+            --target es2020 --module esnext --moduleResolution node \
+            --skipLibCheck /tmp/monkai-trace.d.ts
+
+      # openapi-generator-cli typescript-fetch proves the spec is consumable
+      # by the most common Java-backed generator. Type-checking is skipped here
+      # because the generator has known quirks with oneOf — strict typing is
+      # already proven by the openapi-typescript step above.
+      - name: Setup Java (openapi-generator needs JRE)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Generate TypeScript fetch client (smoke)
+        run: |
+          npx --yes @openapitools/openapi-generator-cli generate \
+            -i docs/openapi.yaml \
+            -g typescript-fetch \
+            -o /tmp/monkai-trace-ts \
+            --skip-validate-spec
+          test -f /tmp/monkai-trace-ts/runtime.ts
+          test -d /tmp/monkai-trace-ts/apis
+          test -d /tmp/monkai-trace-ts/models
+          echo "OK — generator emitted runtime + apis + models"

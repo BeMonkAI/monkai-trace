@@ -1,0 +1,1074 @@
+openapi: 3.1.0
+info:
+  title: MonkAI Trace API
+  version: "0.5.0"
+  summary: Language-agnostic REST API for capturing AI agent traces, sessions, logs, and conversation records.
+  description: |
+    The MonkAI Trace REST API exposes the same backend used by the official
+    Python SDK (`monkai-trace`) so that any runtime (Node.js, Go, Java, .NET,
+    Rust, etc.) can send traces without depending on the SDK.
+
+    The API has three logical surfaces:
+
+    1. **Sessions** — track a logical conversation across multiple traces.
+    2. **Traces** — fine-grained events (LLM call, tool call, agent handoff, log).
+       Recommended for non-Python integrations.
+    3. **Records / Logs** — bulk endpoints used by the Python SDK and for batch
+       imports of historical data. Useful when an integration already produces
+       full conversation records.
+
+    All endpoints accept JSON, return JSON, and require a tracer token. See
+    [`docs/http_rest_api.md`](./http_rest_api.md) for narrative documentation.
+  contact:
+    name: MonkAI
+    url: https://monkai.ai
+  license:
+    name: MIT
+    url: https://github.com/BeMonkAI/monkai-trace/blob/main/LICENSE
+
+servers:
+  - url: https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api
+    description: Production (current — Supabase edge function)
+  - url: https://api.monkai.ai/trace/v1
+    description: Production (planned custom domain — Phase 2)
+
+tags:
+  - name: Sessions
+    description: Manage conversation sessions.
+  - name: Traces
+    description: Record fine-grained events. Preferred for HTTP clients in any language.
+  - name: Records
+    description: Conversation records (used by the Python SDK and for batch imports).
+  - name: Logs
+    description: Operational log entries.
+  - name: Query
+    description: Read records and logs.
+  - name: Export
+    description: Bulk export with server-side pagination.
+
+security:
+  - tracerTokenHeader: []
+  - bearerAuth: []
+
+paths:
+  # ============================================================
+  # SESSIONS
+  # ============================================================
+  /sessions/create:
+    post:
+      tags: [Sessions]
+      summary: Create a new session
+      description: |
+        Creates a new session for tracking a conversation flow. Use this when
+        you want to force a fresh session, regardless of recent activity.
+      operationId: createSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionCreateRequest"
+            examples:
+              whatsapp:
+                summary: WhatsApp user
+                value:
+                  namespace: my-agent
+                  user_id: "5521999998888"
+                  inactivity_timeout: 300
+                  metadata:
+                    platform: whatsapp
+      responses:
+        "200":
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /sessions/get-or-create:
+    post:
+      tags: [Sessions]
+      summary: Get an active session or create a new one
+      description: |
+        Returns an existing active session for `(namespace, user_id)` if there
+        was activity within `inactivity_timeout` seconds; otherwise creates a
+        new one. This is the endpoint used by the Python SDK to keep session
+        continuity across stateless environments (REST APIs, serverless).
+      operationId: getOrCreateSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionGetOrCreateRequest"
+      responses:
+        "200":
+          description: Session returned (existing or new)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionGetOrCreateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # ============================================================
+  # TRACES (language-agnostic surface)
+  # ============================================================
+  /traces/llm:
+    post:
+      tags: [Traces]
+      summary: Trace an LLM call
+      operationId: traceLlmCall
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LlmTraceRequest"
+      responses:
+        "200":
+          description: Trace recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LlmTraceResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /traces/tool:
+    post:
+      tags: [Traces]
+      summary: Trace a tool/function call
+      operationId: traceToolCall
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ToolTraceRequest"
+      responses:
+        "200":
+          description: Trace recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ToolTraceResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /traces/handoff:
+    post:
+      tags: [Traces]
+      summary: Trace an agent-to-agent handoff
+      operationId: traceHandoff
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HandoffTraceRequest"
+      responses:
+        "200":
+          description: Trace recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HandoffTraceResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /traces/log:
+    post:
+      tags: [Traces]
+      summary: Trace a log entry
+      description: |
+        Records a log entry. Either `session_id` or `namespace` must be provided.
+      operationId: traceLog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogTraceRequest"
+      responses:
+        "200":
+          description: Log recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogTraceResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # ============================================================
+  # RECORDS (bulk — used by Python SDK)
+  # ============================================================
+  /records/upload:
+    post:
+      tags: [Records]
+      summary: Upload conversation records (batch)
+      description: |
+        Batch upload of conversation records. Used by the Python SDK
+        (`MonkAIClient.upload_record` / `upload_records_batch`). Server-side
+        deduplication is applied; the response indicates how many were inserted
+        vs. dropped as duplicates.
+      operationId: uploadRecords
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordsUploadRequest"
+      responses:
+        "200":
+          description: Records processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecordsUploadResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /logs/upload:
+    post:
+      tags: [Logs]
+      summary: Upload operational logs (batch)
+      description: Batch upload of structured log entries.
+      operationId: uploadLogs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogsUploadRequest"
+      responses:
+        "200":
+          description: Logs processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogsUploadResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # ============================================================
+  # QUERY
+  # ============================================================
+  /record_query:
+    post:
+      tags: [Query]
+      summary: Query conversation records
+      operationId: queryRecords
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordQueryRequest"
+      responses:
+        "200":
+          description: Records matching the query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecordQueryResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /logs/query:
+    post:
+      tags: [Query]
+      summary: Query log entries
+      operationId: queryLogs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogQueryRequest"
+      responses:
+        "200":
+          description: Logs matching the query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogQueryResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # ============================================================
+  # EXPORT
+  # ============================================================
+  /records/export:
+    post:
+      tags: [Export]
+      summary: Export conversation records (JSON or CSV)
+      operationId: exportRecords
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordExportRequest"
+      responses:
+        "200":
+          description: Records exported
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecordExportResponse"
+            text/csv:
+              schema:
+                type: string
+                description: CSV content (when `format=csv`)
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /logs/export:
+    post:
+      tags: [Export]
+      summary: Export logs (JSON or CSV)
+      operationId: exportLogs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogExportRequest"
+      responses:
+        "200":
+          description: Logs exported
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogExportResponse"
+            text/csv:
+              schema:
+                type: string
+                description: CSV content (when `format=csv`)
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  securitySchemes:
+    tracerTokenHeader:
+      type: apiKey
+      in: header
+      name: tracer_token
+      description: |
+        Current authentication scheme. Send the tracer token in the
+        `tracer_token` HTTP header.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+      description: |
+        Planned authentication scheme (Phase 2). Send the tracer token as
+        `Authorization: Bearer <token>`. Both schemes will work in parallel
+        during the deprecation window.
+
+  parameters: {}
+
+  responses:
+    BadRequest:
+      description: Bad Request — required field missing or invalid payload
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Unauthorized — invalid or missing tracer token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: Forbidden — token does not have access to the resource
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    InternalError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    # ---------- Common ----------
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message description (legacy flat shape)
+      additionalProperties: true
+      examples:
+        - error: "Invalid tracer_token"
+
+
+    # ---------- Sessions ----------
+    SessionCreateRequest:
+      type: object
+      required: [namespace]
+      properties:
+        namespace:
+          type: string
+          description: Logical namespace the session belongs to (e.g. agent name).
+          example: my-agent
+        user_id:
+          type: string
+          description: External user identifier (used in `session_id` generation).
+          example: "5521999998888"
+        inactivity_timeout:
+          type: integer
+          minimum: 1
+          default: 120
+          description: Seconds of inactivity before the session expires.
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Free-form metadata stored with the session.
+
+    Session:
+      type: object
+      required: [session_id, namespace, created_at]
+      properties:
+        session_id:
+          type: string
+          example: my-namespace-user123-20251210123456
+        namespace:
+          type: string
+        user_id:
+          type: string
+        inactivity_timeout:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+
+    SessionGetOrCreateRequest:
+      type: object
+      required: [namespace, user_id]
+      properties:
+        namespace:
+          type: string
+        user_id:
+          type: string
+        inactivity_timeout:
+          type: integer
+          minimum: 1
+          default: 120
+        force_new:
+          type: boolean
+          default: false
+          description: Force a new session even if a recent active session exists.
+
+    SessionGetOrCreateResponse:
+      allOf:
+        - $ref: "#/components/schemas/Session"
+        - type: object
+          properties:
+            reused:
+              type: boolean
+              description: True if an existing session was returned, false if a new one was created.
+
+    # ---------- Traces ----------
+    LlmTraceRequest:
+      type: object
+      required: [session_id]
+      properties:
+        session_id:
+          type: string
+        model:
+          type: string
+          example: gpt-4
+        provider:
+          type: string
+          example: openai
+        input:
+          type: object
+          description: |
+            Input payload. Common shape: `{ "messages": [...] }`.
+          additionalProperties: true
+        output:
+          type: object
+          description: |
+            Output payload. Common shape: `{ "content": "...", "usage": {...} }`.
+          additionalProperties: true
+        latency_ms:
+          type: integer
+          minimum: 0
+        metadata:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+        external_user_id:
+          type: string
+          description: Optional external user identifier (phone, email, customer ID).
+          example: "5521999998888"
+        external_user_name:
+          type: string
+          description: Optional human-readable user display name.
+          example: "João Silva"
+        external_user_channel:
+          type: string
+          description: Origin channel for the user.
+          enum: [whatsapp, web, telegram, slack, email, teams, sms, voice, other]
+          example: whatsapp
+
+    LlmTraceResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        trace_type:
+          type: string
+          const: llm_call
+        tokens:
+          type: object
+          properties:
+            input:
+              type: integer
+            output:
+              type: integer
+
+    ToolTraceRequest:
+      type: object
+      required: [session_id, tool_name]
+      properties:
+        session_id:
+          type: string
+        tool_name:
+          type: string
+        arguments:
+          type: object
+          additionalProperties: true
+        result: {}
+        latency_ms:
+          type: integer
+          minimum: 0
+        agent:
+          type: string
+          description: Agent that called the tool.
+        metadata:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+        external_user_id:
+          type: string
+          description: Optional external user identifier (phone, email, customer ID).
+          example: "5521999998888"
+        external_user_name:
+          type: string
+          description: Optional human-readable user display name.
+          example: "João Silva"
+        external_user_channel:
+          type: string
+          description: Origin channel for the user.
+          enum: [whatsapp, web, telegram, slack, email, teams, sms, voice, other]
+          example: whatsapp
+
+    ToolTraceResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        trace_type:
+          type: string
+          const: tool_call
+        tool_name:
+          type: string
+
+    HandoffTraceRequest:
+      type: object
+      required: [session_id, from_agent, to_agent]
+      properties:
+        session_id:
+          type: string
+        from_agent:
+          type: string
+        to_agent:
+          type: string
+        reason:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+        external_user_id:
+          type: string
+          description: Optional external user identifier (phone, email, customer ID).
+          example: "5521999998888"
+        external_user_name:
+          type: string
+          description: Optional human-readable user display name.
+          example: "João Silva"
+        external_user_channel:
+          type: string
+          description: Origin channel for the user.
+          enum: [whatsapp, web, telegram, slack, email, teams, sms, voice, other]
+          example: whatsapp
+
+    HandoffTraceResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        trace_type:
+          type: string
+          const: handoff
+        from:
+          type: string
+        to:
+          type: string
+
+    LogTraceRequest:
+      type: object
+      required: [message]
+      properties:
+        session_id:
+          type: string
+          description: Provide either `session_id` or `namespace`.
+        namespace:
+          type: string
+        level:
+          type: string
+          enum: [debug, info, warn, error]
+          default: info
+        message:
+          type: string
+        resource_id:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+
+    LogTraceResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        trace_type:
+          type: string
+          const: log
+
+    # ---------- Records ----------
+    Message:
+      type: object
+      required: [role]
+      properties:
+        role:
+          type: string
+          enum: [user, assistant, system, tool]
+        content:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: object
+                additionalProperties: true
+            - type: object
+              additionalProperties: true
+            - type: "null"
+        sender:
+          type: string
+        tool_calls:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        tool_call_id:
+          type: string
+        tool_name:
+          type: string
+        is_internal_tool:
+          type: boolean
+        internal_tool_type:
+          type: string
+          enum: [web_search_call, file_search_call, code_interpreter_call]
+
+    MessageList:
+      type: array
+      description: Ordered list of messages (turn or session segment).
+      items:
+        $ref: "#/components/schemas/Message"
+
+    MessageDict:
+      type: object
+      description: Free-form message-shaped payload (escape hatch for legacy clients).
+      additionalProperties: true
+
+    Transfer:
+      type: object
+      required: [from, to]
+      properties:
+        from:
+          type: string
+          description: Source agent.
+        to:
+          type: string
+          description: Target agent.
+        reason:
+          type: string
+        timestamp:
+          type: string
+
+    ConversationRecord:
+      type: object
+      required: [namespace, agent, msg]
+      properties:
+        namespace:
+          type: string
+        agent:
+          type: string
+        session_id:
+          type: string
+        msg:
+          oneOf:
+            - $ref: "#/components/schemas/Message"
+            - $ref: "#/components/schemas/MessageList"
+            - $ref: "#/components/schemas/MessageDict"
+        input_tokens:
+          type: integer
+          minimum: 0
+        output_tokens:
+          type: integer
+          minimum: 0
+        process_tokens:
+          type: integer
+          minimum: 0
+        memory_tokens:
+          type: integer
+          minimum: 0
+        total_tokens:
+          type: integer
+          minimum: 0
+        transfers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transfer"
+        inserted_at:
+          type: string
+          format: date-time
+        user_id:
+          type: string
+        user_whatsapp:
+          type: string
+        wam_id:
+          type: string
+        replied_whatsapp:
+          type: string
+        attachments:
+          type: array
+          items: {}
+        source:
+          type: string
+          description: Source tool (claude-code, cline, copilot, openai-agents, langchain, ...).
+        model:
+          type: string
+        external_user_id:
+          type: string
+          description: Optional external user identifier (phone, email, customer ID).
+          example: "5521999998888"
+        external_user_name:
+          type: string
+          description: Optional human-readable user display name.
+          example: "João Silva"
+        external_user_channel:
+          type: string
+          description: Origin channel for the user.
+          enum: [whatsapp, web, telegram, slack, email, teams, sms, voice, other]
+          example: whatsapp
+
+    RecordsUploadRequest:
+      type: object
+      required: [records]
+      properties:
+        records:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/ConversationRecord"
+
+    RecordsUploadResponse:
+      type: object
+      properties:
+        inserted_count:
+          type: integer
+          minimum: 0
+        dropped_count:
+          type: integer
+          minimum: 0
+          description: Records dropped server-side (e.g., duplicates).
+        details:
+          type: object
+          additionalProperties: true
+
+    # ---------- Logs ----------
+    LogEntry:
+      type: object
+      required: [namespace, level, message]
+      properties:
+        namespace:
+          type: string
+        level:
+          type: string
+          enum: [debug, info, warn, error]
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        resource_id:
+          type: string
+        custom_object:
+          type: object
+          additionalProperties: true
+
+    LogsUploadRequest:
+      type: object
+      required: [logs]
+      properties:
+        logs:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/LogEntry"
+
+    LogsUploadResponse:
+      type: object
+      additionalProperties: true
+      properties:
+        inserted_count:
+          type: integer
+          minimum: 0
+
+    # ---------- Query ----------
+    RecordQueryFilters:
+      type: object
+      properties:
+        agent:
+          type: string
+        session_id:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 100
+        offset:
+          type: integer
+          minimum: 0
+          default: 0
+
+    RecordQueryRequest:
+      type: object
+      required: [namespace, query]
+      properties:
+        namespace:
+          type: string
+        query:
+          $ref: "#/components/schemas/RecordQueryFilters"
+
+    RecordQueryResponse:
+      type: object
+      properties:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversationRecord"
+        count:
+          type: integer
+          minimum: 0
+
+    LogQueryRequest:
+      type: object
+      required: [namespace]
+      properties:
+        namespace:
+          type: string
+        level:
+          type: string
+          enum: [debug, info, warn, error]
+        resource_id:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 100
+        offset:
+          type: integer
+          minimum: 0
+          default: 0
+
+    LogQueryResponse:
+      type: object
+      properties:
+        logs:
+          type: array
+          items:
+            $ref: "#/components/schemas/LogEntry"
+        count:
+          type: integer
+          minimum: 0
+
+    # ---------- Export ----------
+    RecordExportRequest:
+      type: object
+      required: [namespace]
+      properties:
+        namespace:
+          type: string
+        agent:
+          type: string
+        session_id:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        format:
+          type: string
+          enum: [json, csv]
+          default: json
+
+    RecordExportResponse:
+      type: object
+      properties:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversationRecord"
+
+    LogExportRequest:
+      type: object
+      required: [namespace]
+      properties:
+        namespace:
+          type: string
+        level:
+          type: string
+          enum: [debug, info, warn, error]
+        resource_id:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        format:
+          type: string
+          enum: [json, csv]
+          default: json
+
+    LogExportResponse:
+      type: object
+      properties:
+        logs:
+          type: array
+          items:
+            $ref: "#/components/schemas/LogEntry"
