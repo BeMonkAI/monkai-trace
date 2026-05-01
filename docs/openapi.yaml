@@ -27,8 +27,10 @@ info:
     url: https://github.com/BeMonkAI/monkai-trace/blob/main/LICENSE
 
 servers:
+  - url: https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1
+    description: Production — versioned routes (recommended for new clients)
   - url: https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api
-    description: Production (current — Supabase edge function)
+    description: Production — legacy unversioned routes (still supported)
   - url: https://api.monkai.ai/trace/v1
     description: Production (planned custom domain — Phase 2)
 
