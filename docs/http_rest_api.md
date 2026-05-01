@@ -339,6 +339,121 @@ Batch upload conversation records.
 
 ---
 
+## Integrate from Node.js (no SDK)
+
+Node.js 18+ has `fetch` natively — no dependencies required.
+
+```javascript
+// monkai-trace.mjs
+const API = "https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api";
+const TOKEN = process.env.MONKAI_TRACER_TOKEN; // never hard-code
+const NAMESPACE = "my-agent";
+
+const headers = {
+  "tracer_token": TOKEN,
+  "Content-Type": "application/json",
+};
+
+async function post(path, body) {
+  const res = await fetch(`${API}${path}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`MonkAI ${path} → ${res.status}: ${text}`);
+  }
+  return res.json();
+}
+
+export async function traceConversation({ phone, name, userMsg, botResponse }) {
+  // 1. Get or create the session for this user (recommended for HTTP clients
+  //    in stateless environments — keeps the session alive across requests
+  //    based on inactivity_timeout).
+  const session = await post("/sessions/get-or-create", {
+    namespace: NAMESPACE,
+    user_id: phone,
+    inactivity_timeout: 300,
+  });
+
+  // 2. Trace the LLM call.
+  await post("/traces/llm", {
+    session_id: session.session_id,
+    model: "gpt-4",
+    provider: "openai",
+    input: { messages: [{ role: "user", content: userMsg }] },
+    output: { content: botResponse },
+    external_user_id: phone,
+    external_user_name: name,
+    external_user_channel: "whatsapp",
+  });
+
+  // 3. (Optional) Trace a tool call.
+  await post("/traces/tool", {
+    session_id: session.session_id,
+    tool_name: "get_fuel_price",
+    arguments: { fuel_type: "gasoline", city: "São Paulo" },
+    result: { price: 5.89, currency: "BRL" },
+    latency_ms: 120,
+    agent: "fuel-assistant",
+    external_user_id: phone,
+    external_user_name: name,
+    external_user_channel: "whatsapp",
+  });
+}
+
+// Usage:
+//   MONKAI_TRACER_TOKEN=tk_xxx node monkai-trace.mjs
+await traceConversation({
+  phone: "5521999998888",
+  name: "Italo",
+  userMsg: "Qual o preço da gasolina?",
+  botResponse: "O preço atual da gasolina é R$ 5,89/L.",
+});
+```
+
+### Retry with backoff (production-ready)
+
+```javascript
+async function postWithRetry(path, body, { maxAttempts = 3 } = {}) {
+  let lastErr;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await post(path, body);
+    } catch (err) {
+      lastErr = err;
+      // Only retry on transient errors (5xx / 429 / network).
+      const status = Number((err.message.match(/→ (\d+)/) || [])[1] || 0);
+      const transient = status >= 500 || status === 429 || status === 0;
+      if (!transient || attempt === maxAttempts) throw err;
+      const delayMs = 250 * 2 ** (attempt - 1); // 250, 500, 1000 ms
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+  throw lastErr;
+}
+```
+
+### TypeScript types from the OpenAPI spec
+
+If you want strict typing in TS:
+
+```bash
+npx openapi-typescript@7 \
+  https://raw.githubusercontent.com/BeMonkAI/monkai-trace/main/docs/openapi.yaml \
+  -o ./monkai-trace.d.ts
+```
+
+Then:
+
+```typescript
+import type { paths } from "./monkai-trace.d.ts";
+type LlmTrace = paths["/traces/llm"]["post"]["requestBody"]["content"]["application/json"];
+```
+
+---
+
 ## WhatsApp Integration Example
 
 Here's a complete example for integrating with WhatsApp:
@@ -403,8 +518,40 @@ All endpoints return standard error responses:
 }
 ```
 
-Common HTTP status codes:
-- `400` - Bad Request (missing required fields)
-- `401` - Unauthorized (invalid or missing token)
-- `403` - Forbidden (token doesn't have access)
-- `500` - Internal Server Error
+### HTTP Status Codes by Endpoint
+
+Every endpoint may return any of the codes below. Use this table to decide
+how to handle each response programmatically.
+
+| Code | Meaning | When it happens | Retry? |
+|------|---------|-----------------|--------|
+| `200` | OK | Request succeeded; payload is in the response body | — |
+| `400` | Bad Request | Required field missing, invalid JSON, type mismatch, body too large | ❌ Fix payload first |
+| `401` | Unauthorized | `tracer_token` header missing or invalid | ❌ Refresh token |
+| `403` | Forbidden | Token is valid but does not have access to that namespace/resource | ❌ Check permissions |
+| `429` | Too Many Requests | Rate limit hit (planned in Phase 3 of API roadmap) | ✅ Backoff + retry |
+| `500` | Internal Server Error | Backend bug or transient failure | ✅ Backoff + retry (max 3) |
+| `502` / `503` / `504` | Gateway / Upstream | Edge function or upstream temporarily unavailable | ✅ Backoff + retry (max 3) |
+
+### Retry Guidance
+
+- **Permanent errors (4xx except 429)** — fix the request, do not retry blindly.
+- **Transient errors (429, 5xx)** — exponential backoff, ~3 attempts max.
+- **Idempotency** — most endpoints are NOT yet idempotent (Phase 3 introduces
+  `Idempotency-Key`). For retries today, prefer reusing the same `session_id`
+  and let server-side dedup on `/records/upload` handle duplicates.
+
+### Per-Endpoint Notes
+
+| Endpoint | Common 4xx triggers |
+|---|---|
+| `POST /sessions/create` | `400` if `namespace` missing |
+| `POST /sessions/get-or-create` | `400` if `namespace` or `user_id` missing |
+| `POST /traces/llm` | `400` if `session_id` missing or unknown |
+| `POST /traces/tool` | `400` if `session_id` or `tool_name` missing |
+| `POST /traces/handoff` | `400` if `session_id`, `from_agent`, or `to_agent` missing |
+| `POST /traces/log` | `400` if `message` missing AND neither `session_id` nor `namespace` provided |
+| `POST /records/upload` | `400` if `records` empty or items missing required fields (`namespace`, `agent`, `msg`) |
+| `POST /logs/upload` | `400` if `logs` empty or items missing `namespace`/`level`/`message` |
+| `POST /record_query` `POST /logs/query` | `400` if `namespace` missing |
+| `POST /records/export` `POST /logs/export` | `400` if `namespace` missing or unsupported `format` |

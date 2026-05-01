@@ -2,6 +2,22 @@
 
 This directory contains practical, executable examples demonstrating MonkAI integration patterns.
 
+## REST API (any language)
+
+### 0. `monkai_trace.http` — request collection
+A ready-to-run set of every REST endpoint, usable from VS Code REST Client or
+JetBrains HTTP Client. Edit `@token` at the top, then click "Send Request"
+above any block.
+
+```
+examples/monkai_trace.http
+```
+
+Pairs with `docs/openapi.yaml` (machine-readable contract) and the
+"Integrate from Node.js" section in `docs/http_rest_api.md`.
+
+---
+
 ## Session Management
 
 ### 1. Basic Session Management
