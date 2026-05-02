@@ -100,6 +100,38 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl -X POST "https://api.monkai.ai/trace/v1/sessions/create" \
+              -H "Authorization: Bearer $MONKAI_TRACER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "X-Request-ID: $(uuidgen)" \
+              -d '{"namespace":"my-agent","user_id":"5521999998888","inactivity_timeout":300}'
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies
+            const res = await fetch("https://api.monkai.ai/trace/v1/sessions/create", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.MONKAI_TRACER_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({"namespace":"my-agent","user_id":"5521999998888","inactivity_timeout":300})
+            });
+            console.log(res.headers.get("x-request-id"), await res.json());
+        - lang: Python
+          label: Python
+          source: |
+            import os, requests
+            r = requests.post(
+                "https://api.monkai.ai/trace/v1/sessions/create",
+                headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
+                json={"namespace":"my-agent","user_id":"5521999998888","inactivity_timeout":300},
+            )
+            print(r.headers["x-request-id"], r.json())
   /sessions/get-or-create:
     post:
       tags: [Sessions]
@@ -140,6 +172,38 @@ paths:
   # ============================================================
   # TRACES (language-agnostic surface)
   # ============================================================
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl -X POST "https://api.monkai.ai/trace/v1/sessions/get-or-create" \
+              -H "Authorization: Bearer $MONKAI_TRACER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "X-Request-ID: $(uuidgen)" \
+              -d '{"namespace":"my-agent","user_id":"5521999998888"}'
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies
+            const res = await fetch("https://api.monkai.ai/trace/v1/sessions/get-or-create", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.MONKAI_TRACER_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({"namespace":"my-agent","user_id":"5521999998888"})
+            });
+            console.log(res.headers.get("x-request-id"), await res.json());
+        - lang: Python
+          label: Python
+          source: |
+            import os, requests
+            r = requests.post(
+                "https://api.monkai.ai/trace/v1/sessions/get-or-create",
+                headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
+                json={"namespace":"my-agent","user_id":"5521999998888"},
+            )
+            print(r.headers["x-request-id"], r.json())
   /traces/llm:
     post:
       tags: [Traces]
@@ -172,6 +236,38 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl -X POST "https://api.monkai.ai/trace/v1/traces/llm" \
+              -H "Authorization: Bearer $MONKAI_TRACER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "X-Request-ID: $(uuidgen)" \
+              -d '{"session_id":"sess_abc","model":"gpt-4","input":{"messages":[{"role":"user","content":"Hi"}]},"output":{"content":"Hello"}}'
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies
+            const res = await fetch("https://api.monkai.ai/trace/v1/traces/llm", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.MONKAI_TRACER_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({"session_id":"sess_abc","model":"gpt-4","input":{"messages":[{"role":"user","content":"Hi"}]},"output":{"content":"Hello"}})
+            });
+            console.log(res.headers.get("x-request-id"), await res.json());
+        - lang: Python
+          label: Python
+          source: |
+            import os, requests
+            r = requests.post(
+                "https://api.monkai.ai/trace/v1/traces/llm",
+                headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
+                json={"session_id":"sess_abc","model":"gpt-4","input":{"messages":[{"role":"user","content":"Hi"}]},"output":{"content":"Hello"}},
+            )
+            print(r.headers["x-request-id"], r.json())
   /traces/tool:
     post:
       tags: [Traces]
@@ -204,6 +300,38 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl -X POST "https://api.monkai.ai/trace/v1/traces/tool" \
+              -H "Authorization: Bearer $MONKAI_TRACER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "X-Request-ID: $(uuidgen)" \
+              -d '{"session_id":"sess_abc","tool_name":"get_weather","arguments":{"city":"SP"},"result":{"temp":24}}'
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies
+            const res = await fetch("https://api.monkai.ai/trace/v1/traces/tool", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.MONKAI_TRACER_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({"session_id":"sess_abc","tool_name":"get_weather","arguments":{"city":"SP"},"result":{"temp":24}})
+            });
+            console.log(res.headers.get("x-request-id"), await res.json());
+        - lang: Python
+          label: Python
+          source: |
+            import os, requests
+            r = requests.post(
+                "https://api.monkai.ai/trace/v1/traces/tool",
+                headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
+                json={"session_id":"sess_abc","tool_name":"get_weather","arguments":{"city":"SP"},"result":{"temp":24}},
+            )
+            print(r.headers["x-request-id"], r.json())
   /traces/handoff:
     post:
       tags: [Traces]
@@ -236,6 +364,38 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl -X POST "https://api.monkai.ai/trace/v1/traces/handoff" \
+              -H "Authorization: Bearer $MONKAI_TRACER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "X-Request-ID: $(uuidgen)" \
+              -d '{"session_id":"sess_abc","from_agent":"triage","to_agent":"sales","reason":"intent matched"}'
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies
+            const res = await fetch("https://api.monkai.ai/trace/v1/traces/handoff", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.MONKAI_TRACER_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({"session_id":"sess_abc","from_agent":"triage","to_agent":"sales","reason":"intent matched"})
+            });
+            console.log(res.headers.get("x-request-id"), await res.json());
+        - lang: Python
+          label: Python
+          source: |
+            import os, requests
+            r = requests.post(
+                "https://api.monkai.ai/trace/v1/traces/handoff",
+                headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
+                json={"session_id":"sess_abc","from_agent":"triage","to_agent":"sales","reason":"intent matched"},
+            )
+            print(r.headers["x-request-id"], r.json())
   /traces/log:
     post:
       tags: [Traces]
@@ -273,6 +433,38 @@ paths:
   # ============================================================
   # RECORDS (bulk — used by Python SDK)
   # ============================================================
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl -X POST "https://api.monkai.ai/trace/v1/traces/log" \
+              -H "Authorization: Bearer $MONKAI_TRACER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "X-Request-ID: $(uuidgen)" \
+              -d '{"session_id":"sess_abc","level":"info","message":"step 5 done"}'
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies
+            const res = await fetch("https://api.monkai.ai/trace/v1/traces/log", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.MONKAI_TRACER_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({"session_id":"sess_abc","level":"info","message":"step 5 done"})
+            });
+            console.log(res.headers.get("x-request-id"), await res.json());
+        - lang: Python
+          label: Python
+          source: |
+            import os, requests
+            r = requests.post(
+                "https://api.monkai.ai/trace/v1/traces/log",
+                headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
+                json={"session_id":"sess_abc","level":"info","message":"step 5 done"},
+            )
+            print(r.headers["x-request-id"], r.json())
   /records/upload:
     post:
       tags: [Records]
@@ -310,6 +502,38 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl -X POST "https://api.monkai.ai/trace/v1/records/upload" \
+              -H "Authorization: Bearer $MONKAI_TRACER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "X-Request-ID: $(uuidgen)" \
+              -d '{"records":[{"namespace":"my-agent","agent":"bot","msg":[{"role":"user","content":"hi"}]}]}'
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies
+            const res = await fetch("https://api.monkai.ai/trace/v1/records/upload", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.MONKAI_TRACER_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({"records":[{"namespace":"my-agent","agent":"bot","msg":[{"role":"user","content":"hi"}]}]})
+            });
+            console.log(res.headers.get("x-request-id"), await res.json());
+        - lang: Python
+          label: Python
+          source: |
+            import os, requests
+            r = requests.post(
+                "https://api.monkai.ai/trace/v1/records/upload",
+                headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
+                json={"records":[{"namespace":"my-agent","agent":"bot","msg":[{"role":"user","content":"hi"}]}]},
+            )
+            print(r.headers["x-request-id"], r.json())
   /logs/upload:
     post:
       tags: [Logs]
@@ -346,6 +570,38 @@ paths:
   # ============================================================
   # QUERY
   # ============================================================
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl -X POST "https://api.monkai.ai/trace/v1/logs/upload" \
+              -H "Authorization: Bearer $MONKAI_TRACER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "X-Request-ID: $(uuidgen)" \
+              -d '{"logs":[{"namespace":"my-agent","level":"info","message":"hi"}]}'
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies
+            const res = await fetch("https://api.monkai.ai/trace/v1/logs/upload", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.MONKAI_TRACER_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({"logs":[{"namespace":"my-agent","level":"info","message":"hi"}]})
+            });
+            console.log(res.headers.get("x-request-id"), await res.json());
+        - lang: Python
+          label: Python
+          source: |
+            import os, requests
+            r = requests.post(
+                "https://api.monkai.ai/trace/v1/logs/upload",
+                headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
+                json={"logs":[{"namespace":"my-agent","level":"info","message":"hi"}]},
+            )
+            print(r.headers["x-request-id"], r.json())
   /record_query:
     post:
       tags: [Query]
@@ -378,6 +634,38 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl -X POST "https://api.monkai.ai/trace/v1/record_query" \
+              -H "Authorization: Bearer $MONKAI_TRACER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "X-Request-ID: $(uuidgen)" \
+              -d '{"namespace":"my-agent","query":{"limit":50}}'
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies
+            const res = await fetch("https://api.monkai.ai/trace/v1/record_query", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.MONKAI_TRACER_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({"namespace":"my-agent","query":{"limit":50}})
+            });
+            console.log(res.headers.get("x-request-id"), await res.json());
+        - lang: Python
+          label: Python
+          source: |
+            import os, requests
+            r = requests.post(
+                "https://api.monkai.ai/trace/v1/record_query",
+                headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
+                json={"namespace":"my-agent","query":{"limit":50}},
+            )
+            print(r.headers["x-request-id"], r.json())
   /logs/query:
     post:
       tags: [Query]
@@ -413,6 +701,38 @@ paths:
   # ============================================================
   # EXPORT
   # ============================================================
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl -X POST "https://api.monkai.ai/trace/v1/logs/query" \
+              -H "Authorization: Bearer $MONKAI_TRACER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "X-Request-ID: $(uuidgen)" \
+              -d '{"namespace":"my-agent","level":"error","limit":100}'
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies
+            const res = await fetch("https://api.monkai.ai/trace/v1/logs/query", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.MONKAI_TRACER_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({"namespace":"my-agent","level":"error","limit":100})
+            });
+            console.log(res.headers.get("x-request-id"), await res.json());
+        - lang: Python
+          label: Python
+          source: |
+            import os, requests
+            r = requests.post(
+                "https://api.monkai.ai/trace/v1/logs/query",
+                headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
+                json={"namespace":"my-agent","level":"error","limit":100},
+            )
+            print(r.headers["x-request-id"], r.json())
   /records/export:
     post:
       tags: [Export]
@@ -449,6 +769,38 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl -X POST "https://api.monkai.ai/trace/v1/records/export" \
+              -H "Authorization: Bearer $MONKAI_TRACER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "X-Request-ID: $(uuidgen)" \
+              -d '{"namespace":"my-agent","format":"json"}'
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies
+            const res = await fetch("https://api.monkai.ai/trace/v1/records/export", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.MONKAI_TRACER_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({"namespace":"my-agent","format":"json"})
+            });
+            console.log(res.headers.get("x-request-id"), await res.json());
+        - lang: Python
+          label: Python
+          source: |
+            import os, requests
+            r = requests.post(
+                "https://api.monkai.ai/trace/v1/records/export",
+                headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
+                json={"namespace":"my-agent","format":"json"},
+            )
+            print(r.headers["x-request-id"], r.json())
   /logs/export:
     post:
       tags: [Export]
@@ -485,6 +837,38 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl -X POST "https://api.monkai.ai/trace/v1/logs/export" \
+              -H "Authorization: Bearer $MONKAI_TRACER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "X-Request-ID: $(uuidgen)" \
+              -d '{"namespace":"my-agent","format":"csv"}'
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies
+            const res = await fetch("https://api.monkai.ai/trace/v1/logs/export", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.MONKAI_TRACER_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({"namespace":"my-agent","format":"csv"})
+            });
+            console.log(res.headers.get("x-request-id"), await res.json());
+        - lang: Python
+          label: Python
+          source: |
+            import os, requests
+            r = requests.post(
+                "https://api.monkai.ai/trace/v1/logs/export",
+                headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
+                json={"namespace":"my-agent","format":"csv"},
+            )
+            print(r.headers["x-request-id"], r.json())
 components:
   securitySchemes:
     bearerAuth:
