@@ -46,7 +46,7 @@ jobs:
           node-version: "20"
 
       - name: Redocly lint
-        run: npx --yes @redocly/cli@latest lint docs/openapi.yaml
+        run: npx --yes @redocly/cli@latest lint docs/openapi.yaml --config docs/redocly.yaml
 
   generate-typescript-client:
     name: Smoke-test TS client generation

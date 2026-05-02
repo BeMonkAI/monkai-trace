@@ -76,6 +76,38 @@ These fields enable:
 
 ## Endpoints
 
+### Health Check — `GET /v1/health`
+
+Cheap, unauthenticated liveness probe. Use it for monitors, uptime
+checks, and post-deploy smoke tests.
+
+**Headers:**
+- *(none required)*
+- `X-Request-ID` *(optional)*: client-supplied trace ID, returned round-trip
+
+**Response (200):**
+```json
+{
+  "status": "ok",
+  "service": "monkai-trace",
+  "api_version": "v1",
+  "timestamp": "2026-05-02T11:52:02.199Z"
+}
+```
+
+`HEAD /v1/health` is also accepted (RFC 7231) and returns the same
+headers without a body.
+
+**Example:**
+```bash
+curl https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1/health
+
+# HEAD-only (for bandwidth-sensitive monitors)
+curl -I https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1/health
+```
+
+---
+
 ### Create Session — `POST /sessions/create`
 
 Creates a new session for tracking a conversation flow.
@@ -321,6 +353,72 @@ curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1
     "level": "info",
     "message": "User completed onboarding flow",
     "metadata": { "step": 5, "duration_ms": 3200 }
+  }'
+```
+
+---
+
+### Batch Traces — `POST /v1/traces/batch`
+
+Submit up to **100 mixed traces** in a single request. Each item
+carries a `type` field (`llm`, `tool`, `handoff`, `log`) plus the same
+body shape as the per-type endpoint, minus `type`.
+
+**When to use it.** Whenever a single client interaction produces
+multiple traces (e.g., an LLM call → tool call → log) — cuts N
+round-trips down to 1.
+
+**Headers:**
+- `Authorization: Bearer tk_<token>` *or* `tracer_token: tk_<token>` — required
+- `Content-Type`: `application/json`
+- `X-Request-ID` *(optional)*: returned round-trip
+
+**Body:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `traces` | array | Yes | 1–100 items. Each item `{type, ...payload}`. |
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "total": 3,
+  "succeeded": 3,
+  "failed": 0,
+  "results": [
+    { "index": 0, "type": "llm",  "status": "ok", "result": {"trace_type": "llm_call", "tokens": {"input": 12, "output": 15}, "credits_charged": 0.001} },
+    { "index": 1, "type": "tool", "status": "ok", "result": {"trace_type": "tool_call", "tool_name": "get_weather"} },
+    { "index": 2, "type": "log",  "status": "ok", "result": {"trace_type": "log"} }
+  ]
+}
+```
+
+**Partial success.** When the outer envelope is well-formed, the
+response is **always 200**, even if some items errored. Inspect
+`results[i].status`. The outer `success` is `true` only when every
+item succeeded.
+
+**Per-item errors** carry the standard `{code, message}` shape:
+
+```json
+{ "index": 1, "type": "handoff", "status": "error", "error": { "code": "missing_field", "message": "from_agent is required" } }
+```
+
+**Limits.** Max 100 items per call. Empty arrays return 400. Invalid
+JSON returns 400.
+
+**Example:**
+```bash
+curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1/traces/batch \
+  -H "Authorization: Bearer tk_YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "traces": [
+      { "type": "llm",  "session_id": "sess_abc", "model": "gpt-4", "input": {"messages":[{"role":"user","content":"hi"}]}, "output": {"content":"hello"} },
+      { "type": "tool", "session_id": "sess_abc", "tool_name": "get_weather", "arguments": {"city":"SP"}, "result": {"temp": 24} },
+      { "type": "log",  "session_id": "sess_abc", "level": "info", "message": "done" }
+    ]
   }'
 ```
 

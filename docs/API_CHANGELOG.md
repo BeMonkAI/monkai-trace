@@ -12,14 +12,26 @@ keep working during a deprecation window.
 
 ## [Unreleased]
 
-### Planned (Phase 3)
+### Planned (Phase 3 — remaining)
 - `Idempotency-Key` header for `POST /traces/*` and `POST /v1/traces/batch`.
-- Batch endpoint `POST /v1/traces/batch` for mixed `llm`/`tool`/`handoff`/`log` payloads.
 - Rate-limit response headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`).
-- `GET /v1/health` health-check endpoint.
 
 ### Planned (Phase 2 — remaining)
 - Custom domain `https://api.monkai.ai/trace/v1`.
+
+## [v1.2] — 2026-05-02
+
+### Added
+- **`GET /v1/health`** (and `HEAD /v1/health`) — unauthenticated
+  liveness probe returning `{status, service, api_version, timestamp}`.
+  No auth required; suitable for monitors, uptime checks, and
+  post-deploy smoke tests. Reference: [BeMonkAI/monkai-agent-hub#22](https://github.com/BeMonkAI/monkai-agent-hub/pull/22).
+- **`POST /v1/traces/batch`** — submit up to 100 mixed traces
+  (`llm` | `tool` | `handoff` | `log`) in a single request. Partial
+  success is allowed: response is always 200 when the outer envelope
+  is well-formed, with per-item `status: "ok" | "error"`. Cuts N
+  round-trips down to 1 for clients that produce multiple traces per
+  user interaction. Reference: [BeMonkAI/monkai-agent-hub#23](https://github.com/BeMonkAI/monkai-agent-hub/pull/23).
 
 ## [v1.1] — 2026-05-02
 
