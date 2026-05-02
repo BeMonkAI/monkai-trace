@@ -336,6 +336,48 @@ fix the body so it matches the original):
 
 ---
 
+## 6. Handle rate limits
+
+Phase 3 final piece: every authenticated endpoint (except
+`/v1/health`) is rate-limited per `tracer_token`. Most clients
+won't notice — limits are deliberately generous (600 traces/min,
+60 batches/min, 60 bulk uploads/min). Production code should still
+handle the `429` gracefully.
+
+### What changed
+
+- Every response from a rate-limited endpoint now carries
+  `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
+  (and the IETF draft `RateLimit-*` equivalents).
+- When the quota is exhausted, the server returns
+  `429 rate_limit_exceeded` with `Retry-After` header.
+
+### Recommended pattern
+
+```javascript
+async function callWithBackoff(fetchOnce) {
+  let res = await fetchOnce();
+  if (res.status === 429) {
+    const wait = parseInt(res.headers.get("Retry-After") ?? "1", 10);
+    await new Promise(r => setTimeout(r, wait * 1000));
+    res = await fetchOnce();  // single retry; surface failure if 429 again
+  }
+  return res;
+}
+```
+
+For long-running batch jobs, **read `X-RateLimit-Remaining` after
+every call** and self-pace when it gets close to 0 — preferable
+to hitting 429 and waiting for `Retry-After`.
+
+### Diagnosing rate-limit issues
+
+Quote `request_id` from the 429 body or the `X-Request-ID` response
+header in support tickets. With the bucket name in `error.message`
+support can confirm exactly which bucket you're hitting.
+
+---
+
 ## Summary table
 
 | Change | Action | Required by |
@@ -345,6 +387,7 @@ fix the body so it matches the original):
 | `X-Request-ID` | Generate per call, log on errors | Optional, recommended for prod |
 | Error shape | Read `error.message` and `error.code` | Required if you rendered `error` as a string |
 | `Idempotency-Key` | Generate per logical operation, reuse across retries | Optional, recommended for prod |
+| Rate limits | Read `X-RateLimit-Remaining`, handle `429 + Retry-After` | Required if you hit the limits (most don't) |
 
 ---
 

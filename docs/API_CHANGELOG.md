@@ -12,11 +12,37 @@ keep working during a deprecation window.
 
 ## [Unreleased]
 
-### Planned (Phase 3 — remaining)
-- Rate-limit response headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`).
-
 ### Planned (Phase 2 — remaining)
 - Custom domain `https://api.monkai.ai/trace/v1`.
+
+## [v1.4] — 2026-05-02
+
+### Added
+- **Per-token rate limiting** with response headers on every
+  request to a rate-limited endpoint. Both legacy `X-RateLimit-*`
+  and IETF draft `RateLimit-*` names are emitted.
+- New canonical error code **`rate_limit_exceeded`** (HTTP 429).
+  The 429 response also carries `Retry-After: <seconds>` per
+  RFC 6585. The `error.message` includes the bucket name so
+  clients/support can identify which limit was hit.
+- Buckets and limits (per token, per minute, fixed window):
+  `traces=600`, `traces_batch=60`, `bulk_upload=60`,
+  `sessions=600`, `query=60`, `rules=60`. `GET /v1/health` is
+  intentionally unlimited.
+- References: [BeMonkAI/monkai-agent-hub#26](https://github.com/BeMonkAI/monkai-agent-hub/pull/26)
+  (edge function + migration + RPC) and
+  [`docs/MIGRATION.md`](./MIGRATION.md#6-handle-rate-limits)
+  (client adoption guide).
+
+### Notes
+- Counters live in the `monkai_rate_limits` Postgres table with
+  per-`(token_id, bucket, minute)` PK. Increment is atomic via the
+  `monkai_increment_rate_limit` RPC (SECURITY DEFINER, locked down
+  to `service_role`).
+- Cache failures fail open — a flaky DB never takes down the API,
+  it just stops enforcing limits temporarily (logged server-side).
+- **Phase 3 of the API roadmap is complete with this release.**
+  Only `Phase 2 — custom domain` remains as a roadmap item.
 
 ## [v1.3] — 2026-05-02
 
