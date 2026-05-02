@@ -19,8 +19,34 @@ keep working during a deprecation window.
 - `GET /v1/health` health-check endpoint.
 
 ### Planned (Phase 2 — remaining)
-- Structured error envelope `{ "error": { "code": "...", "message": "...", "request_id": "..." } }`.
 - Custom domain `https://api.monkai.ai/trace/v1`.
+
+## [v1.1] — 2026-05-02
+
+### Added
+- **Structured error envelope** for every 4xx/5xx response. The body
+  shape is now `{ "error": { "code": "...", "message": "...", "request_id": "..." } }`
+  instead of a bare `{ "error": "string" }`. Clients should branch on
+  `error.code` (machine-readable, stable). See
+  [`MIGRATION.md`](./MIGRATION.md#4-error-response-shape) for the
+  client-side change. Reference: [BeMonkAI/monkai-agent-hub#20](https://github.com/BeMonkAI/monkai-agent-hub/pull/20)
+  + [BeMonkAI/monkai-agent-hub#21](https://github.com/BeMonkAI/monkai-agent-hub/pull/21).
+- **16 canonical error codes**: `bad_request`, `missing_field`,
+  `invalid_payload`, `namespace_taken`, `namespace_too_similar`,
+  `unauthorized`, `missing_token`, `invalid_token`, `token_expired`,
+  `token_inactive`, `forbidden`, `not_found`, `internal_error`,
+  `encryption_error`, `anonymization_error`. Listed in the OpenAPI
+  `Error` schema; clients should treat unknown codes as the generic
+  family code.
+
+### Compatibility
+- Clients that only check `response.error` for truthiness keep working
+  unchanged.
+- Clients that rendered `error` directly as a string now see
+  `[object Object]` and should switch to `error.message`.
+- The Python SDK stringifies the entire JSON via
+  `str(response.json())`; its exception messages remain informative
+  without code changes.
 
 ## [v1] — 2026-05-01
 

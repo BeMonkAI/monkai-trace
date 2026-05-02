@@ -5,7 +5,7 @@
             "description": "Manage conversation sessions.",
             "item": [
                 {
-                    "id": "122d7420-bfbb-4b20-a079-affcaab8e144",
+                    "id": "60acfb02-4ba2-47ce-a9ef-f905fb71180a",
                     "name": "Create a new session",
                     "request": {
                         "name": "Create a new session",
@@ -32,7 +32,7 @@
                                     "type": "text/plain"
                                 },
                                 "key": "X-Request-ID",
-                                "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                             },
                             {
                                 "key": "Content-Type",
@@ -46,7 +46,7 @@
                         "method": "POST",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"namespace\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": 120,\n  \"metadata\": {\n    \"key_0\": 7787.960214214097,\n    \"key_1\": 3078,\n    \"key_2\": 6362.038926064231,\n    \"key_3\": 3429\n  }\n}",
+                            "raw": "{\n  \"namespace\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": 120,\n  \"metadata\": {\n    \"key_0\": 99,\n    \"key_1\": \"string\",\n    \"key_2\": 135\n  }\n}",
                             "options": {
                                 "raw": {
                                     "headerFamily": "json",
@@ -58,7 +58,7 @@
                     },
                     "response": [
                         {
-                            "id": "209f6056-f456-48c2-bace-22f245a88e48",
+                            "id": "9ea3d132-8e26-4964-ad74-d521e24c678d",
                             "name": "Session created",
                             "originalRequest": {
                                 "url": {
@@ -80,7 +80,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -102,7 +102,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": 120,\n  \"metadata\": {\n    \"key_0\": 7787.960214214097,\n    \"key_1\": 3078,\n    \"key_2\": 6362.038926064231,\n    \"key_3\": 3429\n  }\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": 120,\n  \"metadata\": {\n    \"key_0\": 99,\n    \"key_1\": \"string\",\n    \"key_2\": 135\n  }\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -128,12 +128,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"created_at\": \"<dateTime>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": \"string\"\n  }\n}",
+                            "body": "{\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"created_at\": \"<dateTime>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": 390,\n    \"key_1\": 2980.41441608499\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "9c5fc2d4-e951-4127-b0a1-12fc6f1f76b7",
+                            "id": "3774e29a-fe8b-4255-b613-d05dcbd46d50",
                             "name": "Bad Request — required field missing or invalid payload",
                             "originalRequest": {
                                 "url": {
@@ -155,7 +155,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -177,7 +177,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": 120,\n  \"metadata\": {\n    \"key_0\": 7787.960214214097,\n    \"key_1\": 3078,\n    \"key_2\": 6362.038926064231,\n    \"key_3\": 3429\n  }\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": 120,\n  \"metadata\": {\n    \"key_0\": 99,\n    \"key_1\": \"string\",\n    \"key_2\": 135\n  }\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -203,12 +203,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "011d9784-a0f7-4a42-ac41-bd5b59873a6a",
+                            "id": "feeb56e5-c2b3-475d-b515-17aaf4cadd21",
                             "name": "Unauthorized — invalid or missing tracer token",
                             "originalRequest": {
                                 "url": {
@@ -230,7 +230,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -252,7 +252,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": 120,\n  \"metadata\": {\n    \"key_0\": 7787.960214214097,\n    \"key_1\": 3078,\n    \"key_2\": 6362.038926064231,\n    \"key_3\": 3429\n  }\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": 120,\n  \"metadata\": {\n    \"key_0\": 99,\n    \"key_1\": \"string\",\n    \"key_2\": 135\n  }\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -278,12 +278,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "7d2ade78-068d-46c3-a744-9d7671eb8cac",
+                            "id": "4f6f95a5-9b27-474c-b778-aa9454b8881e",
                             "name": "Forbidden — token does not have access to the resource",
                             "originalRequest": {
                                 "url": {
@@ -305,7 +305,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -327,7 +327,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": 120,\n  \"metadata\": {\n    \"key_0\": 7787.960214214097,\n    \"key_1\": 3078,\n    \"key_2\": 6362.038926064231,\n    \"key_3\": 3429\n  }\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": 120,\n  \"metadata\": {\n    \"key_0\": 99,\n    \"key_1\": \"string\",\n    \"key_2\": 135\n  }\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -353,12 +353,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "6a5a90c5-04e7-4c0e-adfb-9beb06066ff7",
+                            "id": "c8aa1568-e50b-4b1e-8ce3-f3afa4d311d3",
                             "name": "Internal Server Error",
                             "originalRequest": {
                                 "url": {
@@ -380,7 +380,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -402,7 +402,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": 120,\n  \"metadata\": {\n    \"key_0\": 7787.960214214097,\n    \"key_1\": 3078,\n    \"key_2\": 6362.038926064231,\n    \"key_3\": 3429\n  }\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": 120,\n  \"metadata\": {\n    \"key_0\": 99,\n    \"key_1\": \"string\",\n    \"key_2\": 135\n  }\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -428,7 +428,7 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         }
@@ -439,7 +439,7 @@
                     }
                 },
                 {
-                    "id": "227c86a7-0517-41d0-b056-3709dabd398e",
+                    "id": "bf9c5fb8-af10-4756-8de5-96e1815dff9f",
                     "name": "Get an active session or create a new one",
                     "request": {
                         "name": "Get an active session or create a new one",
@@ -466,7 +466,7 @@
                                     "type": "text/plain"
                                 },
                                 "key": "X-Request-ID",
-                                "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                             },
                             {
                                 "key": "Content-Type",
@@ -492,7 +492,7 @@
                     },
                     "response": [
                         {
-                            "id": "265721e1-d959-4fc2-bf10-9c016c65cb48",
+                            "id": "bc2909e3-1c80-4b30-828c-755f41fefea6",
                             "name": "Session returned (existing or new)",
                             "originalRequest": {
                                 "url": {
@@ -514,7 +514,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -562,12 +562,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"created_at\": \"<dateTime>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": 3679.377344026027,\n    \"key_1\": false\n  },\n  \"reused\": \"<boolean>\"\n}",
+                            "body": "{\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"created_at\": \"<dateTime>\",\n  \"user_id\": \"<string>\",\n  \"inactivity_timeout\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": \"string\"\n  },\n  \"reused\": \"<boolean>\"\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "1c1f20e2-c4b1-47d0-a557-029748217083",
+                            "id": "308ff5ec-89e2-43ba-aada-436b0302803e",
                             "name": "Bad Request — required field missing or invalid payload",
                             "originalRequest": {
                                 "url": {
@@ -589,7 +589,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -637,12 +637,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "71fae891-f381-40d4-8784-e0ab851a05c8",
+                            "id": "0c08495e-8803-4ad1-9824-a46a4749fc61",
                             "name": "Unauthorized — invalid or missing tracer token",
                             "originalRequest": {
                                 "url": {
@@ -664,7 +664,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -712,12 +712,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "615cb2bd-273b-4f8e-9941-18da4123b036",
+                            "id": "64c9c80e-c3f6-47a9-ab87-d4451661acf3",
                             "name": "Forbidden — token does not have access to the resource",
                             "originalRequest": {
                                 "url": {
@@ -739,7 +739,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -787,12 +787,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "75cf64ac-846c-41fb-902c-c2d687924bc4",
+                            "id": "07606b4f-c992-45b1-baa4-b911a5a1f7f2",
                             "name": "Internal Server Error",
                             "originalRequest": {
                                 "url": {
@@ -814,7 +814,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -862,7 +862,7 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         }
@@ -879,7 +879,7 @@
             "description": "Record fine-grained events. Preferred for HTTP clients in any language.",
             "item": [
                 {
-                    "id": "37f4d039-d0a7-4dfa-aae6-69fb0e0facba",
+                    "id": "ce7c46ff-28bd-4aea-9ed6-80fd6bbc2f81",
                     "name": "Trace an LLM call",
                     "request": {
                         "name": "Trace an LLM call",
@@ -903,7 +903,7 @@
                                     "type": "text/plain"
                                 },
                                 "key": "X-Request-ID",
-                                "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                             },
                             {
                                 "key": "Content-Type",
@@ -917,7 +917,7 @@
                         "method": "POST",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"session_id\": \"<string>\",\n  \"model\": \"<string>\",\n  \"provider\": \"<string>\",\n  \"input\": {\n    \"key_0\": 1465.6751039162364,\n    \"key_1\": 6364,\n    \"key_2\": false\n  },\n  \"output\": {\n    \"key_0\": 3801.1586815593246\n  },\n  \"latency_ms\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": 396.1880171004595,\n    \"key_1\": \"string\",\n    \"key_2\": 6657\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"teams\"\n}",
+                            "raw": "{\n  \"session_id\": \"<string>\",\n  \"model\": \"<string>\",\n  \"provider\": \"<string>\",\n  \"input\": {\n    \"key_0\": \"string\",\n    \"key_1\": false\n  },\n  \"output\": {\n    \"key_0\": 5385,\n    \"key_1\": 4226.1758127761495\n  },\n  \"latency_ms\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": false,\n    \"key_1\": 4029,\n    \"key_2\": true\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"telegram\"\n}",
                             "options": {
                                 "raw": {
                                     "headerFamily": "json",
@@ -929,7 +929,7 @@
                     },
                     "response": [
                         {
-                            "id": "bff39bf9-cd36-42b6-8f99-62df4a50dd90",
+                            "id": "a36ca097-460f-49ed-bb62-e10669026a36",
                             "name": "Trace recorded",
                             "originalRequest": {
                                 "url": {
@@ -951,7 +951,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -973,7 +973,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"model\": \"<string>\",\n  \"provider\": \"<string>\",\n  \"input\": {\n    \"key_0\": 1465.6751039162364,\n    \"key_1\": 6364,\n    \"key_2\": false\n  },\n  \"output\": {\n    \"key_0\": 3801.1586815593246\n  },\n  \"latency_ms\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": 396.1880171004595,\n    \"key_1\": \"string\",\n    \"key_2\": 6657\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"teams\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"model\": \"<string>\",\n  \"provider\": \"<string>\",\n  \"input\": {\n    \"key_0\": \"string\",\n    \"key_1\": false\n  },\n  \"output\": {\n    \"key_0\": 5385,\n    \"key_1\": 4226.1758127761495\n  },\n  \"latency_ms\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": false,\n    \"key_1\": 4029,\n    \"key_2\": true\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"telegram\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -1004,7 +1004,7 @@
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "b3428e03-22b9-4785-8ef2-3b09ef95c242",
+                            "id": "8edcff1e-eda6-49ec-ba48-28151b2056c1",
                             "name": "Bad Request — required field missing or invalid payload",
                             "originalRequest": {
                                 "url": {
@@ -1026,7 +1026,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -1048,7 +1048,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"model\": \"<string>\",\n  \"provider\": \"<string>\",\n  \"input\": {\n    \"key_0\": 1465.6751039162364,\n    \"key_1\": 6364,\n    \"key_2\": false\n  },\n  \"output\": {\n    \"key_0\": 3801.1586815593246\n  },\n  \"latency_ms\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": 396.1880171004595,\n    \"key_1\": \"string\",\n    \"key_2\": 6657\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"teams\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"model\": \"<string>\",\n  \"provider\": \"<string>\",\n  \"input\": {\n    \"key_0\": \"string\",\n    \"key_1\": false\n  },\n  \"output\": {\n    \"key_0\": 5385,\n    \"key_1\": 4226.1758127761495\n  },\n  \"latency_ms\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": false,\n    \"key_1\": 4029,\n    \"key_2\": true\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"telegram\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -1074,12 +1074,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "35250524-6bca-4e44-be32-392efdb63a76",
+                            "id": "fa649e16-fd9c-402a-a43f-68ae90f769d7",
                             "name": "Unauthorized — invalid or missing tracer token",
                             "originalRequest": {
                                 "url": {
@@ -1101,7 +1101,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -1123,7 +1123,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"model\": \"<string>\",\n  \"provider\": \"<string>\",\n  \"input\": {\n    \"key_0\": 1465.6751039162364,\n    \"key_1\": 6364,\n    \"key_2\": false\n  },\n  \"output\": {\n    \"key_0\": 3801.1586815593246\n  },\n  \"latency_ms\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": 396.1880171004595,\n    \"key_1\": \"string\",\n    \"key_2\": 6657\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"teams\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"model\": \"<string>\",\n  \"provider\": \"<string>\",\n  \"input\": {\n    \"key_0\": \"string\",\n    \"key_1\": false\n  },\n  \"output\": {\n    \"key_0\": 5385,\n    \"key_1\": 4226.1758127761495\n  },\n  \"latency_ms\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": false,\n    \"key_1\": 4029,\n    \"key_2\": true\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"telegram\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -1149,12 +1149,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "86455d7d-ec14-4f0c-8d23-81f99096d360",
+                            "id": "54fe2d4c-ba9f-49a4-8101-c8b8310d84d3",
                             "name": "Forbidden — token does not have access to the resource",
                             "originalRequest": {
                                 "url": {
@@ -1176,7 +1176,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -1198,7 +1198,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"model\": \"<string>\",\n  \"provider\": \"<string>\",\n  \"input\": {\n    \"key_0\": 1465.6751039162364,\n    \"key_1\": 6364,\n    \"key_2\": false\n  },\n  \"output\": {\n    \"key_0\": 3801.1586815593246\n  },\n  \"latency_ms\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": 396.1880171004595,\n    \"key_1\": \"string\",\n    \"key_2\": 6657\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"teams\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"model\": \"<string>\",\n  \"provider\": \"<string>\",\n  \"input\": {\n    \"key_0\": \"string\",\n    \"key_1\": false\n  },\n  \"output\": {\n    \"key_0\": 5385,\n    \"key_1\": 4226.1758127761495\n  },\n  \"latency_ms\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": false,\n    \"key_1\": 4029,\n    \"key_2\": true\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"telegram\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -1224,12 +1224,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "2809dcfd-4ba9-45e6-b3d7-3880e86b6716",
+                            "id": "ddbb83cf-ace1-4ea6-b6c8-4be8d6464afd",
                             "name": "Internal Server Error",
                             "originalRequest": {
                                 "url": {
@@ -1251,7 +1251,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -1273,7 +1273,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"model\": \"<string>\",\n  \"provider\": \"<string>\",\n  \"input\": {\n    \"key_0\": 1465.6751039162364,\n    \"key_1\": 6364,\n    \"key_2\": false\n  },\n  \"output\": {\n    \"key_0\": 3801.1586815593246\n  },\n  \"latency_ms\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": 396.1880171004595,\n    \"key_1\": \"string\",\n    \"key_2\": 6657\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"teams\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"model\": \"<string>\",\n  \"provider\": \"<string>\",\n  \"input\": {\n    \"key_0\": \"string\",\n    \"key_1\": false\n  },\n  \"output\": {\n    \"key_0\": 5385,\n    \"key_1\": 4226.1758127761495\n  },\n  \"latency_ms\": \"<integer>\",\n  \"metadata\": {\n    \"key_0\": false,\n    \"key_1\": 4029,\n    \"key_2\": true\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"telegram\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -1299,7 +1299,7 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         }
@@ -1310,7 +1310,7 @@
                     }
                 },
                 {
-                    "id": "086aa988-3363-41ca-9cd7-0b44dea21e4f",
+                    "id": "f27afd27-3180-4043-ba17-5f136e2eac26",
                     "name": "Trace a tool/function call",
                     "request": {
                         "name": "Trace a tool/function call",
@@ -1334,7 +1334,7 @@
                                     "type": "text/plain"
                                 },
                                 "key": "X-Request-ID",
-                                "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                             },
                             {
                                 "key": "Content-Type",
@@ -1348,7 +1348,7 @@
                         "method": "POST",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"session_id\": \"<string>\",\n  \"tool_name\": \"<string>\",\n  \"arguments\": {\n    \"key_0\": \"string\",\n    \"key_1\": \"string\"\n  },\n  \"result\": \"\",\n  \"latency_ms\": \"<integer>\",\n  \"agent\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": 4944\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"email\"\n}",
+                            "raw": "{\n  \"session_id\": \"<string>\",\n  \"tool_name\": \"<string>\",\n  \"arguments\": {\n    \"key_0\": false,\n    \"key_1\": 7321.85421826729,\n    \"key_2\": false,\n    \"key_3\": 9776.866704144324,\n    \"key_4\": 9267\n  },\n  \"result\": \"\",\n  \"latency_ms\": \"<integer>\",\n  \"agent\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": \"string\"\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"voice\"\n}",
                             "options": {
                                 "raw": {
                                     "headerFamily": "json",
@@ -1360,7 +1360,7 @@
                     },
                     "response": [
                         {
-                            "id": "84248e6c-bac4-4922-9ed5-cc401bcffb6f",
+                            "id": "10f1c75b-22c2-42dd-a1da-6a476bc7d765",
                             "name": "Trace recorded",
                             "originalRequest": {
                                 "url": {
@@ -1382,7 +1382,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -1404,7 +1404,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"tool_name\": \"<string>\",\n  \"arguments\": {\n    \"key_0\": \"string\",\n    \"key_1\": \"string\"\n  },\n  \"result\": \"\",\n  \"latency_ms\": \"<integer>\",\n  \"agent\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": 4944\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"email\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"tool_name\": \"<string>\",\n  \"arguments\": {\n    \"key_0\": false,\n    \"key_1\": 7321.85421826729,\n    \"key_2\": false,\n    \"key_3\": 9776.866704144324,\n    \"key_4\": 9267\n  },\n  \"result\": \"\",\n  \"latency_ms\": \"<integer>\",\n  \"agent\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": \"string\"\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"voice\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -1435,7 +1435,7 @@
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "5eb8f032-3ae1-45bc-a917-e46ad89d64be",
+                            "id": "81f03f64-5eb0-4f4d-81f6-6dcb78be04ed",
                             "name": "Bad Request — required field missing or invalid payload",
                             "originalRequest": {
                                 "url": {
@@ -1457,7 +1457,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -1479,7 +1479,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"tool_name\": \"<string>\",\n  \"arguments\": {\n    \"key_0\": \"string\",\n    \"key_1\": \"string\"\n  },\n  \"result\": \"\",\n  \"latency_ms\": \"<integer>\",\n  \"agent\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": 4944\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"email\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"tool_name\": \"<string>\",\n  \"arguments\": {\n    \"key_0\": false,\n    \"key_1\": 7321.85421826729,\n    \"key_2\": false,\n    \"key_3\": 9776.866704144324,\n    \"key_4\": 9267\n  },\n  \"result\": \"\",\n  \"latency_ms\": \"<integer>\",\n  \"agent\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": \"string\"\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"voice\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -1505,12 +1505,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "e2a2cf07-97be-44e3-afaf-0c1b36fb9925",
+                            "id": "5f38b947-8733-4e2f-80e6-38354cf74a4c",
                             "name": "Unauthorized — invalid or missing tracer token",
                             "originalRequest": {
                                 "url": {
@@ -1532,7 +1532,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -1554,7 +1554,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"tool_name\": \"<string>\",\n  \"arguments\": {\n    \"key_0\": \"string\",\n    \"key_1\": \"string\"\n  },\n  \"result\": \"\",\n  \"latency_ms\": \"<integer>\",\n  \"agent\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": 4944\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"email\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"tool_name\": \"<string>\",\n  \"arguments\": {\n    \"key_0\": false,\n    \"key_1\": 7321.85421826729,\n    \"key_2\": false,\n    \"key_3\": 9776.866704144324,\n    \"key_4\": 9267\n  },\n  \"result\": \"\",\n  \"latency_ms\": \"<integer>\",\n  \"agent\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": \"string\"\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"voice\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -1580,12 +1580,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "539a9908-62be-404e-b17e-d0d7d2c8cef7",
+                            "id": "8853eeb1-08b3-4f0f-b452-be637cd5e0c3",
                             "name": "Forbidden — token does not have access to the resource",
                             "originalRequest": {
                                 "url": {
@@ -1607,7 +1607,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -1629,7 +1629,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"tool_name\": \"<string>\",\n  \"arguments\": {\n    \"key_0\": \"string\",\n    \"key_1\": \"string\"\n  },\n  \"result\": \"\",\n  \"latency_ms\": \"<integer>\",\n  \"agent\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": 4944\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"email\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"tool_name\": \"<string>\",\n  \"arguments\": {\n    \"key_0\": false,\n    \"key_1\": 7321.85421826729,\n    \"key_2\": false,\n    \"key_3\": 9776.866704144324,\n    \"key_4\": 9267\n  },\n  \"result\": \"\",\n  \"latency_ms\": \"<integer>\",\n  \"agent\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": \"string\"\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"voice\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -1655,12 +1655,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "f4d1201f-2136-47e3-8b8e-7000b0c5687f",
+                            "id": "c1d0fdb2-02e2-4144-9f62-2611525784f7",
                             "name": "Internal Server Error",
                             "originalRequest": {
                                 "url": {
@@ -1682,7 +1682,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -1704,7 +1704,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"tool_name\": \"<string>\",\n  \"arguments\": {\n    \"key_0\": \"string\",\n    \"key_1\": \"string\"\n  },\n  \"result\": \"\",\n  \"latency_ms\": \"<integer>\",\n  \"agent\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": 4944\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"email\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"tool_name\": \"<string>\",\n  \"arguments\": {\n    \"key_0\": false,\n    \"key_1\": 7321.85421826729,\n    \"key_2\": false,\n    \"key_3\": 9776.866704144324,\n    \"key_4\": 9267\n  },\n  \"result\": \"\",\n  \"latency_ms\": \"<integer>\",\n  \"agent\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": \"string\"\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"voice\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -1730,7 +1730,7 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         }
@@ -1741,7 +1741,7 @@
                     }
                 },
                 {
-                    "id": "217dccbe-816e-4392-874e-c8b050dad887",
+                    "id": "a4d4a836-6ae3-4b32-8088-dc623e5ea671",
                     "name": "Trace an agent-to-agent handoff",
                     "request": {
                         "name": "Trace an agent-to-agent handoff",
@@ -1765,7 +1765,7 @@
                                     "type": "text/plain"
                                 },
                                 "key": "X-Request-ID",
-                                "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                             },
                             {
                                 "key": "Content-Type",
@@ -1779,7 +1779,7 @@
                         "method": "POST",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"session_id\": \"<string>\",\n  \"from_agent\": \"<string>\",\n  \"to_agent\": \"<string>\",\n  \"reason\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": 1030.3919988226785,\n    \"key_2\": \"string\",\n    \"key_3\": true\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"other\"\n}",
+                            "raw": "{\n  \"session_id\": \"<string>\",\n  \"from_agent\": \"<string>\",\n  \"to_agent\": \"<string>\",\n  \"reason\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": \"string\",\n    \"key_1\": 478,\n    \"key_2\": 8742.255655442248\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"whatsapp\"\n}",
                             "options": {
                                 "raw": {
                                     "headerFamily": "json",
@@ -1791,7 +1791,7 @@
                     },
                     "response": [
                         {
-                            "id": "96dc2d23-b157-423d-b11b-6d13804b8243",
+                            "id": "099754cd-75e2-4c4a-a59f-269ea12bc86b",
                             "name": "Trace recorded",
                             "originalRequest": {
                                 "url": {
@@ -1813,7 +1813,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -1835,7 +1835,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"from_agent\": \"<string>\",\n  \"to_agent\": \"<string>\",\n  \"reason\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": 1030.3919988226785,\n    \"key_2\": \"string\",\n    \"key_3\": true\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"other\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"from_agent\": \"<string>\",\n  \"to_agent\": \"<string>\",\n  \"reason\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": \"string\",\n    \"key_1\": 478,\n    \"key_2\": 8742.255655442248\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"whatsapp\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -1866,7 +1866,7 @@
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "119b431d-b8a3-4831-b3ea-87538dcb447f",
+                            "id": "8bfd8551-2917-47cc-b1e5-6710b2ba71d9",
                             "name": "Bad Request — required field missing or invalid payload",
                             "originalRequest": {
                                 "url": {
@@ -1888,7 +1888,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -1910,7 +1910,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"from_agent\": \"<string>\",\n  \"to_agent\": \"<string>\",\n  \"reason\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": 1030.3919988226785,\n    \"key_2\": \"string\",\n    \"key_3\": true\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"other\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"from_agent\": \"<string>\",\n  \"to_agent\": \"<string>\",\n  \"reason\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": \"string\",\n    \"key_1\": 478,\n    \"key_2\": 8742.255655442248\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"whatsapp\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -1936,12 +1936,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "761f6a96-0750-4422-936d-a276cc8a3d6e",
+                            "id": "e222b98d-928b-492e-9129-4019f238b409",
                             "name": "Unauthorized — invalid or missing tracer token",
                             "originalRequest": {
                                 "url": {
@@ -1963,7 +1963,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -1985,7 +1985,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"from_agent\": \"<string>\",\n  \"to_agent\": \"<string>\",\n  \"reason\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": 1030.3919988226785,\n    \"key_2\": \"string\",\n    \"key_3\": true\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"other\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"from_agent\": \"<string>\",\n  \"to_agent\": \"<string>\",\n  \"reason\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": \"string\",\n    \"key_1\": 478,\n    \"key_2\": 8742.255655442248\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"whatsapp\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -2011,12 +2011,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "e2bfd8a5-e10f-4f10-acca-68f8885a2882",
+                            "id": "ae007871-b355-4c6e-a91d-d75ff0ce4ffa",
                             "name": "Forbidden — token does not have access to the resource",
                             "originalRequest": {
                                 "url": {
@@ -2038,7 +2038,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -2060,7 +2060,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"from_agent\": \"<string>\",\n  \"to_agent\": \"<string>\",\n  \"reason\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": 1030.3919988226785,\n    \"key_2\": \"string\",\n    \"key_3\": true\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"other\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"from_agent\": \"<string>\",\n  \"to_agent\": \"<string>\",\n  \"reason\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": \"string\",\n    \"key_1\": 478,\n    \"key_2\": 8742.255655442248\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"whatsapp\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -2086,12 +2086,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "07c0de0b-7336-4e42-9906-f6d7b525f7ef",
+                            "id": "8c45a00e-86a8-40d9-861d-7c6bb248a6f1",
                             "name": "Internal Server Error",
                             "originalRequest": {
                                 "url": {
@@ -2113,7 +2113,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -2135,7 +2135,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"from_agent\": \"<string>\",\n  \"to_agent\": \"<string>\",\n  \"reason\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": 1030.3919988226785,\n    \"key_2\": \"string\",\n    \"key_3\": true\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"other\"\n}",
+                                    "raw": "{\n  \"session_id\": \"<string>\",\n  \"from_agent\": \"<string>\",\n  \"to_agent\": \"<string>\",\n  \"reason\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": \"string\",\n    \"key_1\": 478,\n    \"key_2\": 8742.255655442248\n  },\n  \"timestamp\": \"<dateTime>\",\n  \"external_user_id\": \"<string>\",\n  \"external_user_name\": \"<string>\",\n  \"external_user_channel\": \"whatsapp\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -2161,7 +2161,7 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         }
@@ -2172,7 +2172,7 @@
                     }
                 },
                 {
-                    "id": "992e5180-7718-4a8d-9a69-e8e66d7802d8",
+                    "id": "dc4c07f3-5a1e-4e3b-9a15-779d2fad0774",
                     "name": "Trace a log entry",
                     "request": {
                         "name": "Trace a log entry",
@@ -2199,7 +2199,7 @@
                                     "type": "text/plain"
                                 },
                                 "key": "X-Request-ID",
-                                "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                             },
                             {
                                 "key": "Content-Type",
@@ -2213,7 +2213,7 @@
                         "method": "POST",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"message\": \"<string>\",\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": 4829\n  },\n  \"timestamp\": \"<dateTime>\"\n}",
+                            "raw": "{\n  \"message\": \"<string>\",\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true\n  },\n  \"timestamp\": \"<dateTime>\"\n}",
                             "options": {
                                 "raw": {
                                     "headerFamily": "json",
@@ -2225,7 +2225,7 @@
                     },
                     "response": [
                         {
-                            "id": "2b28e56a-9d82-49e7-a4ab-93ae66bf6ba8",
+                            "id": "bd608516-2ce2-4779-9ea9-f1ce1351e80b",
                             "name": "Log recorded",
                             "originalRequest": {
                                 "url": {
@@ -2247,7 +2247,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -2269,7 +2269,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"message\": \"<string>\",\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": 4829\n  },\n  \"timestamp\": \"<dateTime>\"\n}",
+                                    "raw": "{\n  \"message\": \"<string>\",\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true\n  },\n  \"timestamp\": \"<dateTime>\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -2300,7 +2300,7 @@
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "2b072c3d-cb19-4808-8362-edc52d1b5087",
+                            "id": "9edd4987-d0a5-4b10-81ac-e2d899d77bec",
                             "name": "Bad Request — required field missing or invalid payload",
                             "originalRequest": {
                                 "url": {
@@ -2322,7 +2322,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -2344,7 +2344,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"message\": \"<string>\",\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": 4829\n  },\n  \"timestamp\": \"<dateTime>\"\n}",
+                                    "raw": "{\n  \"message\": \"<string>\",\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true\n  },\n  \"timestamp\": \"<dateTime>\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -2370,12 +2370,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "5de5f754-8309-4f7d-a86c-832fa649fb91",
+                            "id": "c5f88bfa-de49-49e3-8953-fe7c4cad58dd",
                             "name": "Unauthorized — invalid or missing tracer token",
                             "originalRequest": {
                                 "url": {
@@ -2397,7 +2397,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -2419,7 +2419,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"message\": \"<string>\",\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": 4829\n  },\n  \"timestamp\": \"<dateTime>\"\n}",
+                                    "raw": "{\n  \"message\": \"<string>\",\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true\n  },\n  \"timestamp\": \"<dateTime>\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -2445,12 +2445,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "d3cc364e-4dde-4598-9f36-0daf2c20e88a",
+                            "id": "31a4e5a6-3461-465d-b97c-776935c7247b",
                             "name": "Forbidden — token does not have access to the resource",
                             "originalRequest": {
                                 "url": {
@@ -2472,7 +2472,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -2494,7 +2494,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"message\": \"<string>\",\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": 4829\n  },\n  \"timestamp\": \"<dateTime>\"\n}",
+                                    "raw": "{\n  \"message\": \"<string>\",\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true\n  },\n  \"timestamp\": \"<dateTime>\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -2520,12 +2520,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "dce83965-b151-402f-bb59-0186da9d40af",
+                            "id": "c5f5b12c-fd3e-4725-95ad-0cf78aaf8195",
                             "name": "Internal Server Error",
                             "originalRequest": {
                                 "url": {
@@ -2547,7 +2547,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -2569,7 +2569,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"message\": \"<string>\",\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true,\n    \"key_1\": 4829\n  },\n  \"timestamp\": \"<dateTime>\"\n}",
+                                    "raw": "{\n  \"message\": \"<string>\",\n  \"session_id\": \"<string>\",\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"metadata\": {\n    \"key_0\": true\n  },\n  \"timestamp\": \"<dateTime>\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -2595,7 +2595,7 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         }
@@ -2612,7 +2612,7 @@
             "description": "Conversation records (used by the Python SDK and for batch imports).",
             "item": [
                 {
-                    "id": "75be4595-f85b-4b52-a259-392d797453be",
+                    "id": "03eca025-485a-46bc-aa81-9d0a19a06023",
                     "name": "Upload conversation records (batch)",
                     "request": {
                         "name": "Upload conversation records (batch)",
@@ -2639,7 +2639,7 @@
                                     "type": "text/plain"
                                 },
                                 "key": "X-Request-ID",
-                                "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                             },
                             {
                                 "key": "Content-Type",
@@ -2653,7 +2653,7 @@
                         "method": "POST",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"assistant\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": true,\n            \"key_1\": 6621.615967166946,\n            \"key_2\": 7992.124882857625\n          },\n          {\n            \"key_0\": \"string\"\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"web_search_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"voice\"\n    }\n  ]\n}",
+                            "raw": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"tool\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": false,\n            \"key_1\": 9030\n          },\n          {\n            \"key_0\": false,\n            \"key_1\": false\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"code_interpreter_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"telegram\"\n    }\n  ]\n}",
                             "options": {
                                 "raw": {
                                     "headerFamily": "json",
@@ -2665,7 +2665,7 @@
                     },
                     "response": [
                         {
-                            "id": "ca6d1e40-4448-4c55-bc70-b723c5e931d6",
+                            "id": "d78b552c-b36c-46d7-8ff2-b7fb2a3f11aa",
                             "name": "Records processed",
                             "originalRequest": {
                                 "url": {
@@ -2687,7 +2687,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -2709,7 +2709,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"assistant\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": true,\n            \"key_1\": 6621.615967166946,\n            \"key_2\": 7992.124882857625\n          },\n          {\n            \"key_0\": \"string\"\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"web_search_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"voice\"\n    }\n  ]\n}",
+                                    "raw": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"tool\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": false,\n            \"key_1\": 9030\n          },\n          {\n            \"key_0\": false,\n            \"key_1\": false\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"code_interpreter_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"telegram\"\n    }\n  ]\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -2735,12 +2735,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"inserted_count\": \"<integer>\",\n  \"dropped_count\": \"<integer>\",\n  \"details\": {\n    \"key_0\": 4836\n  }\n}",
+                            "body": "{\n  \"inserted_count\": \"<integer>\",\n  \"dropped_count\": \"<integer>\",\n  \"details\": {\n    \"key_0\": 3511.41191581952,\n    \"key_1\": 3391.831957315208\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "79995a37-2b9e-4888-b34d-56763c4fe137",
+                            "id": "194a7865-2305-4917-9ac4-da0c5ff7a987",
                             "name": "Bad Request — required field missing or invalid payload",
                             "originalRequest": {
                                 "url": {
@@ -2762,7 +2762,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -2784,7 +2784,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"assistant\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": true,\n            \"key_1\": 6621.615967166946,\n            \"key_2\": 7992.124882857625\n          },\n          {\n            \"key_0\": \"string\"\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"web_search_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"voice\"\n    }\n  ]\n}",
+                                    "raw": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"tool\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": false,\n            \"key_1\": 9030\n          },\n          {\n            \"key_0\": false,\n            \"key_1\": false\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"code_interpreter_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"telegram\"\n    }\n  ]\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -2810,12 +2810,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "c530422e-f81e-484a-a1a1-4cddf3a710d0",
+                            "id": "2f103df4-fc12-4ef3-ba68-e466101b87d0",
                             "name": "Unauthorized — invalid or missing tracer token",
                             "originalRequest": {
                                 "url": {
@@ -2837,7 +2837,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -2859,7 +2859,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"assistant\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": true,\n            \"key_1\": 6621.615967166946,\n            \"key_2\": 7992.124882857625\n          },\n          {\n            \"key_0\": \"string\"\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"web_search_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"voice\"\n    }\n  ]\n}",
+                                    "raw": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"tool\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": false,\n            \"key_1\": 9030\n          },\n          {\n            \"key_0\": false,\n            \"key_1\": false\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"code_interpreter_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"telegram\"\n    }\n  ]\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -2885,12 +2885,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "6baee072-ac18-46d5-a19a-3cc5c3dd3dee",
+                            "id": "d1f83fe6-b35f-4c5c-b4e4-5b46b81e9313",
                             "name": "Forbidden — token does not have access to the resource",
                             "originalRequest": {
                                 "url": {
@@ -2912,7 +2912,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -2934,7 +2934,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"assistant\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": true,\n            \"key_1\": 6621.615967166946,\n            \"key_2\": 7992.124882857625\n          },\n          {\n            \"key_0\": \"string\"\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"web_search_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"voice\"\n    }\n  ]\n}",
+                                    "raw": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"tool\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": false,\n            \"key_1\": 9030\n          },\n          {\n            \"key_0\": false,\n            \"key_1\": false\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"code_interpreter_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"telegram\"\n    }\n  ]\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -2960,12 +2960,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "f510c393-e608-4e00-b775-a34e4bb64ebc",
+                            "id": "4c8be370-9b93-4031-ad00-9f7a5e648422",
                             "name": "Internal Server Error",
                             "originalRequest": {
                                 "url": {
@@ -2987,7 +2987,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -3009,7 +3009,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"assistant\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": true,\n            \"key_1\": 6621.615967166946,\n            \"key_2\": 7992.124882857625\n          },\n          {\n            \"key_0\": \"string\"\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"web_search_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"voice\"\n    }\n  ]\n}",
+                                    "raw": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"tool\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": false,\n            \"key_1\": 9030\n          },\n          {\n            \"key_0\": false,\n            \"key_1\": false\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"code_interpreter_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"telegram\"\n    }\n  ]\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -3035,7 +3035,7 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         }
@@ -3052,7 +3052,7 @@
             "description": "Operational log entries.",
             "item": [
                 {
-                    "id": "c637b1e1-a587-445e-896b-6537e7a416b9",
+                    "id": "c4dd68dd-9a7c-45b2-b32e-6467b47d272f",
                     "name": "Upload operational logs (batch)",
                     "request": {
                         "name": "Upload operational logs (batch)",
@@ -3079,7 +3079,7 @@
                                     "type": "text/plain"
                                 },
                                 "key": "X-Request-ID",
-                                "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                             },
                             {
                                 "key": "Content-Type",
@@ -3093,7 +3093,7 @@
                         "method": "POST",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"error\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": false,\n        \"key_1\": \"string\"\n      }\n    }\n  ]\n}",
+                            "raw": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"debug\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": \"string\"\n      }\n    }\n  ]\n}",
                             "options": {
                                 "raw": {
                                     "headerFamily": "json",
@@ -3105,7 +3105,7 @@
                     },
                     "response": [
                         {
-                            "id": "dbdb1022-dafa-42c4-89c0-e336f784684c",
+                            "id": "f2f4c75c-d81b-4b30-be7d-38911694d0fa",
                             "name": "Logs processed",
                             "originalRequest": {
                                 "url": {
@@ -3127,7 +3127,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -3149,7 +3149,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"error\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": false,\n        \"key_1\": \"string\"\n      }\n    }\n  ]\n}",
+                                    "raw": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"debug\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": \"string\"\n      }\n    }\n  ]\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -3175,12 +3175,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"inserted_count\": \"<integer>\",\n  \"key_0\": \"string\",\n  \"key_1\": 7699\n}",
+                            "body": "{\n  \"inserted_count\": \"<integer>\",\n  \"key_0\": 3924\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "3bf982ce-ce74-48db-b62e-3e05dea55558",
+                            "id": "1f8ffc45-5f36-42ef-bc66-5b3f214a72cd",
                             "name": "Bad Request — required field missing or invalid payload",
                             "originalRequest": {
                                 "url": {
@@ -3202,7 +3202,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -3224,7 +3224,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"error\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": false,\n        \"key_1\": \"string\"\n      }\n    }\n  ]\n}",
+                                    "raw": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"debug\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": \"string\"\n      }\n    }\n  ]\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -3250,12 +3250,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "9f087703-1d96-4ec5-96ba-dcc0899b36ae",
+                            "id": "61460643-9658-4ddf-8a53-c085c56a1e69",
                             "name": "Unauthorized — invalid or missing tracer token",
                             "originalRequest": {
                                 "url": {
@@ -3277,7 +3277,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -3299,7 +3299,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"error\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": false,\n        \"key_1\": \"string\"\n      }\n    }\n  ]\n}",
+                                    "raw": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"debug\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": \"string\"\n      }\n    }\n  ]\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -3325,12 +3325,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "8d7f89e1-4c8d-4d98-a518-870ebb58644d",
+                            "id": "8f6710a3-0e3d-49c8-9b7e-a95ae7029e25",
                             "name": "Forbidden — token does not have access to the resource",
                             "originalRequest": {
                                 "url": {
@@ -3352,7 +3352,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -3374,7 +3374,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"error\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": false,\n        \"key_1\": \"string\"\n      }\n    }\n  ]\n}",
+                                    "raw": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"debug\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": \"string\"\n      }\n    }\n  ]\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -3400,12 +3400,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "c16bf31c-e47f-4004-a3c3-4a0b65a28f46",
+                            "id": "888db82b-af1c-4099-b5ea-d62dc9912462",
                             "name": "Internal Server Error",
                             "originalRequest": {
                                 "url": {
@@ -3427,7 +3427,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -3449,7 +3449,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"error\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": false,\n        \"key_1\": \"string\"\n      }\n    }\n  ]\n}",
+                                    "raw": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"debug\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": \"string\"\n      }\n    }\n  ]\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -3475,7 +3475,7 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         }
@@ -3492,7 +3492,7 @@
             "description": "Read records and logs.",
             "item": [
                 {
-                    "id": "f13b1969-a973-44d4-9853-5ec4d29c90c8",
+                    "id": "995defa7-b273-4b70-a785-06b397fbfec1",
                     "name": "Query conversation records",
                     "request": {
                         "name": "Query conversation records",
@@ -3515,7 +3515,7 @@
                                     "type": "text/plain"
                                 },
                                 "key": "X-Request-ID",
-                                "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                             },
                             {
                                 "key": "Content-Type",
@@ -3541,7 +3541,7 @@
                     },
                     "response": [
                         {
-                            "id": "06b21990-b229-48f2-a8e8-74f83b646a24",
+                            "id": "e23cebf1-bec9-4f89-ba06-7a5de4781526",
                             "name": "Records matching the query",
                             "originalRequest": {
                                 "url": {
@@ -3562,7 +3562,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -3610,12 +3610,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"assistant\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": 9030,\n            \"key_1\": false\n          },\n          {\n            \"key_0\": 9904.558226434101\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"code_interpreter_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"email\"\n    },\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"system\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": \"string\",\n            \"key_1\": 4684\n          },\n          {\n            \"key_0\": 111\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"web_search_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"other\"\n    }\n  ],\n  \"count\": \"<integer>\"\n}",
+                            "body": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"system\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": 505.58909362356076,\n            \"key_1\": 2723\n          },\n          {\n            \"key_0\": true,\n            \"key_1\": true\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"code_interpreter_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"slack\"\n    },\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"assistant\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": \"string\"\n          },\n          {\n            \"key_0\": 1473\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"file_search_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"other\"\n    }\n  ],\n  \"count\": \"<integer>\"\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "0d1a42a1-24d1-4ff1-936b-1b6527d8830f",
+                            "id": "0f293356-b589-4c39-9f39-bb4caefe7340",
                             "name": "Bad Request — required field missing or invalid payload",
                             "originalRequest": {
                                 "url": {
@@ -3636,7 +3636,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -3684,12 +3684,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "385e0f07-34a4-49fe-88bc-8b167055d23b",
+                            "id": "d3fc22d8-fa94-4864-94a1-266e26bfbbd1",
                             "name": "Unauthorized — invalid or missing tracer token",
                             "originalRequest": {
                                 "url": {
@@ -3710,7 +3710,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -3758,12 +3758,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "b83d3fe0-e6ad-49f3-8985-fc9510392b7d",
+                            "id": "25022efc-a8cb-485d-b563-52163896fa63",
                             "name": "Forbidden — token does not have access to the resource",
                             "originalRequest": {
                                 "url": {
@@ -3784,7 +3784,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -3832,12 +3832,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "5d3e5616-b762-415b-9d78-b4f2f0106af7",
+                            "id": "84d37dc5-4b64-4a90-8332-07277318df89",
                             "name": "Internal Server Error",
                             "originalRequest": {
                                 "url": {
@@ -3858,7 +3858,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -3906,7 +3906,7 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         }
@@ -3917,7 +3917,7 @@
                     }
                 },
                 {
-                    "id": "10ca4467-7196-411c-9352-fa99e5600fb7",
+                    "id": "42237404-6495-4ac2-aee6-d9f3f7168639",
                     "name": "Query log entries",
                     "request": {
                         "name": "Query log entries",
@@ -3941,7 +3941,7 @@
                                     "type": "text/plain"
                                 },
                                 "key": "X-Request-ID",
-                                "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                             },
                             {
                                 "key": "Content-Type",
@@ -3955,7 +3955,7 @@
                         "method": "POST",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"warn\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"limit\": 100,\n  \"offset\": 0\n}",
+                            "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"limit\": 100,\n  \"offset\": 0\n}",
                             "options": {
                                 "raw": {
                                     "headerFamily": "json",
@@ -3967,7 +3967,7 @@
                     },
                     "response": [
                         {
-                            "id": "d4c4f709-0c4e-400f-86e5-463b6a3bcae0",
+                            "id": "f57c092c-dc9b-4f66-b04d-0dea15fc7cac",
                             "name": "Logs matching the query",
                             "originalRequest": {
                                 "url": {
@@ -3989,7 +3989,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -4011,7 +4011,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"warn\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"limit\": 100,\n  \"offset\": 0\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"limit\": 100,\n  \"offset\": 0\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -4037,12 +4037,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"info\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": 9687.637208938973,\n        \"key_1\": 7680.524015896116,\n        \"key_2\": 9876\n      }\n    },\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"debug\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": \"string\"\n      }\n    }\n  ],\n  \"count\": \"<integer>\"\n}",
+                            "body": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"info\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": 965\n      }\n    },\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"error\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": 3435,\n        \"key_1\": \"string\"\n      }\n    }\n  ],\n  \"count\": \"<integer>\"\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "fbe59157-a45e-41d0-9eeb-7bcf7152b930",
+                            "id": "826fcb73-652a-4b2a-b3eb-1d4fe4c726a4",
                             "name": "Bad Request — required field missing or invalid payload",
                             "originalRequest": {
                                 "url": {
@@ -4064,7 +4064,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -4086,7 +4086,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"warn\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"limit\": 100,\n  \"offset\": 0\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"limit\": 100,\n  \"offset\": 0\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -4112,12 +4112,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "a147deb4-e14f-42de-acd5-571262219f51",
+                            "id": "92e280fe-976b-4777-a460-2168f8e83ded",
                             "name": "Unauthorized — invalid or missing tracer token",
                             "originalRequest": {
                                 "url": {
@@ -4139,7 +4139,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -4161,7 +4161,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"warn\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"limit\": 100,\n  \"offset\": 0\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"limit\": 100,\n  \"offset\": 0\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -4187,12 +4187,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "e2b67806-6927-4a6e-8ee8-ff02e1dc0045",
+                            "id": "5d970ef5-56bf-472e-bcdd-bd2ca4ba7de8",
                             "name": "Forbidden — token does not have access to the resource",
                             "originalRequest": {
                                 "url": {
@@ -4214,7 +4214,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -4236,7 +4236,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"warn\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"limit\": 100,\n  \"offset\": 0\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"limit\": 100,\n  \"offset\": 0\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -4262,12 +4262,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "754b7a78-daf7-444b-8f3f-86c27dc3ace1",
+                            "id": "cdff220e-1817-4b56-93dd-796c6872674e",
                             "name": "Internal Server Error",
                             "originalRequest": {
                                 "url": {
@@ -4289,7 +4289,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -4311,7 +4311,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"warn\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"limit\": 100,\n  \"offset\": 0\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"info\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"limit\": 100,\n  \"offset\": 0\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -4337,7 +4337,7 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         }
@@ -4354,7 +4354,7 @@
             "description": "Bulk export with server-side pagination.",
             "item": [
                 {
-                    "id": "90cf94d9-733b-4f7c-bb1f-20ba2f39f6c0",
+                    "id": "0d6e29a3-f1b3-423d-9afb-8bb61cdf6924",
                     "name": "Export conversation records (JSON or CSV)",
                     "request": {
                         "name": "Export conversation records (JSON or CSV)",
@@ -4378,7 +4378,7 @@
                                     "type": "text/plain"
                                 },
                                 "key": "X-Request-ID",
-                                "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                             },
                             {
                                 "key": "Content-Type",
@@ -4404,7 +4404,7 @@
                     },
                     "response": [
                         {
-                            "id": "0e0be57e-b75d-4ea0-8a01-2cf0ba3e9fac",
+                            "id": "3d66bb88-9983-4429-b0a1-8ef76b3d4afe",
                             "name": "Records exported",
                             "originalRequest": {
                                 "url": {
@@ -4426,7 +4426,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -4474,12 +4474,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"assistant\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": 3486\n          },\n          {\n            \"key_0\": \"string\"\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"code_interpreter_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"voice\"\n    },\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"assistant\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": \"string\",\n            \"key_1\": false\n          },\n          {\n            \"key_0\": \"string\",\n            \"key_1\": 9313\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"code_interpreter_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"other\"\n    }\n  ]\n}",
+                            "body": "{\n  \"records\": [\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"assistant\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": 5953,\n            \"key_1\": 6085\n          },\n          {\n            \"key_0\": \"string\"\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"file_search_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"email\"\n    },\n    {\n      \"namespace\": \"<string>\",\n      \"agent\": \"<string>\",\n      \"msg\": {\n        \"role\": \"assistant\",\n        \"content\": \"<string>\",\n        \"sender\": \"<string>\",\n        \"tool_calls\": [\n          {\n            \"key_0\": 9775.965629597156,\n            \"key_1\": \"string\"\n          },\n          {\n            \"key_0\": 8517,\n            \"key_1\": true\n          }\n        ],\n        \"tool_call_id\": \"<string>\",\n        \"tool_name\": \"<string>\",\n        \"is_internal_tool\": \"<boolean>\",\n        \"internal_tool_type\": \"web_search_call\"\n      },\n      \"session_id\": \"<string>\",\n      \"input_tokens\": \"<integer>\",\n      \"output_tokens\": \"<integer>\",\n      \"process_tokens\": \"<integer>\",\n      \"memory_tokens\": \"<integer>\",\n      \"total_tokens\": \"<integer>\",\n      \"transfers\": [\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        },\n        {\n          \"from\": \"<string>\",\n          \"to\": \"<string>\",\n          \"reason\": \"<string>\",\n          \"timestamp\": \"<string>\"\n        }\n      ],\n      \"inserted_at\": \"<dateTime>\",\n      \"user_id\": \"<string>\",\n      \"user_whatsapp\": \"<string>\",\n      \"wam_id\": \"<string>\",\n      \"replied_whatsapp\": \"<string>\",\n      \"attachments\": [\n        \"\",\n        \"\"\n      ],\n      \"source\": \"<string>\",\n      \"model\": \"<string>\",\n      \"external_user_id\": \"<string>\",\n      \"external_user_name\": \"<string>\",\n      \"external_user_channel\": \"whatsapp\"\n    }\n  ]\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "c9540e23-444d-4628-af72-dc18127abdf2",
+                            "id": "a997da65-1261-417f-9ca7-3e36ec9e2be9",
                             "name": "Bad Request — required field missing or invalid payload",
                             "originalRequest": {
                                 "url": {
@@ -4501,7 +4501,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -4549,12 +4549,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "393cdac4-e029-406f-84ed-eafa0869977d",
+                            "id": "590ce015-66d4-4c94-8737-0da6192bfc97",
                             "name": "Unauthorized — invalid or missing tracer token",
                             "originalRequest": {
                                 "url": {
@@ -4576,7 +4576,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -4624,12 +4624,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "58ec5ffc-2a50-412f-a2fa-6636953cc685",
+                            "id": "8935541e-3929-46f5-8498-8940a2d14579",
                             "name": "Forbidden — token does not have access to the resource",
                             "originalRequest": {
                                 "url": {
@@ -4651,7 +4651,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -4699,12 +4699,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "fcf7f2ac-018d-48e3-b368-15bf12e284da",
+                            "id": "b9c625f9-4f26-4409-bbcf-1244f57dedc3",
                             "name": "Internal Server Error",
                             "originalRequest": {
                                 "url": {
@@ -4726,7 +4726,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -4774,7 +4774,7 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         }
@@ -4785,7 +4785,7 @@
                     }
                 },
                 {
-                    "id": "28818026-0a62-40bc-9d69-1a6d481eb826",
+                    "id": "9742de2e-fe8f-4737-bb4a-7dc6ed15d838",
                     "name": "Export logs (JSON or CSV)",
                     "request": {
                         "name": "Export logs (JSON or CSV)",
@@ -4809,7 +4809,7 @@
                                     "type": "text/plain"
                                 },
                                 "key": "X-Request-ID",
-                                "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                             },
                             {
                                 "key": "Content-Type",
@@ -4823,7 +4823,7 @@
                         "method": "POST",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"error\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"format\": \"json\"\n}",
+                            "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"debug\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"format\": \"json\"\n}",
                             "options": {
                                 "raw": {
                                     "headerFamily": "json",
@@ -4835,7 +4835,7 @@
                     },
                     "response": [
                         {
-                            "id": "7498f3c2-40c8-4787-949e-bd9d71105295",
+                            "id": "3f1e8c14-32bc-414b-96d6-cc72bdb13fee",
                             "name": "Logs exported",
                             "originalRequest": {
                                 "url": {
@@ -4857,7 +4857,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -4879,7 +4879,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"error\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"format\": \"json\"\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"debug\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"format\": \"json\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -4905,12 +4905,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"debug\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": 4206.44472920176,\n        \"key_1\": false,\n        \"key_2\": 5467\n      }\n    },\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"warn\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": true\n      }\n    }\n  ]\n}",
+                            "body": "{\n  \"logs\": [\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"debug\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": true,\n        \"key_1\": 9088.025891254294\n      }\n    },\n    {\n      \"namespace\": \"<string>\",\n      \"level\": \"info\",\n      \"message\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"resource_id\": \"<string>\",\n      \"custom_object\": {\n        \"key_0\": false,\n        \"key_1\": false,\n        \"key_2\": \"string\",\n        \"key_3\": 8536\n      }\n    }\n  ]\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "2b95c930-ac4f-48d4-9bae-303fc98eec3b",
+                            "id": "7a14e925-c2a2-4741-9bdd-fb471eeab54c",
                             "name": "Bad Request — required field missing or invalid payload",
                             "originalRequest": {
                                 "url": {
@@ -4932,7 +4932,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -4954,7 +4954,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"error\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"format\": \"json\"\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"debug\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"format\": \"json\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -4980,12 +4980,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "17d7f039-30e6-438d-a1c4-65d37bd877e2",
+                            "id": "e4b2b098-e68d-4841-8540-2da762d3ef38",
                             "name": "Unauthorized — invalid or missing tracer token",
                             "originalRequest": {
                                 "url": {
@@ -5007,7 +5007,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -5029,7 +5029,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"error\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"format\": \"json\"\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"debug\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"format\": \"json\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -5055,12 +5055,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "655af38b-6315-4982-a3b0-f887a5523bcf",
+                            "id": "776e5bc4-88ca-43a8-a721-16c0f2d1598e",
                             "name": "Forbidden — token does not have access to the resource",
                             "originalRequest": {
                                 "url": {
@@ -5082,7 +5082,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -5104,7 +5104,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"error\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"format\": \"json\"\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"debug\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"format\": \"json\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -5130,12 +5130,12 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         },
                         {
-                            "id": "50d851cf-cc07-4b6b-9082-c7616218fd5a",
+                            "id": "4f6d2719-551c-43fc-bac5-54c3c38da378",
                             "name": "Internal Server Error",
                             "originalRequest": {
                                 "url": {
@@ -5157,7 +5157,7 @@
                                             "type": "text/plain"
                                         },
                                         "key": "X-Request-ID",
-                                        "value": "(3LfRv[~E^C1[$4fOW\\3Ge}W:D 2QtSF|=||L?vns;YCT}%ZvqX_OoXEaJ&i4bA[_@JP+OAQRDTM]e'tlNGR2zsHLwAD[>x{J6(9y[:P~/h'yd/(QuI7T"
+                                        "value": "\"Jl}(hh/=\\>}{#P8Bw^-F+5"
                                     },
                                     {
                                         "key": "Content-Type",
@@ -5179,7 +5179,7 @@
                                 "method": "POST",
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"error\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"format\": \"json\"\n}",
+                                    "raw": "{\n  \"namespace\": \"<string>\",\n  \"level\": \"debug\",\n  \"resource_id\": \"<string>\",\n  \"start_date\": \"<dateTime>\",\n  \"end_date\": \"<dateTime>\",\n  \"format\": \"json\"\n}",
                                     "options": {
                                         "raw": {
                                             "headerFamily": "json",
@@ -5205,7 +5205,7 @@
                                     "value": ""
                                 }
                             ],
-                            "body": "{\n  \"error\": \"<string>\",\n  \"key_0\": \"string\",\n  \"key_1\": 3489,\n  \"key_2\": true\n}",
+                            "body": "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"<string>\",\n    \"request_id\": \"<string>\"\n  }\n}",
                             "cookie": [],
                             "_postman_previewlanguage": "json"
                         }
@@ -5236,7 +5236,7 @@
         }
     ],
     "info": {
-        "_postman_id": "49288ac7-4d5c-4cf0-a3a3-e4c42a8e3a31",
+        "_postman_id": "6e66d8b2-29f7-4e50-a466-bbf41c2cc729",
         "name": "MonkAI Trace API",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "description": {
