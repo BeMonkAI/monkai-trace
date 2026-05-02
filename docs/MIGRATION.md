@@ -251,6 +251,91 @@ and `request_id`. Treat the extra fields as documented per endpoint.
 
 ---
 
+## 5. Safe retries with `Idempotency-Key`
+
+This is **opt-in** and purely additive — clients that don't send the
+header keep the pre-Phase-3 behaviour. Strongly recommended for any
+production code that retries.
+
+### Behaviour
+
+Trace endpoints (`/v1/traces/llm`, `/tool`, `/handoff`, `/log`,
+`/traces/batch`) accept an `Idempotency-Key` request header. The
+server caches the response under `(tenant, key)` for 24h:
+
+| Same key + same body | Same key + different body | Different / missing key |
+|---|---|---|
+| Cached replay (no DB inserts, no token charges) with `Idempotency-Replay: true` | `422 idempotency_key_conflict` | Fresh execution |
+
+Errors are **not** cached, so retrying a failed call with the same
+key naturally re-executes.
+
+### Recommended client pattern
+
+Generate one UUID per **logical operation** and reuse it across all
+retries of that operation:
+
+```javascript
+async function trackOnce(makeRequest) {
+  const opId = crypto.randomUUID();          // generated once
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      return await makeRequest({ "Idempotency-Key": opId });
+    } catch (err) {
+      if (err.transient && attempt < 3) continue;
+      throw err;
+    }
+  }
+}
+```
+
+The first attempt records the response; if the network drops between
+the server writing the DB and the client reading the body, retry
+attempts replay the same response — the trace is never duplicated
+and credits are never double-charged.
+
+### Reading the replay headers
+
+```javascript
+const res = await fetch(url, {
+  headers: { "Authorization": `Bearer ${token}`, "Idempotency-Key": opId },
+  ...
+});
+
+if (res.headers.get("Idempotency-Replay") === "true") {
+  console.log(
+    "Replayed result of original request",
+    res.headers.get("Idempotency-Original-Request-ID"),
+  );
+}
+```
+
+### Conflict handling
+
+If you reuse a key with a different body, the server returns
+`422 idempotency_key_conflict`. The fix is to pick a new key (or
+fix the body so it matches the original):
+
+```diff
+- // BUG: same key, body changed across retries
+- await fetch(url, { headers: { "Idempotency-Key": "static-key" }, body: latestBody });
++ const opId = crypto.randomUUID();
++ await fetch(url, { headers: { "Idempotency-Key": opId }, body: latestBody });
+```
+
+### Endpoints supported
+
+| Endpoint | Idempotency support |
+|---|---|
+| `POST /v1/traces/llm` | ✅ |
+| `POST /v1/traces/tool` | ✅ |
+| `POST /v1/traces/handoff` | ✅ |
+| `POST /v1/traces/log` | ✅ |
+| `POST /v1/traces/batch` | ✅ |
+| Other endpoints | Not yet — body-level dedup applies on bulk uploads |
+
+---
+
 ## Summary table
 
 | Change | Action | Required by |
@@ -259,6 +344,7 @@ and `request_id`. Treat the extra fields as documented per endpoint.
 | Auth → `Bearer` | Replace one header | Optional, recommended |
 | `X-Request-ID` | Generate per call, log on errors | Optional, recommended for prod |
 | Error shape | Read `error.message` and `error.code` | Required if you rendered `error` as a string |
+| `Idempotency-Key` | Generate per logical operation, reuse across retries | Optional, recommended for prod |
 
 ---
 

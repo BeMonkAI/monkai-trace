@@ -274,6 +274,8 @@ paths:
       operationId: traceLlmCall
       parameters:
         - $ref: "#/components/parameters/RequestIdHeader"
+        - &id001
+          $ref: '#/components/parameters/IdempotencyKeyHeader'
       requestBody:
         required: true
         content:
@@ -286,6 +288,10 @@ paths:
           headers:
             X-Request-ID:
               $ref: "#/components/headers/XRequestId"
+            Idempotency-Replay:
+              $ref: '#/components/headers/IdempotencyReplay'
+            Idempotency-Original-Request-ID:
+              $ref: '#/components/headers/IdempotencyOriginalRequestId'
           content:
             application/json:
               schema:
@@ -299,6 +305,8 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+        '422':
+          $ref: '#/components/responses/Conflict'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -338,6 +346,7 @@ paths:
       operationId: traceToolCall
       parameters:
         - $ref: "#/components/parameters/RequestIdHeader"
+        - *id001
       requestBody:
         required: true
         content:
@@ -350,6 +359,10 @@ paths:
           headers:
             X-Request-ID:
               $ref: "#/components/headers/XRequestId"
+            Idempotency-Replay:
+              $ref: '#/components/headers/IdempotencyReplay'
+            Idempotency-Original-Request-ID:
+              $ref: '#/components/headers/IdempotencyOriginalRequestId'
           content:
             application/json:
               schema:
@@ -363,6 +376,8 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+        '422':
+          $ref: '#/components/responses/Conflict'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -402,6 +417,7 @@ paths:
       operationId: traceHandoff
       parameters:
         - $ref: "#/components/parameters/RequestIdHeader"
+        - *id001
       requestBody:
         required: true
         content:
@@ -414,6 +430,10 @@ paths:
           headers:
             X-Request-ID:
               $ref: "#/components/headers/XRequestId"
+            Idempotency-Replay:
+              $ref: '#/components/headers/IdempotencyReplay'
+            Idempotency-Original-Request-ID:
+              $ref: '#/components/headers/IdempotencyOriginalRequestId'
           content:
             application/json:
               schema:
@@ -427,6 +447,8 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+        '422':
+          $ref: '#/components/responses/Conflict'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -468,6 +490,7 @@ paths:
       operationId: traceLog
       parameters:
         - $ref: "#/components/parameters/RequestIdHeader"
+        - *id001
       requestBody:
         required: true
         content:
@@ -480,6 +503,10 @@ paths:
           headers:
             X-Request-ID:
               $ref: "#/components/headers/XRequestId"
+            Idempotency-Replay:
+              $ref: '#/components/headers/IdempotencyReplay'
+            Idempotency-Original-Request-ID:
+              $ref: '#/components/headers/IdempotencyOriginalRequestId'
           content:
             application/json:
               schema:
@@ -496,6 +523,8 @@ paths:
   # ============================================================
   # RECORDS (bulk — used by Python SDK)
   # ============================================================
+        '422':
+          $ref: '#/components/responses/Conflict'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -549,6 +578,7 @@ paths:
       operationId: traceBatch
       parameters:
         - $ref: "#/components/parameters/RequestIdHeader"
+        - *id001
       requestBody:
         required: true
         content:
@@ -564,6 +594,10 @@ paths:
           headers:
             X-Request-ID:
               $ref: "#/components/headers/XRequestId"
+            Idempotency-Replay:
+              $ref: '#/components/headers/IdempotencyReplay'
+            Idempotency-Original-Request-ID:
+              $ref: '#/components/headers/IdempotencyOriginalRequestId'
           content:
             application/json:
               schema:
@@ -577,6 +611,8 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+        '422':
+          $ref: '#/components/responses/Conflict'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -1049,6 +1085,35 @@ components:
         header (round-trip). If omitted, the server generates a UUIDv4.
         Useful for distributed traces and support correlation.
 
+    IdempotencyKeyHeader:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema:
+        type: string
+        maxLength: 128
+        pattern: '^[\x21-\x7E][\x20-\x7E]{0,127}$'
+      description: |
+        Optional client-supplied idempotency token (Phase 3). When
+        present, the server caches the response under
+        `(tenant, key)` for **24 hours**:
+
+        - Same key + identical body → cached replay; the response
+          is returned without re-running side effects (DB inserts,
+          token charges). Replays carry `Idempotency-Replay: true`.
+        - Same key + different body → `422 idempotency_key_conflict`.
+        - Different (or missing) key → fresh execution, default
+          behaviour.
+
+        Typical pattern: generate a UUID per logical client operation
+        and pass it on every retry of that operation. Errors are NOT
+        cached, so retrying a failed call with the same key naturally
+        re-executes.
+
+        Supported on `/v1/traces/llm`, `/v1/traces/tool`,
+        `/v1/traces/handoff`, `/v1/traces/log`, and
+        `/v1/traces/batch`.
+
   headers:
     XRequestId:
       schema:
@@ -1058,6 +1123,23 @@ components:
         `X-Request-ID` header when present, otherwise a server-generated
         UUIDv4. Always emitted on every response (200, 4xx, 5xx). Quote
         this value when reporting issues.
+
+    IdempotencyReplay:
+      schema:
+        type: string
+        enum: ["true"]
+      description: |
+        Present and set to `"true"` only when the response was served
+        from the idempotency cache (same key + same body as a
+        previous request within 24h). Absent on fresh executions.
+
+    IdempotencyOriginalRequestId:
+      schema:
+        type: string
+      description: |
+        On a replay, mirrors the `X-Request-ID` of the **original**
+        request whose result is being returned. Use it to find the
+        first request in server logs.
 
   responses:
     BadRequest:
@@ -1080,6 +1162,18 @@ components:
             $ref: "#/components/schemas/Error"
     Forbidden:
       description: Forbidden — token does not have access to the resource
+      headers:
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: |
+        Conflict — typically `idempotency_key_conflict`, raised when an
+        `Idempotency-Key` is reused with a different request body. Pick
+        a new key or fix the body.
       headers:
         X-Request-ID:
           $ref: "#/components/headers/XRequestId"
@@ -1293,6 +1387,7 @@ components:
                 - internal_error
                 - encryption_error
                 - anonymization_error
+                - idempotency_key_conflict
               example: missing_token
             message:
               type: string

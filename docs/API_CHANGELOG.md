@@ -13,11 +13,41 @@ keep working during a deprecation window.
 ## [Unreleased]
 
 ### Planned (Phase 3 — remaining)
-- `Idempotency-Key` header for `POST /traces/*` and `POST /v1/traces/batch`.
 - Rate-limit response headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`).
 
 ### Planned (Phase 2 — remaining)
 - Custom domain `https://api.monkai.ai/trace/v1`.
+
+## [v1.3] — 2026-05-02
+
+### Added
+- **`Idempotency-Key` request header** on `POST /v1/traces/llm`,
+  `/v1/traces/tool`, `/v1/traces/handoff`, `/v1/traces/log`, and
+  `/v1/traces/batch`. Same key + identical body within 24h → cached
+  replay (no DB inserts, no token charges). Same key + different body
+  → `422 idempotency_key_conflict`. Different/missing key → fresh
+  execution. References:
+  [BeMonkAI/monkai-agent-hub#25](https://github.com/BeMonkAI/monkai-agent-hub/pull/25)
+  (edge function + migration) and
+  [`docs/MIGRATION.md`](./MIGRATION.md#5-safe-retries-with-idempotency-key)
+  (client adoption guide).
+- **`Idempotency-Replay`** response header (`"true"` only) on cached
+  replays.
+- **`Idempotency-Original-Request-ID`** response header on cached
+  replays — mirrors the `X-Request-ID` of the first call so logs can
+  be correlated across retries.
+- New canonical error code: **`idempotency_key_conflict`**
+  (HTTP 422). Listed in the OpenAPI `Error` schema enum.
+
+### Notes
+- Errors are **not** cached. Retrying a failed call with the same key
+  naturally re-executes — no risk of getting "stuck" replaying a
+  transient failure.
+- Cache failures (DB unavailable) are degraded to a miss: the request
+  proceeds normally without idempotency protection, with a warning
+  logged server-side. Idempotency is never a single point of failure.
+- Storage: per-tenant Postgres table `monkai_idempotency_keys` with
+  24h retention via `expires_at`. RLS-locked, service-role only.
 
 ## [v1.2] — 2026-05-02
 
