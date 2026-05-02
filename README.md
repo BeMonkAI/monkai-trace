@@ -6,7 +6,7 @@ Official Python client for [MonkAI](https://monkai.ai) - Monitor, analyze, and o
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> 📖 **REST API reference**: [trace-docs.monkai.ai](https://trace-docs.monkai.ai) — interactive ReDoc with curl/Node/Python samples per endpoint *(also at [bemonkai.github.io/monkai-trace](https://bemonkai.github.io/monkai-trace/))*
+> 📖 **REST API reference**: [trace-docs.monkai.com.br](https://trace-docs.monkai.com.br) — interactive ReDoc with curl/Node/Python samples per endpoint *(also at [bemonkai.github.io/monkai-trace](https://bemonkai.github.io/monkai-trace/))*
 > · [Migration guide](docs/MIGRATION.md)
 > · [API changelog](docs/API_CHANGELOG.md)
 > · [OpenAPI spec](docs/openapi.yaml)
