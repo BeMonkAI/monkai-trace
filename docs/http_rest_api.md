@@ -10,15 +10,51 @@ The MonkAI Trace HTTP REST API provides a language-agnostic way to send traces f
 ## Base URL
 
 ```
-https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api
+https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1   ← recommended (versioned)
+https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api      ← legacy (still supported)
 ```
+
+The `/v1/` prefix is the contract pin: future breaking changes will land
+under `/v2/` while `/v1/` keeps working. New integrations should use it;
+existing clients without the prefix continue to function.
 
 ## Authentication
 
-All requests require a `tracer_token` header with your MonkAI tracer token.
+Two schemes are accepted, interchangeably:
 
 ```bash
-curl -H "tracer_token: YOUR_TOKEN_HERE" ...
+# Recommended: RFC 6750 bearer auth (works out of the box with curl,
+# fetch, generated clients, and most API gateways).
+curl -H "Authorization: Bearer tk_YOUR_TOKEN" ...
+
+# Legacy: custom header, still supported.
+curl -H "tracer_token: tk_YOUR_TOKEN" ...
+```
+
+Tokens always have the `tk_` prefix. When both headers are sent, the
+legacy `tracer_token` header wins (deterministic during the deprecation
+window). New integrations should prefer `Authorization: Bearer`.
+
+## Request Correlation — `X-Request-ID`
+
+Every response carries an `X-Request-ID` header:
+
+- If the client sends `X-Request-ID: <id>` in the request, it is
+  preserved in the response (round-trip). Useful for distributed
+  traces across multiple services.
+- Otherwise, the server generates a UUIDv4 and returns it.
+
+Always log the `X-Request-ID` you receive on errors. Quote it when
+reporting issues to support — it lets us pinpoint the exact request
+in server logs.
+
+```bash
+curl -i -H "Authorization: Bearer tk_YOUR_TOKEN" \
+     -H "X-Request-ID: my-trace-1" \
+     -X POST .../v1/sessions/get-or-create -d '{...}'
+
+# Response includes:
+#   x-request-id: my-trace-1
 ```
 
 ## User Identification
@@ -45,8 +81,9 @@ These fields enable:
 Creates a new session for tracking a conversation flow.
 
 **Headers:**
-- `tracer_token`: required
+- `Authorization: Bearer tk_<token>` *or* `tracer_token: tk_<token>` — required
 - `Content-Type`: `application/json`
+- `X-Request-ID` *(optional)*: client-supplied trace ID, returned round-trip
 
 **Body:**
 | Field | Type | Required | Description |
@@ -70,8 +107,8 @@ Creates a new session for tracking a conversation flow.
 
 **Example:**
 ```bash
-curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/sessions/create \
-  -H "tracer_token: YOUR_TOKEN_HERE" \
+curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1/sessions/create \
+  -H "Authorization: Bearer tk_YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "namespace": "my-agent",
@@ -88,8 +125,9 @@ curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/se
 Records an LLM (Large Language Model) call trace.
 
 **Headers:**
-- `tracer_token`: required
+- `Authorization: Bearer tk_<token>` *or* `tracer_token: tk_<token>` — required
 - `Content-Type`: `application/json`
+- `X-Request-ID` *(optional)*: client-supplied trace ID, returned round-trip
 
 **Body:**
 | Field | Type | Required | Description |
@@ -117,8 +155,8 @@ Records an LLM (Large Language Model) call trace.
 
 **Example (with user identification):**
 ```bash
-curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/traces/llm \
-  -H "tracer_token: YOUR_TOKEN_HERE" \
+curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1/traces/llm \
+  -H "Authorization: Bearer tk_YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "session_id": "my-agent-5521999998888-20251210123456",
@@ -147,8 +185,9 @@ curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/tr
 Records a tool/function call trace.
 
 **Headers:**
-- `tracer_token`: required
+- `Authorization: Bearer tk_<token>` *or* `tracer_token: tk_<token>` — required
 - `Content-Type`: `application/json`
+- `X-Request-ID` *(optional)*: client-supplied trace ID, returned round-trip
 
 **Body:**
 | Field | Type | Required | Description |
@@ -176,8 +215,8 @@ Records a tool/function call trace.
 
 **Example:**
 ```bash
-curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/traces/tool \
-  -H "tracer_token: YOUR_TOKEN_HERE" \
+curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1/traces/tool \
+  -H "Authorization: Bearer tk_YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "session_id": "my-agent-5521999998888-20251210123456",
@@ -199,8 +238,9 @@ curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/tr
 Records an agent-to-agent handoff trace.
 
 **Headers:**
-- `tracer_token`: required
+- `Authorization: Bearer tk_<token>` *or* `tracer_token: tk_<token>` — required
 - `Content-Type`: `application/json`
+- `X-Request-ID` *(optional)*: client-supplied trace ID, returned round-trip
 
 **Body:**
 | Field | Type | Required | Description |
@@ -227,8 +267,8 @@ Records an agent-to-agent handoff trace.
 
 **Example:**
 ```bash
-curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/traces/handoff \
-  -H "tracer_token: YOUR_TOKEN_HERE" \
+curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1/traces/handoff \
+  -H "Authorization: Bearer tk_YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "session_id": "my-agent-5521999998888-20251210123456",
@@ -248,8 +288,9 @@ curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/tr
 Records a log entry trace.
 
 **Headers:**
-- `tracer_token`: required
+- `Authorization: Bearer tk_<token>` *or* `tracer_token: tk_<token>` — required
 - `Content-Type`: `application/json`
+- `X-Request-ID` *(optional)*: client-supplied trace ID, returned round-trip
 
 **Body:**
 | Field | Type | Required | Description |
@@ -272,8 +313,8 @@ Records a log entry trace.
 
 **Example:**
 ```bash
-curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/traces/log \
-  -H "tracer_token: YOUR_TOKEN_HERE" \
+curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1/traces/log \
+  -H "Authorization: Bearer tk_YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "session_id": "my-agent-user123-20251210123456",
@@ -292,7 +333,7 @@ curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/tr
 Batch upload operational logs.
 
 **Headers:**
-- `tracer_token`: required
+- `Authorization: Bearer tk_<token>` *or* `tracer_token: tk_<token>` — required
 
 **Body:**
 ```json
@@ -315,7 +356,7 @@ Batch upload operational logs.
 Batch upload conversation records.
 
 **Headers:**
-- `tracer_token`: required
+- `Authorization: Bearer tk_<token>` *or* `tracer_token: tk_<token>` — required
 
 **Body:**
 ```json
@@ -345,12 +386,12 @@ Node.js 18+ has `fetch` natively — no dependencies required.
 
 ```javascript
 // monkai-trace.mjs
-const API = "https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api";
-const TOKEN = process.env.MONKAI_TRACER_TOKEN; // never hard-code
+const API = "https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1";
+const TOKEN = process.env.MONKAI_TRACER_TOKEN; // never hard-code (must start with "tk_")
 const NAMESPACE = "my-agent";
 
 const headers = {
-  "tracer_token": TOKEN,
+  "Authorization": `Bearer ${TOKEN}`,
   "Content-Type": "application/json",
 };
 
@@ -461,9 +502,10 @@ Here's a complete example for integrating with WhatsApp:
 ```python
 import requests
 
-MONKAI_API = "https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api"
+MONKAI_API = "https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1"
 TRACER_TOKEN = "tk_your_token_here"
 NAMESPACE = "trackfuel"
+HEADERS = {"Authorization": f"Bearer {TRACER_TOKEN}", "Content-Type": "application/json"}
 
 def process_whatsapp_message(phone: str, name: str, user_msg: str, bot_response: str):
     """Process and trace a WhatsApp message."""
@@ -471,7 +513,7 @@ def process_whatsapp_message(phone: str, name: str, user_msg: str, bot_response:
     # 1. Create session with user's phone as ID
     session = requests.post(
         f"{MONKAI_API}/sessions/create",
-        headers={"tracer_token": TRACER_TOKEN, "Content-Type": "application/json"},
+        headers=HEADERS,
         json={
             "namespace": NAMESPACE,
             "user_id": phone,
@@ -482,7 +524,7 @@ def process_whatsapp_message(phone: str, name: str, user_msg: str, bot_response:
     # 2. Trace the LLM call with full user identification
     requests.post(
         f"{MONKAI_API}/traces/llm",
-        headers={"tracer_token": TRACER_TOKEN, "Content-Type": "application/json"},
+        headers=HEADERS,
         json={
             "session_id": session["session_id"],
             "model": "gpt-4",
