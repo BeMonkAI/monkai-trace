@@ -57,6 +57,56 @@ curl -i -H "Authorization: Bearer tk_YOUR_TOKEN" \
 #   x-request-id: my-trace-1
 ```
 
+## Idempotency — `Idempotency-Key`
+
+Trace endpoints (`/v1/traces/llm`, `/tool`, `/handoff`, `/log`,
+`/traces/batch`) accept an optional **`Idempotency-Key`** request
+header so retries are safe.
+
+### Behaviour
+
+| Same key + same body | Same key + different body | Different/missing key |
+|---|---|---|
+| **Cached replay** — response body and status returned without re-running side effects (DB inserts, token charges). Carries `Idempotency-Replay: true`. | **`422 idempotency_key_conflict`** — pick a new key or fix the body. | **Fresh execution** (default behaviour, no caching). |
+
+The cache lives **24h** per `(tenant, key)` pair. Errors are **not**
+cached: a retry after a failure naturally re-executes.
+
+### Recommended pattern
+
+Generate one UUID per logical client operation and pass it on every
+retry of that operation:
+
+```javascript
+const opId = crypto.randomUUID();          // generated once per operation
+async function uploadTrace(body) {
+  return await postWithRetry("/v1/traces/llm", body, {
+    headers: { "Idempotency-Key": opId },
+  });
+}
+```
+
+### Replay headers
+
+When the response is served from cache, the server adds:
+
+```
+Idempotency-Replay: true
+Idempotency-Original-Request-ID: <uuid of the first request>
+```
+
+Use `Idempotency-Original-Request-ID` to find the first call in
+server logs.
+
+### Format constraints
+
+- Length: 1–128 printable ASCII characters
+- No leading whitespace
+- Same charset as `X-Request-ID`
+
+UUIDs, ULIDs, snowflakes, hex strings, or any human-friendly trace ID
+all work.
+
 ## User Identification
 
 All trace endpoints support optional user identification fields to track who is interacting with your agent:
