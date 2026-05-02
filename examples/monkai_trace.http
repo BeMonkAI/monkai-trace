@@ -8,7 +8,7 @@
 ### Spec (machine-readable): ../docs/openapi.yaml
 ### Narrative docs:           ../docs/http_rest_api.md
 
-@baseUrl  = https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api
+@baseUrl  = https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1
 @token    = tk_REPLACE_ME
 @namespace = my-agent
 @userId   = 5521999998888
@@ -20,7 +20,7 @@
 ### 1. Get or create a session  (recommended for stateless HTTP clients)
 # @name session
 POST {{baseUrl}}/sessions/get-or-create
-tracer_token: {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -35,7 +35,7 @@ Content-Type: application/json
 
 ### 2. Force-create a brand new session
 POST {{baseUrl}}/sessions/create
-tracer_token: {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -47,7 +47,7 @@ Content-Type: application/json
 
 ### 3. Trace an LLM call
 POST {{baseUrl}}/traces/llm
-tracer_token: {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -71,7 +71,7 @@ Content-Type: application/json
 
 ### 4. Trace a tool call
 POST {{baseUrl}}/traces/tool
-tracer_token: {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -88,7 +88,7 @@ Content-Type: application/json
 
 ### 5. Trace an agent-to-agent handoff
 POST {{baseUrl}}/traces/handoff
-tracer_token: {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -103,7 +103,7 @@ Content-Type: application/json
 
 ### 6. Trace a log entry
 POST {{baseUrl}}/traces/log
-tracer_token: {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -115,7 +115,7 @@ Content-Type: application/json
 
 ### 7. Bulk upload conversation records (Python SDK path)
 POST {{baseUrl}}/records/upload
-tracer_token: {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -140,7 +140,7 @@ Content-Type: application/json
 
 ### 8. Bulk upload logs
 POST {{baseUrl}}/logs/upload
-tracer_token: {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -156,7 +156,7 @@ Content-Type: application/json
 
 ### 9. Query records (filter by namespace + session)
 POST {{baseUrl}}/record_query
-tracer_token: {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -170,7 +170,7 @@ Content-Type: application/json
 
 ### 10. Query logs
 POST {{baseUrl}}/logs/query
-tracer_token: {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -182,7 +182,7 @@ Content-Type: application/json
 
 ### 11. Export records (JSON)
 POST {{baseUrl}}/records/export
-tracer_token: {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -192,7 +192,7 @@ Content-Type: application/json
 
 ### 12. Export logs (CSV)
 POST {{baseUrl}}/logs/export
-tracer_token: {{token}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {

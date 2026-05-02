@@ -49,8 +49,8 @@ tags:
     description: Bulk export with server-side pagination.
 
 security:
-  - tracerTokenHeader: []
   - bearerAuth: []
+  - tracerTokenHeader: []
 
 paths:
   # ============================================================
@@ -64,6 +64,8 @@ paths:
         Creates a new session for tracking a conversation flow. Use this when
         you want to force a fresh session, regardless of recent activity.
       operationId: createSession
+      parameters:
+        - $ref: "#/components/parameters/RequestIdHeader"
       requestBody:
         required: true
         content:
@@ -82,6 +84,9 @@ paths:
       responses:
         "200":
           description: Session created
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
@@ -105,6 +110,8 @@ paths:
         new one. This is the endpoint used by the Python SDK to keep session
         continuity across stateless environments (REST APIs, serverless).
       operationId: getOrCreateSession
+      parameters:
+        - $ref: "#/components/parameters/RequestIdHeader"
       requestBody:
         required: true
         content:
@@ -114,6 +121,9 @@ paths:
       responses:
         "200":
           description: Session returned (existing or new)
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
@@ -135,6 +145,8 @@ paths:
       tags: [Traces]
       summary: Trace an LLM call
       operationId: traceLlmCall
+      parameters:
+        - $ref: "#/components/parameters/RequestIdHeader"
       requestBody:
         required: true
         content:
@@ -144,6 +156,9 @@ paths:
       responses:
         "200":
           description: Trace recorded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
@@ -162,6 +177,8 @@ paths:
       tags: [Traces]
       summary: Trace a tool/function call
       operationId: traceToolCall
+      parameters:
+        - $ref: "#/components/parameters/RequestIdHeader"
       requestBody:
         required: true
         content:
@@ -171,6 +188,9 @@ paths:
       responses:
         "200":
           description: Trace recorded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
@@ -189,6 +209,8 @@ paths:
       tags: [Traces]
       summary: Trace an agent-to-agent handoff
       operationId: traceHandoff
+      parameters:
+        - $ref: "#/components/parameters/RequestIdHeader"
       requestBody:
         required: true
         content:
@@ -198,6 +220,9 @@ paths:
       responses:
         "200":
           description: Trace recorded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
@@ -218,6 +243,8 @@ paths:
       description: |
         Records a log entry. Either `session_id` or `namespace` must be provided.
       operationId: traceLog
+      parameters:
+        - $ref: "#/components/parameters/RequestIdHeader"
       requestBody:
         required: true
         content:
@@ -227,6 +254,9 @@ paths:
       responses:
         "200":
           description: Log recorded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
@@ -253,6 +283,8 @@ paths:
         deduplication is applied; the response indicates how many were inserted
         vs. dropped as duplicates.
       operationId: uploadRecords
+      parameters:
+        - $ref: "#/components/parameters/RequestIdHeader"
       requestBody:
         required: true
         content:
@@ -262,6 +294,9 @@ paths:
       responses:
         "200":
           description: Records processed
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
@@ -281,6 +316,8 @@ paths:
       summary: Upload operational logs (batch)
       description: Batch upload of structured log entries.
       operationId: uploadLogs
+      parameters:
+        - $ref: "#/components/parameters/RequestIdHeader"
       requestBody:
         required: true
         content:
@@ -290,6 +327,9 @@ paths:
       responses:
         "200":
           description: Logs processed
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
@@ -311,6 +351,8 @@ paths:
       tags: [Query]
       summary: Query conversation records
       operationId: queryRecords
+      parameters:
+        - $ref: "#/components/parameters/RequestIdHeader"
       requestBody:
         required: true
         content:
@@ -320,6 +362,9 @@ paths:
       responses:
         "200":
           description: Records matching the query
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
@@ -338,6 +383,8 @@ paths:
       tags: [Query]
       summary: Query log entries
       operationId: queryLogs
+      parameters:
+        - $ref: "#/components/parameters/RequestIdHeader"
       requestBody:
         required: true
         content:
@@ -347,6 +394,9 @@ paths:
       responses:
         "200":
           description: Logs matching the query
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
@@ -368,6 +418,8 @@ paths:
       tags: [Export]
       summary: Export conversation records (JSON or CSV)
       operationId: exportRecords
+      parameters:
+        - $ref: "#/components/parameters/RequestIdHeader"
       requestBody:
         required: true
         content:
@@ -377,6 +429,9 @@ paths:
       responses:
         "200":
           description: Records exported
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
@@ -399,6 +454,8 @@ paths:
       tags: [Export]
       summary: Export logs (JSON or CSV)
       operationId: exportLogs
+      parameters:
+        - $ref: "#/components/parameters/RequestIdHeader"
       requestBody:
         required: true
         content:
@@ -408,6 +465,9 @@ paths:
       responses:
         "200":
           description: Logs exported
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
@@ -427,45 +487,83 @@ paths:
 
 components:
   securitySchemes:
-    tracerTokenHeader:
-      type: apiKey
-      in: header
-      name: tracer_token
-      description: |
-        Current authentication scheme. Send the tracer token in the
-        `tracer_token` HTTP header.
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: opaque
       description: |
-        Planned authentication scheme (Phase 2). Send the tracer token as
-        `Authorization: Bearer <token>`. Both schemes will work in parallel
-        during the deprecation window.
+        Recommended authentication scheme. Send the tracer token as
+        `Authorization: Bearer tk_<hex>`. RFC 6750 — works out of the
+        box with `curl`, `fetch`, generated clients, and most API
+        gateways.
+    tracerTokenHeader:
+      type: apiKey
+      in: header
+      name: tracer_token
+      description: |
+        Legacy authentication scheme, still supported. Send the tracer
+        token in the `tracer_token` HTTP header. Both schemes accept
+        the same `tk_<hex>` token and can be used interchangeably.
+        New integrations should prefer `bearerAuth`.
 
-  parameters: {}
+  parameters:
+    RequestIdHeader:
+      name: X-Request-ID
+      in: header
+      required: false
+      schema:
+        type: string
+        maxLength: 128
+        pattern: '^[\x21-\x7E][\x20-\x7E]{0,127}$'
+      description: |
+        Optional client-supplied request correlation ID. If provided,
+        the server preserves the value in the response `X-Request-ID`
+        header (round-trip). If omitted, the server generates a UUIDv4.
+        Useful for distributed traces and support correlation.
+
+  headers:
+    XRequestId:
+      schema:
+        type: string
+      description: |
+        Request correlation ID. Mirrors the value sent in the request
+        `X-Request-ID` header when present, otherwise a server-generated
+        UUIDv4. Always emitted on every response (200, 4xx, 5xx). Quote
+        this value when reporting issues.
 
   responses:
     BadRequest:
       description: Bad Request — required field missing or invalid payload
+      headers:
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
     Unauthorized:
       description: Unauthorized — invalid or missing tracer token
+      headers:
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
     Forbidden:
       description: Forbidden — token does not have access to the resource
+      headers:
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
     InternalError:
       description: Internal Server Error
+      headers:
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
       content:
         application/json:
           schema:
