@@ -552,13 +552,48 @@ process_whatsapp_message(
 
 ## Error Responses
 
-All endpoints return standard error responses:
+Every 4xx/5xx response carries a structured envelope:
 
 ```json
 {
-  "error": "Error message description"
+  "error": {
+    "code": "missing_token",
+    "message": "Missing tracer token (use `tracer_token` header or `Authorization: Bearer tk_...`)",
+    "request_id": "8c5d96f1-9e47-4c01-bb1e-8b5a7a2a1234"
+  }
 }
 ```
+
+- **`code`** — machine-readable, stable across versions. Branch on
+  this. Unknown codes should be treated as the generic family
+  (`bad_request`, `unauthorized`, `forbidden`, `not_found`,
+  `internal_error`).
+- **`message`** — human-readable. Subject to wording changes; do not
+  pattern-match.
+- **`request_id`** — mirror of the `X-Request-ID` response header.
+  Quote it in support tickets.
+
+Some endpoints add extra context fields next to the envelope (e.g.
+`similar_namespaces`, `unregistered_namespaces`, `details`, `issues`)
+— those are operation-specific. The `error` envelope itself always
+follows the shape above.
+
+### Canonical error codes
+
+| Family | Codes |
+|---|---|
+| 400 | `bad_request`, `missing_field`, `invalid_payload`, `namespace_taken`, `namespace_too_similar` |
+| 401 | `unauthorized`, `missing_token`, `invalid_token`, `token_expired`, `token_inactive` |
+| 403 | `forbidden` |
+| 404 | `not_found` |
+| 500 | `internal_error`, `encryption_error`, `anonymization_error` |
+
+### Migrating from the legacy bare-string body
+
+Pre-Phase-2 the body was a flat `{ "error": "..." }` string. Clients
+that read `response.error` as a truthy field continue to work. Clients
+that rendered `error` directly as a string should switch to
+`error.message` — see [`MIGRATION.md`](./MIGRATION.md#4-error-response-shape).
 
 ### HTTP Status Codes by Endpoint
 

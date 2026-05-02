@@ -150,6 +150,107 @@ log entry — no more "what time did this happen?" ping-pong.
 
 ---
 
+## 4. Error response shape
+
+Pre-Phase-2 every error response was a bare string under `error`:
+
+```json
+{ "error": "Missing tracer_token header" }
+```
+
+Phase 2 wraps it in a structured envelope:
+
+```json
+{
+  "error": {
+    "code": "missing_token",
+    "message": "Missing tracer token (use ...)",
+    "request_id": "8c5d96f1-..."
+  }
+}
+```
+
+### Why
+
+`error.code` is stable, machine-readable, and lets clients branch
+deterministically without fragile substring matching of the message.
+`error.request_id` mirrors the `X-Request-ID` response header so
+clients that log only the JSON body can still correlate with server
+logs.
+
+### Compatibility table
+
+| Client pattern | Behaviour after migration |
+|---|---|
+| `if (response.error)` (truthy check) | ✅ Works — `error` is still truthy (object instead of string) |
+| `console.log(response.error)` (renders as string) | ⚠️ Logs `[object Object]` — switch to `response.error.message` |
+| `response.error.code` (new) | ✅ Recommended — stable across versions |
+| `response.error.request_id` (new) | ✅ Use in support tickets and bug reports |
+
+### How
+
+#### JavaScript / TypeScript
+
+```diff
+  if (!res.ok) {
+    const body = await res.json();
+-   throw new Error(`MonkAI failed: ${body.error}`);
++   throw new Error(`MonkAI ${body.error.code}: ${body.error.message} (req ${body.error.request_id})`);
+  }
+```
+
+#### Python
+
+```diff
+  if r.status_code >= 400:
+      body = r.json()
+-     raise RuntimeError(f"MonkAI: {body['error']}")
++     err = body["error"]
++     raise RuntimeError(f"MonkAI {err['code']}: {err['message']} (req {err['request_id']})")
+```
+
+### Branching on `code`
+
+The recommended pattern is to branch on the canonical code, not on
+the message:
+
+```javascript
+const { error } = await res.json();
+switch (error.code) {
+  case "missing_token":
+  case "invalid_token":
+  case "token_expired":
+    return refreshToken();
+  case "namespace_taken":
+  case "namespace_too_similar":
+    return suggestAlternativeNamespace(error);
+  case "internal_error":
+    return retryWithBackoff();
+  default:
+    throw new Error(`Unhandled MonkAI error: ${error.code}`);
+}
+```
+
+The full list of canonical codes is in
+[`http_rest_api.md`](./http_rest_api.md#canonical-error-codes) and
+the OpenAPI [`Error` schema](./openapi.yaml).
+
+### Endpoints with extra context
+
+A few endpoints emit context fields **next to** the envelope:
+
+- `POST /namespace/register` (409 with `similar_namespaces` and
+  `suggestion`, or 500 with `details`)
+- `POST /records/upload` and `POST /logs/upload` on namespace gating
+  (403 with `unregistered_namespaces` and `namespaces_without_token`)
+- `PUT /anonymization-rules` (400 with `issues` array)
+
+The shape is `{ error: {...envelope}, ...extra_fields }` — the
+envelope is always the first key and always carries `code`, `message`,
+and `request_id`. Treat the extra fields as documented per endpoint.
+
+---
+
 ## Summary table
 
 | Change | Action | Required by |
@@ -157,6 +258,7 @@ log entry — no more "what time did this happen?" ping-pong.
 | URL → `/v1/` | Search-replace base URL | Optional, recommended |
 | Auth → `Bearer` | Replace one header | Optional, recommended |
 | `X-Request-ID` | Generate per call, log on errors | Optional, recommended for prod |
+| Error shape | Read `error.message` and `error.code` | Required if you rendered `error` as a string |
 
 ---
 

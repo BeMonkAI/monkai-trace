@@ -957,13 +957,63 @@ components:
     # ---------- Common ----------
     Error:
       type: object
+      description: |
+        Structured error envelope (Phase 2). Every 4xx/5xx response
+        from `/v1/` carries this shape. Some endpoints add extra context
+        fields (e.g. `similar_namespaces`, `unregistered_namespaces`,
+        `details`, `issues`) alongside the envelope — those are
+        operation-specific and documented per response, but `error.code`
+        is always populated and is the recommended branching key.
+      required: [error]
       properties:
         error:
-          type: string
-          description: Error message description (legacy flat shape)
+          type: object
+          required: [code, message, request_id]
+          properties:
+            code:
+              type: string
+              description: |
+                Machine-readable error code. Stable across versions —
+                clients should branch on this rather than substring-match
+                `message`. New codes may be added; clients should treat
+                unknown codes as the generic family code (the same first
+                segment, e.g. `bad_request` for any 4xx the client
+                doesn't recognise).
+              enum:
+                - bad_request
+                - missing_field
+                - invalid_payload
+                - namespace_taken
+                - namespace_too_similar
+                - unauthorized
+                - missing_token
+                - invalid_token
+                - token_expired
+                - token_inactive
+                - forbidden
+                - not_found
+                - internal_error
+                - encryption_error
+                - anonymization_error
+              example: missing_token
+            message:
+              type: string
+              description: Human-readable message. Subject to wording
+                changes — do not pattern-match.
+              example: "Missing tracer token (use `tracer_token` header or `Authorization: Bearer tk_...`)"
+            request_id:
+              type: string
+              description: |
+                Mirror of the `X-Request-ID` response header. Quote this
+                value in support tickets so we can pinpoint the exact
+                server log entry.
+              example: "8c5d96f1-9e47-4c01-bb1e-8b5a7a2a1234"
       additionalProperties: true
       examples:
-        - error: "Invalid tracer_token"
+        - error:
+            code: missing_token
+            message: "Missing tracer token (use `tracer_token` header or `Authorization: Bearer tk_...`)"
+            request_id: "8c5d96f1-9e47-4c01-bb1e-8b5a7a2a1234"
 
 
     # ---------- Sessions ----------
