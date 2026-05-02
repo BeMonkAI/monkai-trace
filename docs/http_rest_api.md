@@ -57,6 +57,80 @@ curl -i -H "Authorization: Bearer tk_YOUR_TOKEN" \
 #   x-request-id: my-trace-1
 ```
 
+## Rate Limiting
+
+Every authenticated request to a rate-limited endpoint returns
+quota headers, regardless of status. When the per-token quota is
+exhausted the server returns `429 rate_limit_exceeded` with a
+`Retry-After` hint.
+
+### Limits (per `tracer_token`, per minute, fixed window)
+
+| Bucket | Limit | Endpoints |
+|---|---:|---|
+| `traces` | 600 | `POST /v1/traces/llm`, `/tool`, `/handoff`, `/log` |
+| `traces_batch` | 60 | `POST /v1/traces/batch` (each batch holds up to 100 items) |
+| `bulk_upload` | 60 | `POST /v1/records/upload`, `/v1/logs/upload` |
+| `sessions` | 600 | `POST /v1/sessions/create`, `/v1/sessions/get-or-create` |
+| `query` | 60 | `POST /v1/record_query`, `/v1/logs/query`, `/v1/records/export`, `/v1/logs/export` |
+| `rules` | 60 | `GET` and `PUT /v1/anonymization-rules` |
+
+`GET /v1/health` is intentionally **unlimited** — monitors and
+load balancers can ping it as often as they need.
+
+### Headers
+
+Every response from a rate-limited endpoint carries:
+
+```
+X-RateLimit-Limit: 600
+X-RateLimit-Remaining: 599
+X-RateLimit-Reset: 47        ← seconds until window resets
+RateLimit-Limit: 600
+RateLimit-Remaining: 599
+RateLimit-Reset: 47
+```
+
+Both legacy `X-RateLimit-*` and the modern IETF draft `RateLimit-*`
+names are emitted so old and new HTTP clients both see them.
+
+### `429 rate_limit_exceeded`
+
+```http
+HTTP/2 429 Too Many Requests
+X-RateLimit-Limit: 600
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 12
+Retry-After: 12
+Content-Type: application/json
+
+{
+  "error": {
+    "code": "rate_limit_exceeded",
+    "message": "Rate limit exceeded for bucket \"traces\". Limit 600/min — retry in 12s.",
+    "request_id": "8c5d96f1-..."
+  }
+}
+```
+
+### Recommended client pattern
+
+Wait `Retry-After` (or `RateLimit-Reset`) seconds before retrying.
+Both headers carry the same value on a 429.
+
+```javascript
+async function postWithRateLimit(url, body, opts = {}) {
+  const res = await fetch(url, opts);
+  if (res.status !== 429) return res;
+  const wait = parseInt(res.headers.get("Retry-After") ?? "1", 10);
+  await new Promise(r => setTimeout(r, wait * 1000));
+  return postWithRateLimit(url, body, opts);  // retry once
+}
+```
+
+For long-running batch jobs, watch `X-RateLimit-Remaining` to
+self-pace before hitting 429.
+
 ## Idempotency — `Idempotency-Key`
 
 Trace endpoints (`/v1/traces/llm`, `/tool`, `/handoff`, `/log`,

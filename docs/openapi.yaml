@@ -150,6 +150,12 @@ paths:
           headers:
             X-Request-ID:
               $ref: "#/components/headers/XRequestId"
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
           content:
             application/json:
               schema:
@@ -163,6 +169,8 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -219,6 +227,12 @@ paths:
           headers:
             X-Request-ID:
               $ref: "#/components/headers/XRequestId"
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
           content:
             application/json:
               schema:
@@ -235,6 +249,8 @@ paths:
   # ============================================================
   # TRACES (language-agnostic surface)
   # ============================================================
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -292,6 +308,12 @@ paths:
               $ref: '#/components/headers/IdempotencyReplay'
             Idempotency-Original-Request-ID:
               $ref: '#/components/headers/IdempotencyOriginalRequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
           content:
             application/json:
               schema:
@@ -307,6 +329,8 @@ paths:
 
         '422':
           $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -363,6 +387,12 @@ paths:
               $ref: '#/components/headers/IdempotencyReplay'
             Idempotency-Original-Request-ID:
               $ref: '#/components/headers/IdempotencyOriginalRequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
           content:
             application/json:
               schema:
@@ -378,6 +408,8 @@ paths:
 
         '422':
           $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -434,6 +466,12 @@ paths:
               $ref: '#/components/headers/IdempotencyReplay'
             Idempotency-Original-Request-ID:
               $ref: '#/components/headers/IdempotencyOriginalRequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
           content:
             application/json:
               schema:
@@ -449,6 +487,8 @@ paths:
 
         '422':
           $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -507,6 +547,12 @@ paths:
               $ref: '#/components/headers/IdempotencyReplay'
             Idempotency-Original-Request-ID:
               $ref: '#/components/headers/IdempotencyOriginalRequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
           content:
             application/json:
               schema:
@@ -525,6 +571,8 @@ paths:
   # ============================================================
         '422':
           $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -598,6 +646,12 @@ paths:
               $ref: '#/components/headers/IdempotencyReplay'
             Idempotency-Original-Request-ID:
               $ref: '#/components/headers/IdempotencyOriginalRequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
           content:
             application/json:
               schema:
@@ -613,6 +667,8 @@ paths:
 
         '422':
           $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -669,6 +725,12 @@ paths:
           headers:
             X-Request-ID:
               $ref: "#/components/headers/XRequestId"
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
           content:
             application/json:
               schema:
@@ -682,6 +744,8 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -734,6 +798,12 @@ paths:
           headers:
             X-Request-ID:
               $ref: "#/components/headers/XRequestId"
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
           content:
             application/json:
               schema:
@@ -750,6 +820,8 @@ paths:
   # ============================================================
   # QUERY
   # ============================================================
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -801,6 +873,12 @@ paths:
           headers:
             X-Request-ID:
               $ref: "#/components/headers/XRequestId"
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
           content:
             application/json:
               schema:
@@ -814,6 +892,8 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -865,6 +945,12 @@ paths:
           headers:
             X-Request-ID:
               $ref: "#/components/headers/XRequestId"
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
           content:
             application/json:
               schema:
@@ -881,6 +967,8 @@ paths:
   # ============================================================
   # EXPORT
   # ============================================================
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -932,6 +1020,12 @@ paths:
           headers:
             X-Request-ID:
               $ref: "#/components/headers/XRequestId"
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
           content:
             application/json:
               schema:
@@ -949,6 +1043,8 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -1000,6 +1096,12 @@ paths:
           headers:
             X-Request-ID:
               $ref: "#/components/headers/XRequestId"
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
           content:
             application/json:
               schema:
@@ -1017,6 +1119,8 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
       x-codeSamples:
         - lang: Shell
           label: curl
@@ -1141,6 +1245,46 @@ components:
         request whose result is being returned. Use it to find the
         first request in server logs.
 
+    RateLimitLimit:
+      schema:
+        type: integer
+        minimum: 0
+      description: |
+        Per-token request limit for the current bucket, in
+        requests/minute. Bucket is determined by the route — see the
+        narrative docs for the table. Emitted on every response from
+        a rate-limited endpoint (200, 4xx, 5xx). The response also
+        carries the modern `RateLimit-Limit` header (IETF draft) with
+        the same value.
+
+    RateLimitRemaining:
+      schema:
+        type: integer
+        minimum: 0
+      description: |
+        Requests still available in the current 1-minute window.
+        Reaches `0` on the request that exhausts the quota; the
+        next call returns `429`. Also emitted as `RateLimit-Remaining`.
+
+    RateLimitReset:
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 60
+      description: |
+        Seconds until the current 1-minute window resets and the
+        full quota is restored. Always between 0 and 60. Also
+        emitted as `RateLimit-Reset`.
+
+    RetryAfter:
+      schema:
+        type: integer
+        minimum: 0
+      description: |
+        Seconds the client should wait before retrying. Emitted with
+        `429 rate_limit_exceeded` (RFC 6585). Identical to
+        `RateLimit-Reset` on `429` responses.
+
   responses:
     BadRequest:
       description: Bad Request — required field missing or invalid payload
@@ -1177,6 +1321,28 @@ components:
       headers:
         X-Request-ID:
           $ref: "#/components/headers/XRequestId"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    TooManyRequests:
+      description: |
+        Per-token rate limit exceeded for the bucket the route belongs
+        to. The error envelope carries `code: "rate_limit_exceeded"`.
+        Wait `Retry-After` seconds (or `RateLimit-Reset` — they're
+        identical here) and retry. Limits are per-token, per-minute,
+        fixed window.
+      headers:
+        X-Request-ID:
+          $ref: "#/components/headers/XRequestId"
+        X-RateLimit-Limit:
+          $ref: "#/components/headers/RateLimitLimit"
+        X-RateLimit-Remaining:
+          $ref: "#/components/headers/RateLimitRemaining"
+        X-RateLimit-Reset:
+          $ref: "#/components/headers/RateLimitReset"
+        Retry-After:
+          $ref: "#/components/headers/RetryAfter"
       content:
         application/json:
           schema:
@@ -1388,6 +1554,7 @@ components:
                 - encryption_error
                 - anonymization_error
                 - idempotency_key_conflict
+                - rate_limit_exceeded
               example: missing_token
             message:
               type: string
