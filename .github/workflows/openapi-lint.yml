@@ -5,11 +5,13 @@ on:
     branches: [main, develop]
     paths:
       - "docs/openapi.yaml"
+      - "docs/postman_collection.json"
       - ".github/workflows/openapi-lint.yml"
   pull_request:
     branches: [main, develop]
     paths:
       - "docs/openapi.yaml"
+      - "docs/postman_collection.json"
       - ".github/workflows/openapi-lint.yml"
 
 jobs:
@@ -89,3 +91,40 @@ jobs:
           test -d /tmp/monkai-trace-ts/apis
           test -d /tmp/monkai-trace-ts/models
           echo "OK — generator emitted runtime + apis + models"
+
+  postman-collection:
+    name: Postman collection sanity
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate committed collection structure
+        run: |
+          # docs/postman_collection.json is generated from docs/openapi.yaml via:
+          #   npx openapi-to-postmanv2 -s docs/openapi.yaml -o docs/postman_collection.json -p -O folderStrategy=Tags
+          # The generator embeds randomly-faked values for free-form fields,
+          # so a strict diff isn't reliable. Instead we sanity-check:
+          #   - file is valid JSON
+          #   - it claims Postman v2.1.0 schema
+          #   - it has at least one folder with at least one request
+          node - <<'JS'
+          const fs = require('fs');
+          const c = JSON.parse(fs.readFileSync('docs/postman_collection.json', 'utf8'));
+          if (!c.info?.schema?.includes('schema.getpostman.com/json/collection/v2.1.0')) {
+            console.error('Not a Postman v2.1.0 collection');
+            process.exit(1);
+          }
+          const folders = c.item || [];
+          const requests = folders.flatMap(f => f.item || []).length;
+          if (folders.length < 1 || requests < 6) {
+            console.error(`Suspicious collection size: ${folders.length} folders / ${requests} requests`);
+            process.exit(1);
+          }
+          console.log(`OK — Postman v2.1.0, ${folders.length} folders, ${requests} requests.`);
+          JS

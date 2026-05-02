@@ -6,29 +6,45 @@
     <title>MonkAI Trace API — Reference</title>
     <link rel="icon" href="data:," />
     <link
+      href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700"
       rel="stylesheet"
-      href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"
     />
     <style>
       html, body { margin: 0; padding: 0; }
-      .topbar { display: none; }
+      .topbar {
+        display: flex;
+        gap: 16px;
+        padding: 12px 24px;
+        background: #1a1a1a;
+        color: #fafafa;
+        font-family: Montserrat, system-ui, sans-serif;
+        font-size: 14px;
+        align-items: center;
+        border-bottom: 1px solid #333;
+      }
+      .topbar a {
+        color: #fafafa;
+        text-decoration: none;
+        opacity: 0.8;
+        transition: opacity 120ms ease;
+      }
+      .topbar a:hover { opacity: 1; }
+      .topbar .brand { font-weight: 700; margin-right: 8px; }
+      .topbar .spacer { flex: 1; }
     </style>
   </head>
   <body>
-    <div id="swagger-ui"></div>
-    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
-    <script>
-      window.addEventListener("load", () => {
-        window.ui = SwaggerUIBundle({
-          url: "./openapi.yaml",
-          dom_id: "#swagger-ui",
-          deepLinking: true,
-          docExpansion: "list",
-          filter: true,
-          tryItOutEnabled: false,
-          syntaxHighlight: { theme: "monokai" }
-        });
-      });
-    </script>
+    <nav class="topbar">
+      <span class="brand">MonkAI Trace API</span>
+      <a href="./MIGRATION.md">Migration guide</a>
+      <a href="./API_CHANGELOG.md">Changelog</a>
+      <a href="./http_rest_api.md">Narrative docs</a>
+      <a href="https://github.com/BeMonkAI/monkai-trace/blob/main/examples/monkai_trace.http">.http collection</a>
+      <span class="spacer"></span>
+      <a href="./openapi.yaml" download>Download spec</a>
+      <a href="https://github.com/BeMonkAI/monkai-trace">GitHub</a>
+    </nav>
+    <redoc spec-url="./openapi.yaml"></redoc>
+    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
   </body>
 </html>
