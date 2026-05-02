@@ -1,0 +1,9 @@
+extends:
+  - recommended
+
+rules:
+  # Health endpoints (GET / HEAD /health) legitimately have no 4xx
+  # responses — they're auth-free liveness probes that either return
+  # 200 or fail at the network level. Redocly's built-in rule wants
+  # every operation to document a 4xx, which adds noise here.
+  operation-4xx-response: off

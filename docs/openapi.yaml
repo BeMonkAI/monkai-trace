@@ -35,6 +35,8 @@ servers:
     description: Production (planned custom domain — Phase 2)
 
 tags:
+  - name: Health
+    description: Liveness check (no auth required).
   - name: Sessions
     description: Manage conversation sessions.
   - name: Traces
@@ -53,6 +55,67 @@ security:
   - tracerTokenHeader: []
 
 paths:
+  # ============================================================
+  # HEALTH (no auth)
+  # ============================================================
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness check
+      description: |
+        Cheap, unauthenticated liveness probe. Returns `200` with a small
+        JSON body when the edge function is responsive. Use it for
+        monitors, uptime checks, and post-deploy smoke tests. Also
+        supports `HEAD` (RFC 7231) — returns the same headers without
+        a body so HEAD-based monitors don't waste bandwidth.
+      operationId: healthCheck
+      security: []
+      responses:
+        "200":
+          description: Service is responsive
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl "https://api.monkai.ai/trace/v1/health"
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies, no auth required
+            const res = await fetch("https://api.monkai.ai/trace/v1/health", { method: "GET" });
+            console.log(res.status, res.headers.get("x-request-id"));
+        - lang: Python
+          label: Python
+          source: |
+            import requests
+            r = requests.get("https://api.monkai.ai/trace/v1/health")
+            print(r.status_code, r.headers["x-request-id"])
+    head:
+      tags: [Health]
+      summary: Liveness check (HEAD variant)
+      description: |
+        Same semantics as `GET /health` but returns no body. Useful for
+        bandwidth-sensitive monitors.
+      operationId: healthCheckHead
+      security: []
+      responses:
+        "200":
+          description: Service is responsive (no body)
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
   # ============================================================
   # SESSIONS
   # ============================================================
@@ -463,6 +526,87 @@ paths:
                 "https://api.monkai.ai/trace/v1/traces/log",
                 headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
                 json={"session_id":"sess_abc","level":"info","message":"step 5 done"},
+            )
+            print(r.headers["x-request-id"], r.json())
+  /traces/batch:
+    post:
+      tags: [Traces]
+      summary: Batch trace endpoint (mixed types)
+      description: |
+        Submit up to 100 traces in a single request. Each item carries a
+        `type` field (`llm` | `tool` | `handoff` | `log`) and the same
+        body shape as the per-type endpoint, minus the `type` field.
+
+        **Partial success is allowed.** When the outer envelope is
+        well-formed, the response is always `200`; per-item status is
+        reported in the `results` array (`status: "ok"` or
+        `status: "error"`). The outer `success` is `true` only when
+        every item succeeded.
+
+        Use this whenever a single client interaction produces multiple
+        traces (an LLM call followed by a tool call, plus a log entry,
+        for example) — it cuts N round-trips down to one.
+      operationId: traceBatch
+      parameters:
+        - $ref: "#/components/parameters/RequestIdHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchTraceRequest"
+      responses:
+        "200":
+          description: |
+            Batch processed. Inspect `results` for per-item status.
+            `failed > 0` means at least one item errored — the others
+            were still recorded.
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchTraceResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl -X POST "https://api.monkai.ai/trace/v1/traces/batch" \
+              -H "Authorization: Bearer $MONKAI_TRACER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "X-Request-ID: $(uuidgen)" \
+              -d '{"traces":[{"type":"llm","session_id":"sess_abc","model":"gpt-4","input":{"messages":[{"role":"user","content":"hi"}]},"output":{"content":"hello"}},{"type":"tool","session_id":"sess_abc","tool_name":"get_weather","arguments":{"city":"SP"},"result":{"temp":24}},{"type":"log","session_id":"sess_abc","level":"info","message":"done"}]}'
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies
+            const res = await fetch("https://api.monkai.ai/trace/v1/traces/batch", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.MONKAI_TRACER_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({"traces":[{"type":"llm","session_id":"sess_abc","model":"gpt-4","input":{"messages":[{"role":"user","content":"hi"}]},"output":{"content":"hello"}},{"type":"tool","session_id":"sess_abc","tool_name":"get_weather","arguments":{"city":"SP"},"result":{"temp":24}},{"type":"log","session_id":"sess_abc","level":"info","message":"done"}]})
+            });
+            console.log(res.headers.get("x-request-id"), await res.json());
+        - lang: Python
+          label: Python
+          source: |
+            import os, requests
+            r = requests.post(
+                "https://api.monkai.ai/trace/v1/traces/batch",
+                headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
+                json={"traces":[{"type":"llm","session_id":"sess_abc","model":"gpt-4","input":{"messages":[{"role":"user","content":"hi"}]},"output":{"content":"hello"}},{"type":"tool","session_id":"sess_abc","tool_name":"get_weather","arguments":{"city":"SP"},"result":{"temp":24}},{"type":"log","session_id":"sess_abc","level":"info","message":"done"}]},
             )
             print(r.headers["x-request-id"], r.json())
   /records/upload:
@@ -955,6 +1099,160 @@ components:
 
   schemas:
     # ---------- Common ----------
+    HealthResponse:
+      type: object
+      required: [status, service, api_version, timestamp]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+          description: Always `ok` when the endpoint responds.
+        service:
+          type: string
+          example: monkai-trace
+        api_version:
+          type: string
+          description: |
+            Detected URL version. `v1` for `/v1/health`; the legacy
+            unversioned `/health` also reports `v1` (it acts as a v1
+            alias).
+          example: v1
+        timestamp:
+          type: string
+          format: date-time
+          description: Server-side timestamp at the moment of the response.
+
+    BatchTraceItem:
+      type: object
+      required: [type]
+      discriminator:
+        propertyName: type
+        mapping:
+          llm: "#/components/schemas/BatchTraceItemLlm"
+          tool: "#/components/schemas/BatchTraceItemTool"
+          handoff: "#/components/schemas/BatchTraceItemHandoff"
+          log: "#/components/schemas/BatchTraceItemLog"
+      properties:
+        type:
+          type: string
+          enum: [llm, tool, handoff, log]
+          description: Selects the per-type body shape.
+      oneOf:
+        - $ref: "#/components/schemas/BatchTraceItemLlm"
+        - $ref: "#/components/schemas/BatchTraceItemTool"
+        - $ref: "#/components/schemas/BatchTraceItemHandoff"
+        - $ref: "#/components/schemas/BatchTraceItemLog"
+
+    BatchTraceItemLlm:
+      allOf:
+        - type: object
+          required: [type]
+          properties:
+            type:
+              type: string
+              const: llm
+        - $ref: "#/components/schemas/LlmTraceRequest"
+
+    BatchTraceItemTool:
+      allOf:
+        - type: object
+          required: [type]
+          properties:
+            type:
+              type: string
+              const: tool
+        - $ref: "#/components/schemas/ToolTraceRequest"
+
+    BatchTraceItemHandoff:
+      allOf:
+        - type: object
+          required: [type]
+          properties:
+            type:
+              type: string
+              const: handoff
+        - $ref: "#/components/schemas/HandoffTraceRequest"
+
+    BatchTraceItemLog:
+      allOf:
+        - type: object
+          required: [type]
+          properties:
+            type:
+              type: string
+              const: log
+        - $ref: "#/components/schemas/LogTraceRequest"
+
+    BatchTraceRequest:
+      type: object
+      required: [traces]
+      properties:
+        traces:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/BatchTraceItem"
+
+    BatchTraceResultItem:
+      type: object
+      required: [index, type, status]
+      properties:
+        index:
+          type: integer
+          minimum: 0
+          description: Position in the request `traces` array.
+        type:
+          type: string
+          enum: [llm, tool, handoff, log]
+        status:
+          type: string
+          enum: [ok, error]
+        result:
+          description: |
+            Present when `status === "ok"`. Shape mirrors the per-type
+            response (`LlmTraceResponse`, `ToolTraceResponse`, etc.)
+            minus the `success` flag.
+          oneOf:
+            - $ref: "#/components/schemas/LlmTraceResponse"
+            - $ref: "#/components/schemas/ToolTraceResponse"
+            - $ref: "#/components/schemas/HandoffTraceResponse"
+            - $ref: "#/components/schemas/LogTraceResponse"
+        error:
+          description: |
+            Present when `status === "error"`. Same shape as the
+            error envelope, minus the wrapping `error` key.
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+
+    BatchTraceResponse:
+      type: object
+      required: [success, total, succeeded, failed, results]
+      properties:
+        success:
+          type: boolean
+          description: |
+            `true` only when every item succeeded. Inspect `results`
+            for per-item status.
+        total:
+          type: integer
+          minimum: 0
+        succeeded:
+          type: integer
+          minimum: 0
+        failed:
+          type: integer
+          minimum: 0
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/BatchTraceResultItem"
+
     Error:
       type: object
       description: |
@@ -998,8 +1296,7 @@ components:
               example: missing_token
             message:
               type: string
-              description: Human-readable message. Subject to wording
-                changes — do not pattern-match.
+              description: Human-readable message. Subject to wording changes — do not pattern-match.
               example: "Missing tracer token (use `tracer_token` header or `Authorization: Bearer tk_...`)"
             request_id:
               type: string
