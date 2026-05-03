@@ -22,7 +22,7 @@ from pathlib import Path
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import LiteralScalarString
 
-API_BASE = "https://api.monkai.ai/trace/v1"
+API_BASE = "https://api.monkai.com.br/trace/v1"
 LEGACY_BASE = (
     "https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1"
 )
