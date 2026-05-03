@@ -1,0 +1,10 @@
+{
+  "name": "monkai-trace-proxy",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Public proxy for the MonkAI Trace API at https://api.monkai.com.br/.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  }
+}
