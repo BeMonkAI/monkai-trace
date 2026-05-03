@@ -12,8 +12,27 @@ keep working during a deprecation window.
 
 ## [Unreleased]
 
-### Planned (Phase 2 — remaining)
-- Custom domain `https://api.monkai.ai/trace/v1`.
+_All Phase 2 and Phase 3 items shipped. The roadmap is currently **complete**._
+
+## [v1.5] — 2026-05-03
+
+### Added
+- **Custom domain** `https://api.monkai.com.br/trace/v1`. Closes
+  the last item of Phase 2 ([#11](https://github.com/BeMonkAI/monkai-trace/issues/11)).
+  - Implemented as a Vercel Edge proxy (~80-line stateless handler)
+    in [`vercel-proxy/`](../vercel-proxy/) that forwards `/trace/*`
+    to the underlying Supabase edge function. Same Web Standards
+    code we already use; portable to any other edge platform.
+  - DNS: CNAME `api.monkai.com.br` → `cname.vercel-dns.com`.
+  - TLS: Let's Encrypt provisioned automatically by Vercel; auto-renewed.
+  - Reference: [BeMonkAI/monkai-trace#29](https://github.com/BeMonkAI/monkai-trace/pull/29) (proxy code).
+- **OpenAPI server entries reordered**: `https://api.monkai.com.br/trace/v1`
+  is now the recommended primary; the direct Supabase URLs are
+  retained as fallbacks for clients that pin to them.
+
+### Notes
+- Future migration off Vercel changes only the proxy upstream;
+  clients keep the same `api.monkai.com.br/trace/v1/*` URLs.
 
 ## [v1.4] — 2026-05-02
 
