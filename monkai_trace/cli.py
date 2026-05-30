@@ -30,7 +30,11 @@ CLAUDE_SETTINGS = Path.home() / ".claude" / "settings.json"
 # Stable marker used to detect a MonkAI Trace hook regardless of how the
 # command path is resolved (bare name, absolute path, or `python -m`).
 HOOK_MARKER = "claude-hook"
-DEFAULT_EVENT = "SessionEnd"
+# Register on both by default: ``Stop`` fires after every assistant turn
+# (near-realtime per-turn uploads) and ``SessionEnd`` is the end-of-session
+# safety net for sessions that end without a final Stop. The per-session
+# incremental offset makes the overlap a no-op (no duplicate turns).
+DEFAULT_EVENTS = ["Stop", "SessionEnd"]
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -51,9 +55,12 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_install.add_argument(
         "--event",
-        default=DEFAULT_EVENT,
-        help=f"Hook event to register on (default: {DEFAULT_EVENT}). "
-        "Use 'Stop' for near-realtime per-turn uploads.",
+        nargs="+",
+        metavar="EVENT",
+        default=DEFAULT_EVENTS,
+        help="Hook event(s) to register on (default: Stop SessionEnd). "
+        "'Stop' gives near-realtime per-turn uploads; 'SessionEnd' is the "
+        "end-of-session safety net. Pass one or more, e.g. --event Stop.",
     )
     p_install.add_argument(
         "--token-file",
@@ -131,22 +138,29 @@ def _cmd_claude_hook() -> int:
     return run_hook()
 
 
-def _cmd_install_hook(event: str, token_file: Optional[str]) -> int:
+def _cmd_install_hook(events: List[str], token_file: Optional[str]) -> int:
     from .integrations.claude_code import resolve_token
 
     settings = _load_settings(CLAUDE_SETTINGS)
     hooks = settings.setdefault("hooks", {})
-    event_hooks = hooks.setdefault(event, [])
-
-    if _hook_present(event_hooks):
-        print(f"MonkAI Trace hook already registered on {event}.")
-        return 0
-
     command = _resolve_hook_command(token_file)
-    event_hooks.append({"hooks": [{"type": "command", "command": command}]})
-    _save_settings(CLAUDE_SETTINGS, settings)
-    print(f"Registered MonkAI Trace hook on {event} in {CLAUDE_SETTINGS}.")
-    print(f"  command: {command}")
+
+    registered: List[str] = []
+    for event in events:
+        event_hooks = hooks.setdefault(event, [])
+        if _hook_present(event_hooks):
+            print(f"MonkAI Trace hook already registered on {event}.")
+            continue
+        event_hooks.append({"hooks": [{"type": "command", "command": command}]})
+        registered.append(event)
+
+    if registered:
+        _save_settings(CLAUDE_SETTINGS, settings)
+        print(
+            f"Registered MonkAI Trace hook on {', '.join(registered)} "
+            f"in {CLAUDE_SETTINGS}."
+        )
+        print(f"  command: {command}")
 
     # Robustness: warn now if the hook would have no token at fire time.
     if token_file is None and not resolve_token():
