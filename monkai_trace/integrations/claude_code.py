@@ -34,7 +34,7 @@ Example:
 import json
 import logging
 import os
-from datetime import datetime
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -95,9 +95,7 @@ class ClaudeCodeTracer:
 
         if self.auto_upload:
             result = self.client.upload_records_batch(records)
-            logger.info(
-                f"Uploaded {result['total_inserted']} records from {path.name}"
-            )
+            logger.info(f"Uploaded {result['total_inserted']} records from {path.name}")
             return result
 
         self._records.extend(records)
@@ -180,12 +178,14 @@ class ClaudeCodeTracer:
             sessions = list(project_dir.glob("*.jsonl"))
             # Decode project path: -Users-me-project -> /Users/me/project
             decoded_path = "/" + project_dir.name.lstrip("-").replace("-", "/")
-            projects.append({
-                "encoded_name": project_dir.name,
-                "decoded_path": decoded_path,
-                "session_count": len(sessions),
-                "dir": str(project_dir),
-            })
+            projects.append(
+                {
+                    "encoded_name": project_dir.name,
+                    "decoded_path": decoded_path,
+                    "session_count": len(sessions),
+                    "dir": str(project_dir),
+                }
+            )
         return projects
 
     def flush(self) -> Dict:
@@ -220,11 +220,13 @@ class ClaudeCodeTracer:
             messages = []
 
             # User message
-            messages.append(Message(
-                role="user",
-                content=user_msg.get("content", ""),
-                sender="user",
-            ))
+            messages.append(
+                Message(
+                    role="user",
+                    content=user_msg.get("content", ""),
+                    sender="user",
+                )
+            )
 
             # Assistant messages (text, tool_use, etc.)
             for amsg in assistant_msgs:
@@ -240,11 +242,13 @@ class ClaudeCodeTracer:
                         if btype == "text":
                             text_parts.append(block.get("text", ""))
                         elif btype == "tool_use":
-                            tool_calls.append({
-                                "name": block.get("name", ""),
-                                "arguments": block.get("input", {}),
-                                "id": block.get("id", ""),
-                            })
+                            tool_calls.append(
+                                {
+                                    "name": block.get("name", ""),
+                                    "arguments": block.get("input", {}),
+                                    "id": block.get("id", ""),
+                                }
+                            )
                         # Skip thinking blocks
 
                 content = "\n".join(text_parts) if text_parts else None
@@ -260,13 +264,15 @@ class ClaudeCodeTracer:
 
                 # Add tool messages for each tool call
                 for tc in tool_calls:
-                    messages.append(Message(
-                        role="tool",
-                        content=f"Tool: {tc['name']}",
-                        sender=self.agent_name,
-                        tool_name=tc["name"],
-                        tool_calls=[tc],
-                    ))
+                    messages.append(
+                        Message(
+                            role="tool",
+                            content=f"Tool: {tc['name']}",
+                            sender=self.agent_name,
+                            tool_name=tc["name"],
+                            tool_calls=[tc],
+                        )
+                    )
 
             # Build token usage
             token_usage = TokenUsage.from_anthropic_usage(usage) if usage else TokenUsage()
@@ -291,14 +297,10 @@ class ClaudeCodeTracer:
             )
             records.append(record)
 
-        logger.info(
-            f"Parsed {len(records)} conversation turns from {path.name}"
-        )
+        logger.info(f"Parsed {len(records)} conversation turns from {path.name}")
         return records
 
-    def _group_turns(
-        self, lines: List[Dict]
-    ) -> List[Tuple[Dict, List[Dict], Dict]]:
+    def _group_turns(self, lines: List[Dict]) -> List[Tuple[Dict, List[Dict], Dict]]:
         """
         Group JSONL lines into conversation turns.
 
@@ -317,11 +319,13 @@ class ClaudeCodeTracer:
             if msg_type == "user":
                 # New turn starts
                 if current_user is not None and current_assistants:
-                    turns.append((
-                        current_user,
-                        current_assistants,
-                        current_usage,
-                    ))
+                    turns.append(
+                        (
+                            current_user,
+                            current_assistants,
+                            current_usage,
+                        )
+                    )
 
                 user_message = line.get("message", {})
                 content = user_message.get("content", "")
@@ -360,10 +364,12 @@ class ClaudeCodeTracer:
                                 break
 
                 if has_content:
-                    current_assistants.append({
-                        "content": content,
-                        "model": model,
-                    })
+                    current_assistants.append(
+                        {
+                            "content": content,
+                            "model": model,
+                        }
+                    )
 
         # Don't forget the last turn
         if current_user is not None and current_assistants:
@@ -401,3 +407,61 @@ class ClaudeCodeTracer:
         Example: '/Users/arthurvaz/Desktop' -> '-Users-arthurvaz-Desktop'
         """
         return path.replace("/", "-")
+
+
+# Default public base URL for the SessionEnd hook (Vercel proxy → Supabase).
+DEFAULT_HOOK_BASE_URL = "https://api.monkai.com.br/trace/v1"
+
+
+def run_hook(stdin=None) -> int:
+    """Entrypoint for the Claude Code ``SessionEnd`` hook.
+
+    Reads the hook payload as JSON from stdin (Claude Code provides
+    ``{session_id, transcript_path, cwd, reason, ...}``), then parses and
+    uploads the full session transcript to MonkAI Trace.
+
+    Configuration is resolved from environment variables so the hook can be
+    invoked with zero arguments:
+
+    - ``MONKAI_TRACE_TOKEN`` (required): tracer token (``tk_...``).
+    - ``MONKAI_TRACE_NAMESPACE`` (optional, default ``claude-code``).
+    - ``MONKAI_TRACE_BASE_URL`` (optional, default the public proxy).
+
+    This function NEVER raises: a hook that fails must not break the user's
+    Claude Code session. All failures are logged and swallowed, returning 0.
+
+    Returns:
+        Always 0 (success exit code for the hook runner).
+    """
+    try:
+        raw = (stdin or sys.stdin).read()
+        payload = json.loads(raw) if raw.strip() else {}
+    except (json.JSONDecodeError, ValueError, OSError) as exc:
+        logger.warning("Could not read Claude Code hook payload: %s", exc)
+        return 0
+
+    transcript = payload.get("transcript_path")
+    if not transcript:
+        logger.info("Hook payload has no transcript_path; nothing to upload")
+        return 0
+
+    token = os.environ.get("MONKAI_TRACE_TOKEN")
+    if not token:
+        logger.warning("MONKAI_TRACE_TOKEN not set; skipping Claude Code trace upload")
+        return 0
+
+    try:
+        tracer = ClaudeCodeTracer(
+            tracer_token=token,
+            namespace=os.environ.get("MONKAI_TRACE_NAMESPACE", "claude-code"),
+            base_url=os.environ.get("MONKAI_TRACE_BASE_URL", DEFAULT_HOOK_BASE_URL),
+        )
+        result = tracer.upload_session(transcript)
+        logger.info(
+            "Claude Code session uploaded: %s records inserted",
+            result.get("total_inserted", 0),
+        )
+    except Exception:  # noqa: BLE001 - hook must never crash the session
+        logger.exception("Failed to upload Claude Code session trace")
+
+    return 0
