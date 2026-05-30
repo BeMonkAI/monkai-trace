@@ -402,6 +402,13 @@ pytest tests/ -x -q
 
 ## Changelog
 
+### v0.7.0
+
+- **Incremental upload (per-session offsets)** — `ClaudeCodeTracer.upload_session_incremental()` uploads only the turns not sent before, persisting an offset per `session_id` under `~/.monkai_trace/` (override with `MONKAI_TRACE_STATE_DIR`). The hook now uses it, so a session can fire on every Claude Code `Stop` (near-realtime) without duplicating, and resumed `SessionEnd` is safe too.
+- **`monkai-trace install-hook` is robust** — registers an absolute, resolvable command (`shutil.which` / `python -m monkai_trace.cli`) so the hook runs even when `monkai-trace` is not on the hook runner's PATH. New `--token-file` (bakes `MONKAI_TRACE_TOKEN_FILE`) and `--event Stop`; warns at install if no token is resolvable yet.
+- **Token from file** — `resolve_token()` falls back to `MONKAI_TRACE_TOKEN_FILE` (default `~/.monkai_trace_token`) when `MONKAI_TRACE_TOKEN` is unset, so the hook does not depend on the shell profile being sourced.
+- **`monkai-trace watch <dir>` / `ClaudeCodeTracer.watch()`** — poll a project directory and upload incrementally, for environments without a hook.
+
 ### v0.6.1
 
 - **Security: redact PII inside `tool_calls`** — tool-call `arguments` (file paths, emails, free-text) are now anonymized by the baseline anonymizer. Previously the `tool_calls` field bypassed redaction entirely.

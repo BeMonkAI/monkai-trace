@@ -1,15 +1,16 @@
 """Command-line interface for MonkAI Trace.
 
 Exposes the ``monkai-trace`` console entrypoint. The primary use case is the
-Claude Code ``SessionEnd`` hook, which auto-uploads conversation transcripts to
-MonkAI Trace so they appear in the MonkAI Hub.
+Claude Code hook, which auto-uploads conversation transcripts to MonkAI Trace
+so they appear in the MonkAI Hub.
 
 Subcommands:
     monkai-trace claude-hook        Read a Claude Code hook payload from stdin
-                                    and upload the session (used by settings.json).
-    monkai-trace install-hook       Register the SessionEnd hook in
-                                    ~/.claude/settings.json (idempotent).
+                                    and incrementally upload the session.
+    monkai-trace install-hook       Register the hook in ~/.claude/settings.json
+                                    (idempotent; resolves an absolute command).
     monkai-trace uninstall-hook     Remove the hook from ~/.claude/settings.json.
+    monkai-trace watch <dir>        Poll a project dir and upload incrementally.
     monkai-trace upload-session ... Manually upload a single session JSONL.
     monkai-trace upload-project ... Manually upload all sessions in a project dir.
 """
@@ -18,6 +19,7 @@ import argparse
 import json
 import logging
 import os
+import shutil
 import sys
 from pathlib import Path
 from typing import List, Optional
@@ -25,7 +27,9 @@ from typing import List, Optional
 logger = logging.getLogger(__name__)
 
 CLAUDE_SETTINGS = Path.home() / ".claude" / "settings.json"
-HOOK_COMMAND = "monkai-trace claude-hook"
+# Stable marker used to detect a MonkAI Trace hook regardless of how the
+# command path is resolved (bare name, absolute path, or `python -m`).
+HOOK_MARKER = "claude-hook"
 DEFAULT_EVENT = "SessionEnd"
 
 
@@ -43,17 +47,32 @@ def _build_parser() -> argparse.ArgumentParser:
 
     p_install = sub.add_parser(
         "install-hook",
-        help="Register the SessionEnd hook in ~/.claude/settings.json.",
+        help="Register the Claude Code hook in ~/.claude/settings.json.",
     )
     p_install.add_argument(
         "--event",
         default=DEFAULT_EVENT,
-        help=f"Hook event to register on (default: {DEFAULT_EVENT}).",
+        help=f"Hook event to register on (default: {DEFAULT_EVENT}). "
+        "Use 'Stop' for near-realtime per-turn uploads.",
+    )
+    p_install.add_argument(
+        "--token-file",
+        default=None,
+        help="Path to a file holding the tracer token (tk_...). Baked into the "
+        "hook command via MONKAI_TRACE_TOKEN_FILE; default ~/.monkai_trace_token.",
     )
 
     sub.add_parser(
         "uninstall-hook",
         help="Remove the MonkAI Trace hook from ~/.claude/settings.json.",
+    )
+
+    p_watch = sub.add_parser(
+        "watch", help="Poll a project directory and upload sessions incrementally."
+    )
+    p_watch.add_argument("path", help="Path to the project directory to watch.")
+    p_watch.add_argument(
+        "--interval", type=float, default=5.0, help="Seconds between scans (default 5)."
     )
 
     p_session = sub.add_parser("upload-session", help="Upload a single Claude Code session JSONL.")
@@ -66,11 +85,13 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _require_token() -> Optional[str]:
-    token = os.environ.get("MONKAI_TRACE_TOKEN")
+    from .integrations.claude_code import resolve_token
+
+    token = resolve_token()
     if not token:
         print(
-            "error: MONKAI_TRACE_TOKEN is not set. Export your tracer token "
-            "(tk_...) before uploading.",
+            "error: no tracer token found. Set MONKAI_TRACE_TOKEN or put it in "
+            "~/.monkai_trace_token (or MONKAI_TRACE_TOKEN_FILE).",
             file=sys.stderr,
         )
     return token
@@ -86,13 +107,33 @@ def _make_tracer(token: str):
     )
 
 
+def _resolve_hook_command(token_file: Optional[str]) -> str:
+    """Build a hook command that resolves regardless of the hook runner's PATH.
+
+    Prefers the absolute path of the installed ``monkai-trace`` binary; falls
+    back to ``<python> -m monkai_trace.cli`` when the binary is not on PATH.
+    When ``token_file`` is given, bakes ``MONKAI_TRACE_TOKEN_FILE`` into the
+    command so the token does not depend on the shell profile being sourced.
+    """
+    binary = shutil.which("monkai-trace")
+    if binary:
+        cmd = f"{binary} {HOOK_MARKER}"
+    else:
+        cmd = f"{sys.executable} -m monkai_trace.cli {HOOK_MARKER}"
+    if token_file:
+        cmd = f'MONKAI_TRACE_TOKEN_FILE="{token_file}" {cmd}'
+    return cmd
+
+
 def _cmd_claude_hook() -> int:
     from .integrations.claude_code import run_hook
 
     return run_hook()
 
 
-def _cmd_install_hook(event: str) -> int:
+def _cmd_install_hook(event: str, token_file: Optional[str]) -> int:
+    from .integrations.claude_code import resolve_token
+
     settings = _load_settings(CLAUDE_SETTINGS)
     hooks = settings.setdefault("hooks", {})
     event_hooks = hooks.setdefault(event, [])
@@ -101,13 +142,20 @@ def _cmd_install_hook(event: str) -> int:
         print(f"MonkAI Trace hook already registered on {event}.")
         return 0
 
-    event_hooks.append({"hooks": [{"type": "command", "command": HOOK_COMMAND}]})
+    command = _resolve_hook_command(token_file)
+    event_hooks.append({"hooks": [{"type": "command", "command": command}]})
     _save_settings(CLAUDE_SETTINGS, settings)
     print(f"Registered MonkAI Trace hook on {event} in {CLAUDE_SETTINGS}.")
-    print(
-        "Make sure MONKAI_TRACE_TOKEN is exported in your shell profile so the "
-        "hook can authenticate."
-    )
+    print(f"  command: {command}")
+
+    # Robustness: warn now if the hook would have no token at fire time.
+    if token_file is None and not resolve_token():
+        print(
+            "warning: no tracer token found yet. Export MONKAI_TRACE_TOKEN in "
+            "your shell profile, write it to ~/.monkai_trace_token, or re-run "
+            "with --token-file <path>.",
+            file=sys.stderr,
+        )
     return 0
 
 
@@ -133,6 +181,16 @@ def _cmd_uninstall_hook() -> int:
         print("Removed MonkAI Trace hook from ~/.claude/settings.json.")
     else:
         print("MonkAI Trace hook was not registered; nothing to remove.")
+    return 0
+
+
+def _cmd_watch(path: str, interval: float) -> int:
+    token = _require_token()
+    if not token:
+        return 1
+    print(f"Watching {path} every {interval}s (Ctrl-C to stop)...")
+    result = _make_tracer(token).watch(path, interval=interval)
+    print(json.dumps(result, default=str))
     return 0
 
 
@@ -176,7 +234,10 @@ def _save_settings(path: Path, settings: dict) -> None:
 
 def _is_monkai_hook(entry: dict) -> bool:
     inner = entry.get("hooks", []) if isinstance(entry, dict) else []
-    return any(isinstance(h, dict) and h.get("command") == HOOK_COMMAND for h in inner)
+    return any(
+        isinstance(h, dict) and isinstance(h.get("command"), str) and HOOK_MARKER in h["command"]
+        for h in inner
+    )
 
 
 def _hook_present(event_hooks: List[dict]) -> bool:
@@ -190,9 +251,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.command == "claude-hook":
         return _cmd_claude_hook()
     if args.command == "install-hook":
-        return _cmd_install_hook(args.event)
+        return _cmd_install_hook(args.event, args.token_file)
     if args.command == "uninstall-hook":
         return _cmd_uninstall_hook()
+    if args.command == "watch":
+        return _cmd_watch(args.path, args.interval)
     if args.command == "upload-session":
         return _cmd_upload_session(args.path)
     if args.command == "upload-project":
