@@ -287,10 +287,29 @@ def test_install_hook_token_file_is_baked(fake_settings):
     assert any("MONKAI_TRACE_TOKEN_FILE=" in c and "/home/me/.tok" in c for c in cmds)
 
 
+def test_install_hook_default_registers_stop_and_sessionend(fake_settings):
+    # Default now registers BOTH: Stop (per-turn, near-realtime) + SessionEnd
+    # (end-of-session safety net). Incremental offset makes the overlap a no-op.
+    assert cli.main(["install-hook"]) == 0
+    for event in ("Stop", "SessionEnd"):
+        cmds = _all_commands(fake_settings, event=event)
+        assert any(cli.HOOK_MARKER in c for c in cmds), f"missing hook on {event}"
+
+
+def test_install_hook_default_is_idempotent_across_events(fake_settings):
+    assert cli.main(["install-hook"]) == 0
+    assert cli.main(["install-hook"]) == 0  # no-op on both events
+    for event in ("Stop", "SessionEnd"):
+        monkai = [c for c in _all_commands(fake_settings, event=event) if cli.HOOK_MARKER in c]
+        assert len(monkai) == 1, f"duplicate hook on {event}"
+
+
 def test_install_hook_custom_event(fake_settings):
+    # A single --event overrides the dual default — only Stop is registered.
     assert cli.main(["install-hook", "--event", "Stop"]) == 0
     cmds = _all_commands(fake_settings, event="Stop")
     assert any(cli.HOOK_MARKER in c for c in cmds)
+    assert "SessionEnd" not in json.loads(fake_settings.read_text()).get("hooks", {})
 
 
 def test_uninstall_hook_removes_only_monkai(fake_settings):
