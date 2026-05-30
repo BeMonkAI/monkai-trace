@@ -89,9 +89,7 @@ BASELINE_RULES: List[BaselineRule] = [
     ),
     BaselineRule(
         name="ipv6",
-        pattern=re.compile(
-            r"\b[0-9a-fA-F]{1,4}(?::{1,2}[0-9a-fA-F]{1,4}){2,7}\b"
-        ),
+        pattern=re.compile(r"\b[0-9a-fA-F]{1,4}(?::{1,2}[0-9a-fA-F]{1,4}){2,7}\b"),
         replacement="[IP]",
     ),
     BaselineRule(
@@ -168,21 +166,36 @@ class BaselineAnonymizer:
             messages = [messages]
         out: List[Any] = []
         for msg in messages:
-            if not isinstance(msg, dict) or "content" not in msg:
+            if not isinstance(msg, dict):
                 out.append(msg)
                 continue
-            content = msg["content"]
             new_msg = dict(msg)
-            if isinstance(content, str):
-                new_msg["content"] = self.apply(content, disabled)
-            elif isinstance(content, list):
-                new_msg["content"] = [self._anonymize_block(b, disabled) for b in content]
-            else:
-                logger.warning(
-                    "BaselineAnonymizer: skipping message with unsupported content "
-                    "type %s; PII may be transmitted unredacted",
-                    type(content).__name__,
-                )
+            if "content" in msg:
+                content = msg["content"]
+                if isinstance(content, str):
+                    new_msg["content"] = self.apply(content, disabled)
+                elif isinstance(content, list):
+                    new_msg["content"] = [self._anonymize_block(b, disabled) for b in content]
+                elif content is None:
+                    # Legitimate for tool-only assistant turns / tool messages.
+                    # Nothing to redact in ``content`` itself; ``tool_calls`` is
+                    # handled below.
+                    pass
+                else:
+                    logger.warning(
+                        "BaselineAnonymizer: skipping message with unsupported "
+                        "content type %s; PII may be transmitted unredacted",
+                        type(content).__name__,
+                    )
+            # Tool call arguments are structured content that can carry PII
+            # (file paths, emails, free-text args) and live in a separate field,
+            # so they must be redacted regardless of the ``content`` shape.
+            tool_calls = msg.get("tool_calls")
+            if isinstance(tool_calls, list):
+                new_msg["tool_calls"] = [
+                    self._anonymize_dict(tc, disabled) if isinstance(tc, dict) else tc
+                    for tc in tool_calls
+                ]
             out.append(new_msg)
         return out
 
@@ -214,9 +227,13 @@ class BaselineAnonymizer:
                 out[k] = self._anonymize_dict(v, disabled)
             elif isinstance(v, list):
                 out[k] = [
-                    self.apply(item, disabled) if isinstance(item, str)
-                    else self._anonymize_dict(item, disabled) if isinstance(item, dict)
-                    else item
+                    (
+                        self.apply(item, disabled)
+                        if isinstance(item, str)
+                        else (
+                            self._anonymize_dict(item, disabled) if isinstance(item, dict) else item
+                        )
+                    )
                     for item in v
                 ]
             else:

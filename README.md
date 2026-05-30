@@ -402,6 +402,11 @@ pytest tests/ -x -q
 
 ## Changelog
 
+### v0.6.1
+
+- **Security: redact PII inside `tool_calls`** — tool-call `arguments` (file paths, emails, free-text) are now anonymized by the baseline anonymizer. Previously the `tool_calls` field bypassed redaction entirely.
+- Messages with `content: null` (tool-only assistant turns, tool messages) no longer emit a spurious "PII may be transmitted unredacted" warning; the warning is reserved for genuinely unexpected content types.
+
 ### v0.6.0
 
 - **New: `monkai-trace` CLI** with a Claude Code auto-trace hook

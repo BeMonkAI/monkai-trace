@@ -20,10 +20,13 @@ def test_apply_returns_string_for_string_input():
     assert result == "hello world"
 
 
-@pytest.mark.parametrize("text, expected_redacted", [
-    ("CPF 123.456.789-09 do cliente", "CPF [CPF] do cliente"),
-    ("12345678909 sem mascara", "[CPF] sem mascara"),
-])
+@pytest.mark.parametrize(
+    "text, expected_redacted",
+    [
+        ("CPF 123.456.789-09 do cliente", "CPF [CPF] do cliente"),
+        ("12345678909 sem mascara", "[CPF] sem mascara"),
+    ],
+)
 def test_redacts_cpf(text, expected_redacted):
     assert BaselineAnonymizer().apply(text) == expected_redacted
 
@@ -32,27 +35,36 @@ def test_does_not_redact_invalid_cpf_length():
     assert BaselineAnonymizer().apply("number 1234") == "number 1234"
 
 
-@pytest.mark.parametrize("text, expected_redacted", [
-    ("CNPJ 12.345.678/0001-95", "CNPJ [CNPJ]"),
-    ("12345678000195 raw", "[CNPJ] raw"),
-])
+@pytest.mark.parametrize(
+    "text, expected_redacted",
+    [
+        ("CNPJ 12.345.678/0001-95", "CNPJ [CNPJ]"),
+        ("12345678000195 raw", "[CNPJ] raw"),
+    ],
+)
 def test_redacts_cnpj(text, expected_redacted):
     assert BaselineAnonymizer().apply(text) == expected_redacted
 
 
-@pytest.mark.parametrize("text, expected_redacted", [
-    ("contact arthur@monkai.com.br please", "contact [EMAIL] please"),
-    ("first.last+tag@sub.example.io", "[EMAIL]"),
-])
+@pytest.mark.parametrize(
+    "text, expected_redacted",
+    [
+        ("contact arthur@monkai.com.br please", "contact [EMAIL] please"),
+        ("first.last+tag@sub.example.io", "[EMAIL]"),
+    ],
+)
 def test_redacts_email(text, expected_redacted):
     assert BaselineAnonymizer().apply(text) == expected_redacted
 
 
-@pytest.mark.parametrize("text, expected_redacted", [
-    ("call (11) 99999-1234 today", "call [PHONE] today"),
-    ("+55 11 9 9999-1234", "[PHONE]"),
-    ("11999991234", "[PHONE]"),
-])
+@pytest.mark.parametrize(
+    "text, expected_redacted",
+    [
+        ("call (11) 99999-1234 today", "call [PHONE] today"),
+        ("+55 11 9 9999-1234", "[PHONE]"),
+        ("11999991234", "[PHONE]"),
+    ],
+)
 def test_redacts_brazilian_phone(text, expected_redacted):
     assert BaselineAnonymizer().apply(text) == expected_redacted
 
@@ -67,17 +79,23 @@ def test_does_not_redact_non_luhn_card_number():
     assert BaselineAnonymizer().apply("4111 1111 1111 1112") == "4111 1111 1111 1112"
 
 
-@pytest.mark.parametrize("text, expected_redacted", [
-    ("server 192.168.1.1 down", "server [IP] down"),
-    ("ipv6 2001:0db8:85a3::8a2e:0370:7334", "ipv6 [IP]"),
-])
+@pytest.mark.parametrize(
+    "text, expected_redacted",
+    [
+        ("server 192.168.1.1 down", "server [IP] down"),
+        ("ipv6 2001:0db8:85a3::8a2e:0370:7334", "ipv6 [IP]"),
+    ],
+)
 def test_redacts_ip(text, expected_redacted):
     assert BaselineAnonymizer().apply(text) == expected_redacted
 
 
-@pytest.mark.parametrize("text, expected_redacted", [
-    ("RG 12.345.678-9", "RG [RG]"),
-])
+@pytest.mark.parametrize(
+    "text, expected_redacted",
+    [
+        ("RG 12.345.678-9", "RG [RG]"),
+    ],
+)
 def test_redacts_rg(text, expected_redacted):
     assert BaselineAnonymizer().apply(text) == expected_redacted
 
@@ -97,21 +115,27 @@ def test_pipeline_order_cpf_before_card():
     assert BaselineAnonymizer().apply(text) == expected
 
 
-@pytest.mark.parametrize("digits, expected", [
-    ("12345678909", True),    # canonical Receita example, valid
-    ("11111111111", False),   # all-same-digit rejected
-    ("12345678900", False),   # wrong second check digit
-    ("123", False),           # too short
-])
+@pytest.mark.parametrize(
+    "digits, expected",
+    [
+        ("12345678909", True),  # canonical Receita example, valid
+        ("11111111111", False),  # all-same-digit rejected
+        ("12345678900", False),  # wrong second check digit
+        ("123", False),  # too short
+    ],
+)
 def test_cpf_check_digits_valid(digits, expected):
     assert _cpf_check_digits_valid(digits) is expected
 
 
-@pytest.mark.parametrize("digits, expected", [
-    ("4111111111111111", True),
-    ("4111111111111112", False),
-    ("123", False),
-])
+@pytest.mark.parametrize(
+    "digits, expected",
+    [
+        ("4111111111111111", True),
+        ("4111111111111112", False),
+        ("123", False),
+    ],
+)
 def test_luhn_valid(digits, expected):
     assert _luhn_valid(digits) is expected
 
@@ -228,3 +252,51 @@ def test_apply_to_messages_does_not_mutate_input():
     a.apply_to_messages([original])
     # input untouched
     assert original["content"][0]["text"] == "CPF 123.456.789-09"
+
+
+# ---------------------------------------------------------------------------
+# tool_calls field — flattened structured content (e.g. Claude Code, OpenAI)
+# ---------------------------------------------------------------------------
+
+
+def test_apply_to_messages_redacts_tool_calls_arguments():
+    a = BaselineAnonymizer()
+    msg = {
+        "role": "assistant",
+        "content": None,
+        "tool_calls": [
+            {
+                "name": "send_email",
+                "arguments": {"to": "arthur@monkai.com.br", "cpf": "12345678909"},
+                "id": "call_1",
+            }
+        ],
+    }
+    out = a.apply_to_messages([msg])
+    tc = out[0]["tool_calls"][0]
+    assert tc["arguments"]["to"] == "[EMAIL]"
+    assert tc["arguments"]["cpf"] == "[CPF]"
+    # non-PII fields preserved
+    assert tc["name"] == "send_email"
+    assert tc["id"] == "call_1"
+    assert out[0]["content"] is None
+
+
+def test_apply_to_messages_redacts_tool_calls_with_string_content():
+    a = BaselineAnonymizer()
+    msg = {
+        "role": "assistant",
+        "content": "ligando para o cliente",
+        "tool_calls": [{"name": "lookup", "arguments": {"q": "CPF 123.456.789-09"}}],
+    }
+    out = a.apply_to_messages([msg])
+    assert out[0]["content"] == "ligando para o cliente"
+    assert out[0]["tool_calls"][0]["arguments"]["q"] == "CPF [CPF]"
+
+
+def test_apply_to_messages_content_none_emits_no_warning(caplog):
+    a = BaselineAnonymizer()
+    with caplog.at_level("WARNING"):
+        out = a.apply_to_messages([{"role": "tool", "content": None}])
+    assert out == [{"role": "tool", "content": None}]
+    assert "PII may be transmitted unredacted" not in caplog.text
