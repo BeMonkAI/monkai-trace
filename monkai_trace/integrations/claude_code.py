@@ -35,6 +35,7 @@ import json
 import logging
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -100,6 +101,108 @@ class ClaudeCodeTracer:
 
         self._records.extend(records)
         return {"total_inserted": 0, "total_records": len(records), "failures": []}
+
+    def upload_session_incremental(self, session_path: str) -> Dict:
+        """Parse a session and upload only the turns not uploaded before.
+
+        Uses a per-``session_id`` offset persisted on disk (see
+        :func:`_load_offsets`) so the same growing transcript can be uploaded
+        repeatedly — e.g. on every Claude Code ``Stop`` event — without
+        duplicating turns. Also makes ``SessionEnd`` safe to re-fire (resumed
+        sessions no longer re-upload in full).
+
+        Args:
+            session_path: Path to the .jsonl session file.
+
+        Returns:
+            Upload result dict with counts (``skipped`` = turns already sent).
+        """
+        path = Path(session_path).expanduser()
+        if not path.exists():
+            raise FileNotFoundError(f"Session file not found: {path}")
+
+        records = self._parse_session(path)
+        session_id = path.stem
+        already = _load_offsets().get(session_id, 0)
+        new_records = records[already:]
+
+        if not new_records:
+            logger.info(
+                "No new turns in %s (offset=%d, total=%d)",
+                path.name,
+                already,
+                len(records),
+            )
+            return {
+                "total_inserted": 0,
+                "total_records": 0,
+                "failures": [],
+                "skipped": already,
+            }
+
+        if self.auto_upload:
+            result = self.client.upload_records_batch(new_records)
+            _save_offset(session_id, len(records))
+            logger.info(
+                "Uploaded %s new turns from %s (was %d, now %d)",
+                result.get("total_inserted", 0),
+                path.name,
+                already,
+                len(records),
+            )
+            result["skipped"] = already
+            return result
+
+        self._records.extend(new_records)
+        return {
+            "total_inserted": 0,
+            "total_records": len(new_records),
+            "failures": [],
+            "skipped": already,
+        }
+
+    def watch(
+        self,
+        project_dir: str,
+        interval: float = 5.0,
+        max_iterations: Optional[int] = None,
+    ) -> Dict:
+        """Poll a project directory and incrementally upload sessions.
+
+        For environments without a Claude Code hook. Every ``interval`` seconds
+        it scans ``project_dir`` for ``*.jsonl`` sessions and uploads any new
+        turns via :meth:`upload_session_incremental`. Runs until interrupted
+        (or ``max_iterations`` is reached, used by tests).
+
+        Args:
+            project_dir: Claude Code project directory to watch.
+            interval: Seconds between scans.
+            max_iterations: Stop after this many scans (``None`` = forever).
+
+        Returns:
+            Aggregate counts across the watch run.
+        """
+        path = Path(project_dir).expanduser()
+        if not path.is_dir():
+            raise NotADirectoryError(f"Not a directory: {path}")
+
+        total_inserted = 0
+        iterations = 0
+        try:
+            while max_iterations is None or iterations < max_iterations:
+                for jsonl_file in sorted(path.glob("*.jsonl")):
+                    try:
+                        result = self.upload_session_incremental(str(jsonl_file))
+                        total_inserted += result.get("total_inserted", 0)
+                    except Exception:  # noqa: BLE001 - keep watching on errors
+                        logger.exception("watch: failed on %s", jsonl_file.name)
+                iterations += 1
+                if max_iterations is not None and iterations >= max_iterations:
+                    break
+                time.sleep(interval)
+        except KeyboardInterrupt:
+            logger.info("watch: stopped by user")
+        return {"total_inserted": total_inserted, "iterations": iterations}
 
     def upload_project(self, project_dir: str) -> Dict:
         """
@@ -409,21 +512,84 @@ class ClaudeCodeTracer:
         return path.replace("/", "-")
 
 
-# Default public base URL for the SessionEnd hook (Vercel proxy → Supabase).
+# Default public base URL for the hook (Vercel proxy → Supabase).
 DEFAULT_HOOK_BASE_URL = "https://api.monkai.com.br/trace/v1"
+
+# Where per-session upload offsets and (default) the token file live.
+DEFAULT_STATE_DIR = Path.home() / ".monkai_trace"
+DEFAULT_TOKEN_FILE = Path.home() / ".monkai_trace_token"
+
+
+def _state_dir() -> Path:
+    return Path(os.environ.get("MONKAI_TRACE_STATE_DIR", str(DEFAULT_STATE_DIR))).expanduser()
+
+
+def _offsets_path() -> Path:
+    return _state_dir() / "offsets.json"
+
+
+def _load_offsets() -> Dict[str, int]:
+    """Load the per-session upload offsets; tolerant of missing/corrupt files."""
+    path = _offsets_path()
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return {k: int(v) for k, v in data.items()} if isinstance(data, dict) else {}
+    except (json.JSONDecodeError, OSError, ValueError, TypeError):
+        logger.warning("Could not read offsets at %s; starting fresh", path)
+        return {}
+
+
+def _save_offset(session_id: str, count: int) -> None:
+    """Persist the uploaded-turn count for a session (best-effort)."""
+    offsets = _load_offsets()
+    offsets[session_id] = count
+    path = _offsets_path()
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(offsets), encoding="utf-8")
+    except OSError:
+        logger.warning("Could not persist offset for %s at %s", session_id, path)
+
+
+def resolve_token() -> Optional[str]:
+    """Resolve the tracer token from the environment or a token file.
+
+    Order: ``MONKAI_TRACE_TOKEN`` env var, then the token file pointed to by
+    ``MONKAI_TRACE_TOKEN_FILE`` (default ``~/.monkai_trace_token``). The file
+    fallback makes the hook robust even when the shell profile that exports the
+    env var is not sourced by the hook runner.
+    """
+    token = os.environ.get("MONKAI_TRACE_TOKEN")
+    if token:
+        return token.strip()
+    token_file = Path(
+        os.environ.get("MONKAI_TRACE_TOKEN_FILE", str(DEFAULT_TOKEN_FILE))
+    ).expanduser()
+    if token_file.exists():
+        try:
+            value = token_file.read_text(encoding="utf-8").strip()
+            if value:
+                return value
+        except OSError:
+            logger.warning("Could not read token file at %s", token_file)
+    return None
 
 
 def run_hook(stdin=None) -> int:
-    """Entrypoint for the Claude Code ``SessionEnd`` hook.
+    """Entrypoint for the Claude Code ``SessionEnd``/``Stop`` hook.
 
     Reads the hook payload as JSON from stdin (Claude Code provides
-    ``{session_id, transcript_path, cwd, reason, ...}``), then parses and
-    uploads the full session transcript to MonkAI Trace.
+    ``{session_id, transcript_path, cwd, reason, ...}``), then uploads only the
+    turns not uploaded before (incremental), so the same growing transcript can
+    fire on every ``Stop`` without duplicating, and resumed ``SessionEnd`` is
+    safe too.
 
-    Configuration is resolved from environment variables so the hook can be
-    invoked with zero arguments:
+    Configuration is resolved with zero arguments:
 
-    - ``MONKAI_TRACE_TOKEN`` (required): tracer token (``tk_...``).
+    - token: ``MONKAI_TRACE_TOKEN`` env, else ``MONKAI_TRACE_TOKEN_FILE``
+      (default ``~/.monkai_trace_token``). See :func:`resolve_token`.
     - ``MONKAI_TRACE_NAMESPACE`` (optional, default ``claude-code``).
     - ``MONKAI_TRACE_BASE_URL`` (optional, default the public proxy).
 
@@ -445,9 +611,12 @@ def run_hook(stdin=None) -> int:
         logger.info("Hook payload has no transcript_path; nothing to upload")
         return 0
 
-    token = os.environ.get("MONKAI_TRACE_TOKEN")
+    token = resolve_token()
     if not token:
-        logger.warning("MONKAI_TRACE_TOKEN not set; skipping Claude Code trace upload")
+        logger.warning(
+            "No tracer token (MONKAI_TRACE_TOKEN env or token file); "
+            "skipping Claude Code trace upload"
+        )
         return 0
 
     try:
@@ -456,9 +625,9 @@ def run_hook(stdin=None) -> int:
             namespace=os.environ.get("MONKAI_TRACE_NAMESPACE", "claude-code"),
             base_url=os.environ.get("MONKAI_TRACE_BASE_URL", DEFAULT_HOOK_BASE_URL),
         )
-        result = tracer.upload_session(transcript)
+        result = tracer.upload_session_incremental(transcript)
         logger.info(
-            "Claude Code session uploaded: %s records inserted",
+            "Claude Code trace: %s new turns uploaded",
             result.get("total_inserted", 0),
         )
     except Exception:  # noqa: BLE001 - hook must never crash the session
