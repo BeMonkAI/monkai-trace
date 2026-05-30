@@ -171,6 +171,30 @@ tracer.upload_all_projects()
 tracer.upload_project("~/.claude/projects/-Users-me-myproject/")
 ```
 
+#### Auto-trace every Claude Code session
+
+Register a one-time hook and every session is uploaded automatically when it
+ends — no manual command, visible in the MonkAI Hub Monitoring view:
+
+```bash
+pip install monkai-trace
+
+# Export your tracer token (from MyAgents in the Hub) in your shell profile:
+export MONKAI_TRACE_TOKEN="tk_your_token"
+export MONKAI_TRACE_NAMESPACE="claude-code"   # optional, this is the default
+
+# Register the SessionEnd hook in ~/.claude/settings.json (idempotent):
+monkai-trace install-hook
+```
+
+The hook runs `monkai-trace claude-hook`, which reads the session transcript
+path from Claude Code and uploads it. It never raises, so a trace failure can
+never break your Claude Code session. Remove it anytime with
+`monkai-trace uninstall-hook`.
+
+> The transcript is uploaded once, when the session ends (`SessionEnd`). If you
+> resume a session and end it again, it is re-uploaded in full.
+
 ### Cline Integration
 
 ```python
@@ -377,6 +401,15 @@ pytest tests/ -x -q
 - `openai-agents-python` (optional, for OpenAI Agents integration)
 
 ## Changelog
+
+### v0.6.0
+
+- **New: `monkai-trace` CLI** with a Claude Code auto-trace hook
+  - `monkai-trace install-hook` registers a `SessionEnd` hook in `~/.claude/settings.json` so every session uploads automatically
+  - `monkai-trace claude-hook` reads the hook payload from stdin and uploads (never raises — a trace failure can't break your session)
+  - `monkai-trace uninstall-hook`, `upload-session`, `upload-project` for manual control
+  - Config via `MONKAI_TRACE_TOKEN` / `MONKAI_TRACE_NAMESPACE` / `MONKAI_TRACE_BASE_URL`
+  - `ClaudeCodeTracer` and `run_hook` now exported from `monkai_trace.integrations`
 
 ### v0.3.0
 
