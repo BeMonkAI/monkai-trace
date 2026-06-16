@@ -14,6 +14,18 @@ def test_client_initialization():
     assert client.base_url == MonkAIClient.BASE_URL
 
 
+def test_client_rejects_token_without_tk_prefix():
+    """Sync client validates the tk_ prefix like the async client (issue #41)."""
+    with pytest.raises(MonkAIValidationError):
+        MonkAIClient(tracer_token="not_a_valid_token")
+
+
+def test_client_rejects_empty_token():
+    """Empty token is rejected at construction, not on first request."""
+    with pytest.raises(MonkAIValidationError):
+        MonkAIClient(tracer_token="")
+
+
 def test_client_custom_base_url():
     """Test client with custom base URL"""
     client = MonkAIClient(

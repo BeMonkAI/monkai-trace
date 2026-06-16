@@ -146,6 +146,9 @@ class MonkAIClient:
             rules_client: Optional pre-built ``RulesClient`` (overrides
                 ``rules_url``/``rules_ttl_seconds`` for full control).
         """
+        if not tracer_token or not tracer_token.startswith("tk_"):
+            raise MonkAIValidationError("Invalid tracer_token format. Must start with 'tk_'")
+
         self.tracer_token = tracer_token
         self.base_url = base_url or self.BASE_URL
         self.timeout = timeout
