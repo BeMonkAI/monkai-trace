@@ -146,13 +146,19 @@ class MonkAIClient:
             rules_client: Optional pre-built ``RulesClient`` (overrides
                 ``rules_url``/``rules_ttl_seconds`` for full control).
         """
+        if not tracer_token or not tracer_token.startswith("tk_"):
+            raise MonkAIValidationError("Invalid tracer_token format. Must start with 'tk_'")
+
         self.tracer_token = tracer_token
         self.base_url = base_url or self.BASE_URL
         self.timeout = timeout
         self.max_retries = max_retries
         self._session = requests.Session()
         self._session.headers.update({
-            "tracer_token": tracer_token,
+            # RFC 6750 bearer auth. The server still accepts the legacy
+            # ``tracer_token`` header as a fallback, but new traffic from the
+            # SDK leads the migration to ``Authorization: Bearer``.
+            "Authorization": f"Bearer {tracer_token}",
             "Content-Type": "application/json"
         })
         self._anonymizer = BaselineAnonymizer()

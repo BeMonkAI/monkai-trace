@@ -195,6 +195,15 @@ never break your Claude Code session. Remove it anytime with
 > The transcript is uploaded once, when the session ends (`SessionEnd`). If you
 > resume a session and end it again, it is re-uploaded in full.
 
+> 🔒 **Protect your token file.** When the token is resolved from a file
+> (`MONKAI_TRACE_TOKEN_FILE`, default `~/.monkai_trace_token`) instead of the
+> `MONKAI_TRACE_TOKEN` env var, restrict it so other users on the machine can't
+> read your tracer token — it authenticates all of your trace traffic:
+>
+> ```bash
+> chmod 600 ~/.monkai_trace_token
+> ```
+
 ### Cline Integration
 
 ```python
