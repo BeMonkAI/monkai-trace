@@ -103,7 +103,10 @@ class AsyncMonkAIClient:
         """Ensure aiohttp session exists"""
         if self._session is None or self._session.closed:
             headers = {
-                "tracer_token": self.tracer_token,
+                # RFC 6750 bearer auth. The server still accepts the legacy
+                # ``tracer_token`` header as a fallback, but new traffic from
+                # the SDK leads the migration to ``Authorization: Bearer``.
+                "Authorization": f"Bearer {self.tracer_token}",
                 "Content-Type": "application/json"
             }
             self._session = aiohttp.ClientSession(

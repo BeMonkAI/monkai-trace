@@ -118,7 +118,9 @@ class RulesClient:
         response = requests.get(
             self.endpoint,
             headers={
-                "tracer_token": self._tracer_token,
+                # RFC 6750 bearer auth (legacy ``tracer_token`` still accepted
+                # server-side as a fallback during the deprecation window).
+                "Authorization": f"Bearer {self._tracer_token}",
                 "Content-Type": "application/json",
             },
             timeout=self._timeout,
