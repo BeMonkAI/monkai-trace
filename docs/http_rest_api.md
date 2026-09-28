@@ -594,11 +594,17 @@ Batch upload conversation records.
       "output_tokens": 5,
       "external_user_id": "5521999998888",
       "external_user_name": "João Silva",
-      "external_user_channel": "whatsapp"
+      "external_user_channel": "whatsapp",
+      "model": "gpt-4o",
+      "inserted_at": "2026-07-02T10:00:00Z"
     }
   ]
 }
 ```
+
+- `inserted_at` (optional, ISO-8601): when the turn happened. Omitted → server stamps upload time, so backfills should always send it. The Hub buckets volume charts and sessions on this field.
+- `session_id` (optional): the Hub's Conversations tab groups records sharing a `session_id` into one session regardless of pauses; records without it fall back to a 120s inactivity gap. Rotate the id per conversation (the SDK session managers do this on inactivity) — never reuse one id per end user forever.
+- `model` (optional): stored and shown per session.
 
 ---
 
