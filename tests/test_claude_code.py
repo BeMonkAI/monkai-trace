@@ -160,6 +160,76 @@ def test_upload_session_incremental_uploads_only_new_turn(tmp_path, monkeypatch)
     assert len(args[0]) == 1
 
 
+def test_parse_session_sets_inserted_at_from_transcript_timestamp(tmp_path):
+    lines = _turn("q1", "a1") + _turn("q2", "a2")
+    lines[0]["timestamp"] = "2026-07-02T10:00:00.000Z"
+    lines[2]["timestamp"] = "2026-07-02T10:05:00.000Z"
+    session = _write_jsonl(tmp_path / "ts.jsonl", lines)
+    tracer = ClaudeCodeTracer(tracer_token="tk_test", namespace="claude-code", auto_upload=False)
+
+    records = tracer._parse_session(session)
+
+    assert [r.inserted_at for r in records] == [
+        "2026-07-02T10:00:00.000Z",
+        "2026-07-02T10:05:00.000Z",
+    ]
+    assert records[0].to_api_format()["inserted_at"] == "2026-07-02T10:00:00.000Z"
+
+
+def test_upload_failure_does_not_advance_offset(tmp_path, monkeypatch):
+    session = _write_jsonl(tmp_path / "f.jsonl", TWO_TURNS)
+    mock = _mock_client(monkeypatch)
+    mock.upload_records_batch.return_value = {
+        "total_inserted": 0,
+        "total_records": 2,
+        "failures": [{"chunk_index": 0, "error": "503"}],
+    }
+    tracer = ClaudeCodeTracer(tracer_token="tk", namespace="claude-code")
+
+    tracer.upload_session_incremental(str(session))
+    retry = tracer.upload_session_incremental(str(session))
+
+    assert retry["skipped"] == 0  # nothing was marked as sent
+    _, args, _ = mock.upload_records_batch.mock_calls[1]
+    assert len(args[0]) == 2  # both turns retried
+
+
+def test_partial_failure_advances_only_to_first_failed_chunk(tmp_path, monkeypatch):
+    lines = []
+    for i in range(150):
+        lines += _turn(f"q{i}", f"a{i}")
+    session = _write_jsonl(tmp_path / "p.jsonl", lines)
+    mock = _mock_client(monkeypatch)
+    mock.upload_records_batch.return_value = {
+        "total_inserted": 100,
+        "total_records": 150,
+        "failures": [{"chunk_index": 1, "error": "timeout"}],
+    }
+    tracer = ClaudeCodeTracer(tracer_token="tk", namespace="claude-code")
+
+    tracer.upload_session_incremental(str(session))
+    retry = tracer.upload_session_incremental(str(session))
+
+    assert retry["skipped"] == 100
+    _, args, _ = mock.upload_records_batch.mock_calls[1]
+    assert len(args[0]) == 50  # only the failed chunk is resent
+
+
+def test_save_offset_concurrent_writers_keep_every_session():
+    from concurrent.futures import ThreadPoolExecutor
+
+    from monkai_trace.integrations.claude_code import _load_offsets, _save_offset
+
+    def write(worker):
+        for n in range(1, 31):
+            _save_offset(f"s{worker}", n)
+
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        list(pool.map(write, range(16)))
+
+    assert _load_offsets() == {f"s{w}": 30 for w in range(16)}
+
+
 # --- run_hook --------------------------------------------------------------
 
 

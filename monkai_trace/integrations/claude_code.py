@@ -39,10 +39,18 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+try:
+    import fcntl
+except ImportError:  # Windows: no flock; atomic replace still avoids torn reads
+    fcntl = None
+
 from ..client import MonkAIClient
 from ..models import ConversationRecord, Message, TokenUsage
 
 logger = logging.getLogger(__name__)
+
+# Records per upload request; also the unit for resuming after a failed chunk.
+_UPLOAD_CHUNK = 100
 
 
 class ClaudeCodeTracer:
@@ -141,8 +149,18 @@ class ClaudeCodeTracer:
             }
 
         if self.auto_upload:
-            result = self.client.upload_records_batch(new_records)
-            _save_offset(session_id, len(records))
+            result = self.client.upload_records_batch(new_records, chunk_size=_UPLOAD_CHUNK)
+            failures = result.get("failures") or []
+            # Only advance past what the server accepted: stop at the first
+            # failed chunk so the next Stop/SessionEnd retries it instead of
+            # losing those turns for good.
+            sent = (
+                min(f["chunk_index"] for f in failures) * _UPLOAD_CHUNK
+                if failures
+                else len(new_records)
+            )
+            if sent:
+                _save_offset(session_id, already + sent)
             logger.info(
                 "Uploaded %s new turns from %s (was %d, now %d)",
                 result.get("total_inserted", 0),
@@ -397,6 +415,7 @@ class ClaudeCodeTracer:
                 total_tokens=token_usage.total_tokens,
                 source="claude-code",
                 model=model_name,
+                inserted_at=user_msg.get("timestamp"),
             )
             records.append(record)
 
@@ -442,7 +461,9 @@ class ClaudeCodeTracer:
                             text_parts.append(block.get("text", ""))
                     content = "\n".join(text_parts)
 
-                current_user = {"content": content}
+                # Keep the transcript timestamp: the server stamps upload time
+                # when inserted_at is missing, which misdates backfills.
+                current_user = {"content": content, "timestamp": line.get("timestamp")}
                 current_assistants = []
                 current_usage = {}
 
@@ -542,15 +563,26 @@ def _load_offsets() -> Dict[str, int]:
 
 
 def _save_offset(session_id: str, count: int) -> None:
-    """Persist the uploaded-turn count for a session (best-effort)."""
-    offsets = _load_offsets()
-    offsets[session_id] = count
+    """Persist the uploaded-turn count for a session (best-effort).
+
+    Parallel Claude Code sessions fire hooks concurrently, so the
+    read-modify-write runs under an exclusive lock and the file is replaced
+    atomically; a reader never sees a half-written file (which used to make
+    ``_load_offsets`` start fresh and wipe every other session's offset).
+    """
     path = _offsets_path()
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(offsets), encoding="utf-8")
+        with open(path.with_suffix(".lock"), "a") as lock:
+            if fcntl is not None:
+                fcntl.flock(lock, fcntl.LOCK_EX)
+            offsets = _load_offsets()
+            offsets[session_id] = count
+            tmp = path.with_suffix(f".{os.getpid()}.tmp")
+            tmp.write_text(json.dumps(offsets), encoding="utf-8")
+            os.replace(tmp, path)
     except OSError:
-        logger.warning("Could not persist offset for %s at %s", session_id, path)
+        logger.exception("Could not persist offset for %s at %s", session_id, path)
 
 
 def resolve_token() -> Optional[str]:

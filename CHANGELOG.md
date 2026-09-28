@@ -5,6 +5,16 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.1] - 2026-09-28
+
+### Fixed
+- **Claude Code hook sends the real turn time**: each record now carries `inserted_at` from the transcript timestamp; the server used to stamp upload time, misdating any backfill. (Issue #44)
+- **Offsets no longer wiped by parallel sessions**: `offsets.json` is written under an exclusive lock and replaced atomically. A torn read used to make the hook "start fresh" and overwrite every other session's offset, re-uploading whole sessions as duplicates. (Issue #44)
+- **Failed uploads are retried instead of lost**: the offset only advances up to the first failed chunk, so the next `Stop`/`SessionEnd` resends it. (Issue #44)
+
+### Docs
+- `POST /records/upload`: documents `inserted_at`, `model` and how the Hub groups sessions by `session_id` (companion of monkai-agent-hub#106).
+
 ## [0.5.0] - 2026-04-28
 
 ### Added
