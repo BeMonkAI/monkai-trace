@@ -172,7 +172,7 @@ async def test_batch_upload_threshold(mock_context, mock_agent):
 
 
 @pytest.mark.asyncio
-async def test_token_segmentation(mock_context, mock_agent, capsys):
+async def test_token_segmentation(mock_context, mock_agent, caplog):
     """Test that all 4 token types are captured"""
     hooks = MonkAIRunHooks(
         tracer_token="tk_test",
@@ -189,14 +189,12 @@ async def test_token_segmentation(mock_context, mock_agent, capsys):
     mock_output.items = None
     mock_output.output = None
     
-    await hooks.on_agent_start(mock_context, mock_agent)
-    await hooks.on_agent_end(mock_context, mock_agent, mock_output)
+    with caplog.at_level("INFO", logger="monkai_trace.integrations.openai_agents"):
+        await hooks.on_agent_start(mock_context, mock_agent)
+        await hooks.on_agent_end(mock_context, mock_agent, mock_output)
     
-    # Verify token tracking occurred via stdout
-    captured = capsys.readouterr()
-    assert "Tracked" in captured.out and "tokens" in captured.out
-    # Should show 30 tokens (10 input + 20 output)
-    assert "30 tokens" in captured.out
+    # 10 input + 20 output + 12 process (49-char instructions // 4)
+    assert "Tracked 42 tokens" in caplog.text
 
 
 @pytest.mark.asyncio
@@ -208,6 +206,7 @@ async def test_session_continuity(mock_context, mock_agent):
         auto_upload=False,
         inactivity_timeout=60  # 60 seconds timeout
     )
+    hooks.set_user_id("user123")
     
     # Create mock outputs with spec=[] to prevent __iter__
     mock_output1 = Mock(spec=[])
@@ -497,3 +496,63 @@ async def test_session_id_format(mock_agent):
     # Should have timestamp in format YYYYMMDD-HHMMSS
     parts = session_id.split("-")
     assert len(parts) >= 3
+
+
+def _final_output():
+    output = Mock(spec=[])
+    output.final_output = "Output"
+    output.raw_items = None
+    output.new_items = None
+    output.items = None
+    output.output = None
+    return output
+
+
+@pytest.mark.asyncio
+async def test_anonymous_runs_get_distinct_sessions(mock_context, mock_agent):
+    """Runs without user_id must never share a session_id (issue #47)"""
+    hooks = MonkAIRunHooks(
+        tracer_token="tk_test",
+        namespace="test",
+        auto_upload=False,
+        inactivity_timeout=60
+    )
+
+    await hooks.on_agent_start(mock_context, mock_agent)
+    first = hooks._current_session
+    await hooks.on_agent_end(mock_context, mock_agent, _final_output())
+
+    await hooks.on_agent_start(mock_context, mock_agent)
+    second = hooks._current_session
+
+    assert first.startswith("test-anonymous-")
+    assert second.startswith("test-anonymous-")
+    assert first != second
+
+
+@pytest.mark.asyncio
+async def test_anonymous_handoff_keeps_run_session(mock_context, mock_agent):
+    """A handoff inside one anonymous run keeps the same session_id"""
+    hooks = MonkAIRunHooks(tracer_token="tk_test", namespace="test", auto_upload=False)
+    other_agent = Mock()
+    other_agent.name = "Other Agent"
+    other_agent.instructions = "Second agent."
+
+    await hooks.on_agent_start(mock_context, mock_agent)
+    first = hooks._current_session
+    await hooks.on_agent_start(mock_context, other_agent)
+
+    assert hooks._current_session == first
+
+
+@pytest.mark.asyncio
+async def test_anonymous_warns_once(mock_context, mock_agent, caplog):
+    """Missing user_id logs a single warning per hooks instance"""
+    hooks = MonkAIRunHooks(tracer_token="tk_test", namespace="test", auto_upload=False)
+
+    with caplog.at_level("WARNING", logger="monkai_trace.integrations.openai_agents"):
+        for _ in range(2):
+            await hooks.on_agent_start(mock_context, mock_agent)
+            await hooks.on_agent_end(mock_context, mock_agent, _final_output())
+
+    assert caplog.text.count("no user_id set") == 1

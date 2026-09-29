@@ -1,6 +1,7 @@
 """OpenAI Agents framework integration for MonkAI"""
 
 import logging
+import uuid
 from typing import Any, Optional, Dict, List
 from datetime import datetime
 
@@ -98,6 +99,9 @@ class MonkAIRunHooks(RunHooks):
         
         # Track conversation state
         self._current_session: Optional[str] = None
+        # Per-run session for runs without user_id (never shared across runs)
+        self._anonymous_session: Optional[str] = None
+        self._warned_anonymous: bool = False
         self._messages: List[Message] = []
         self._transfers: List[Transfer] = []
         self._system_prompt_tokens: int = 0
@@ -126,14 +130,26 @@ class MonkAIRunHooks(RunHooks):
             user_id = context.user_id
         elif self._current_user_id:
             user_id = self._current_user_id
-        else:
-            user_id = "anonymous"  # Fallback
         
-        # Get or create session with timeout logic
-        self._current_session = self.session_manager.get_or_create_session(
-            user_id=user_id,
-            namespace=self.namespace
-        )
+        if user_id:
+            # Get or create session with timeout logic
+            self._current_session = self.session_manager.get_or_create_session(
+                user_id=user_id,
+                namespace=self.namespace
+            )
+        else:
+            # Without user_id there is no safe way to tell users apart, so each
+            # run gets its own session (handoffs inside the run reuse it).
+            if not self._warned_anonymous:
+                logger.warning(
+                    "MonkAIRunHooks: no user_id set; each run gets its own session. "
+                    "Call set_user_id() to group turns of the same user."
+                )
+                self._warned_anonymous = True
+            if not self._anonymous_session:
+                self._anonymous_session = f"{self.namespace}-anonymous-{uuid.uuid4().hex}"
+            self._current_session = self._anonymous_session
+            user_id = "anonymous"
         
         logger.debug(f"Session: {self._current_session} (user: {user_id})")
         
@@ -328,6 +344,7 @@ class MonkAIRunHooks(RunHooks):
         self._system_prompt_tokens = 0
         self._context_tokens = 0
         self._user_input = None
+        self._anonymous_session = None
         
         logger.info(f"Tracked {token_usage.total_tokens} tokens for '{agent.name}'")
     

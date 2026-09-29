@@ -5,6 +5,16 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.2] - 2026-09-29
+
+### Fixed
+- **OpenAI Agents: anonymous users no longer share a session**: without `set_user_id()` (or `context.user_id`), every run used the `anonymous` key, so different people talking within the inactivity window got the same `session_id` and showed up as one conversation in the Hub. Each anonymous run now gets its own `{namespace}-anonymous-<uuid>` session (handoffs inside the run keep it) and a one-time warning recommends `set_user_id()`. Runs with a user id are unchanged. (Issue #47)
+- **LangChain: sessions rotate on inactivity**: `MonkAICallbackHandler` kept one uuid until `reset_session()`, turning the whole process into a single endless session. It now uses `SessionManager` like the other integrations; new optional `inactivity_timeout` (default 120s) and `session_manager` params. Session ids follow the `{namespace}-{key}-{timestamp}` format. (Issue #46)
+- **`[openai-agents]` extra installs**: it pointed to `openai-agents-python`, which does not exist on PyPI; now `openai-agents`.
+
+### CI
+- The OpenAI Agents and LangChain integration suites run in CI again (they were ignored for missing deps); fixed `test_token_segmentation`, which read `stdout` instead of the log.
+
 ## [0.9.1] - 2026-09-28
 
 ### Fixed

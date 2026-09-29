@@ -253,3 +253,37 @@ def test_handler_cleanup(mock_client):
         handler.__del__()
         
         assert mock_client.upload_records_batch.called
+
+
+def test_session_rotates_after_inactivity(handler):
+    """Session rotates once inactivity_timeout passes (issue #46)"""
+    with patch('monkai_trace.session_manager.time.time', return_value=1000.0):
+        first = handler._get_or_create_session_id()
+    with patch('monkai_trace.session_manager.time.time', return_value=1000.0 + 60):
+        assert handler._get_or_create_session_id() == first
+    with patch('monkai_trace.session_manager.time.time', return_value=1060.0 + 121):
+        assert handler._get_or_create_session_id() != first
+
+
+def test_custom_inactivity_timeout(mock_client):
+    """inactivity_timeout is honored by the handler"""
+    with patch('monkai_trace.integrations.langchain.MonkAIClient', return_value=mock_client):
+        handler = MonkAICallbackHandler(
+            tracer_token="tk_test_token",
+            namespace="test-namespace",
+            auto_upload=False,
+            inactivity_timeout=5
+        )
+    with patch('monkai_trace.session_manager.time.time', return_value=1000.0):
+        first = handler._get_or_create_session_id()
+    with patch('monkai_trace.session_manager.time.time', return_value=1006.0):
+        assert handler._get_or_create_session_id() != first
+
+
+def test_handlers_do_not_share_sessions(mock_client):
+    """Two handler instances never share a session_id"""
+    with patch('monkai_trace.integrations.langchain.MonkAIClient', return_value=mock_client):
+        a = MonkAICallbackHandler(tracer_token="tk_test_token", namespace="ns", auto_upload=False)
+        b = MonkAICallbackHandler(tracer_token="tk_test_token", namespace="ns", auto_upload=False)
+
+    assert a._get_or_create_session_id() != b._get_or_create_session_id()
