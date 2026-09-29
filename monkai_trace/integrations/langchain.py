@@ -39,6 +39,7 @@ except ImportError:
 
 from ..client import MonkAIClient
 from ..models import ConversationRecord, Message
+from ..session_manager import SessionManager
 
 
 class MonkAICallbackHandler(BaseCallbackHandler):
@@ -54,6 +55,8 @@ class MonkAICallbackHandler(BaseCallbackHandler):
         auto_upload: Whether to auto-upload records (default: True)
         batch_size: Number of records to batch before auto-upload (default: 10)
         estimate_tokens: Estimate tokens for tool calls (default: True)
+        inactivity_timeout: Seconds of inactivity before a new session starts (default: 120)
+        session_manager: Custom SessionManager instance (optional)
     
     Example:
         >>> handler = MonkAICallbackHandler(
@@ -72,7 +75,9 @@ class MonkAICallbackHandler(BaseCallbackHandler):
         agent_name: str = "langchain-agent",
         auto_upload: bool = True,
         batch_size: int = 10,
-        estimate_tokens: bool = True
+        estimate_tokens: bool = True,
+        inactivity_timeout: int = 120,
+        session_manager: Optional[SessionManager] = None
     ):
         """Initialize the MonkAI callback handler."""
         if not LANGCHAIN_AVAILABLE:
@@ -89,6 +94,12 @@ class MonkAICallbackHandler(BaseCallbackHandler):
         self.batch_size = batch_size
         self.estimate_tokens = estimate_tokens
         
+        # Sessions rotate after inactivity; one key per handler instance
+        self.session_manager = session_manager or SessionManager(
+            inactivity_timeout, auto_cleanup_interval=0
+        )
+        self._session_key = uuid.uuid4().hex
+
         # Track current session and conversation state
         self.session_id: Optional[str] = None
         self.current_input: Optional[str] = None
@@ -103,9 +114,11 @@ class MonkAICallbackHandler(BaseCallbackHandler):
         self._current_model: Optional[str] = None
         
     def _get_or_create_session_id(self) -> str:
-        """Get or create a session ID for this conversation."""
-        if not self.session_id:
-            self.session_id = str(uuid.uuid4())
+        """Get the active session ID, rotating it after inactivity."""
+        self.session_id = self.session_manager.get_or_create_session(
+            user_id=self._session_key,
+            namespace=self.namespace
+        )
         return self.session_id
     
     def _estimate_tokens(self, text: str) -> int:
@@ -285,6 +298,7 @@ class MonkAICallbackHandler(BaseCallbackHandler):
         
         Call this between different user conversations.
         """
+        self.session_manager.close_session(self._session_key)
         self.session_id = None
     
     def __del__(self):
