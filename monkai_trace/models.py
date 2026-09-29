@@ -178,6 +178,12 @@ class ConversationRecord(BaseModel):
         description="LLM model used (e.g., gpt-4o, claude-sonnet-4-6-20250514, gpt-4.1-mini)"
     )
 
+    # Free-form context about where the record came from (e.g. repo, branch)
+    metadata: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Integration-specific context, e.g. {'repo': 'org/name', 'branch': 'main'}"
+    )
+
     def to_api_format(self) -> Dict:
         """Convert to API request format"""
         data = {
@@ -212,6 +218,8 @@ class ConversationRecord(BaseModel):
             data["source"] = self.source
         if self.model:
             data["model"] = self.model
+        if self.metadata:
+            data["metadata"] = self.metadata
 
         return data
     

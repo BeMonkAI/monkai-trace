@@ -230,6 +230,112 @@ def test_save_offset_concurrent_writers_keep_every_session():
     assert _load_offsets() == {f"s{w}": 30 for w in range(16)}
 
 
+# --- session metadata (repo / branch / entrypoint) --------------------------
+
+
+def _git_repo(path: Path, remote: str = None) -> Path:
+    import subprocess
+
+    path.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init", "-q", str(path)], check=True)
+    subprocess.run(
+        ["git", "-C", str(path), "-c", "user.email=t@t", "-c", "user.name=t",
+         "commit", "-q", "--allow-empty", "-m", "init"],
+        check=True,
+    )
+    if remote:
+        subprocess.run(["git", "-C", str(path), "remote", "add", "origin", remote], check=True)
+    return path
+
+
+def _session_in(tmp_path: Path, cwd: str, **extra) -> list:
+    first = {"type": "user", "message": {"content": "q"}, "cwd": cwd,
+             "gitBranch": "feat/x", "entrypoint": "cli", "version": "2.1.284", **extra}
+    lines = [first] + _turn("q2", "a2")[1:]
+    session = _write_jsonl(tmp_path / "meta.jsonl", lines)
+    tracer = ClaudeCodeTracer(tracer_token="tk_test", namespace="claude-code", auto_upload=False)
+    return tracer._parse_session(session)
+
+
+def test_metadata_has_repo_from_remote_and_no_absolute_path(tmp_path):
+    repo = _git_repo(tmp_path / "hub", remote="https://tok3n@github.com/BeMonkAI/monkai-agent-hub.git")
+
+    records = _session_in(tmp_path, str(repo))
+
+    assert records[0].metadata == {
+        "repo": "BeMonkAI/monkai-agent-hub",
+        "project": "hub",
+        "branch": "feat/x",
+        "entrypoint": "cli",
+        "client_version": "2.1.284",
+    }
+    payload = json.dumps(records[0].to_api_format())
+    assert str(tmp_path) not in payload  # cwd never sent
+    assert "tok3n" not in payload  # remote credentials never sent
+
+
+def test_metadata_ssh_remote(tmp_path):
+    repo = _git_repo(tmp_path / "trace", remote="git@github.com:BeMonkAI/monkai-trace.git")
+    assert _session_in(tmp_path, str(repo))[0].metadata["repo"] == "BeMonkAI/monkai-trace"
+
+
+def test_metadata_repo_without_remote_falls_back_to_folder(tmp_path):
+    repo = _git_repo(tmp_path / "scratch")
+    meta = _session_in(tmp_path, str(repo))[0].metadata
+    assert meta["repo"] == "scratch" and meta["project"] == "scratch"
+
+
+def test_metadata_worktree_resolves_to_parent_project(tmp_path):
+    import subprocess
+
+    repo = _git_repo(tmp_path / "sortimento", remote="https://github.com/BeMonkAI/sortimento-engineer")
+    wt = repo / ".claude" / "worktrees" / "fix-x"
+    subprocess.run(["git", "-C", str(repo), "worktree", "add", "-q", str(wt)], check=True)
+
+    meta = _session_in(tmp_path, str(wt))[0].metadata
+
+    assert meta["repo"] == "BeMonkAI/sortimento-engineer"
+    assert meta["project"] == "sortimento"
+
+
+def test_metadata_outside_git_keeps_session_fields(tmp_path):
+    plain = tmp_path / "not-a-repo"
+    plain.mkdir()
+    meta = _session_in(tmp_path, str(plain), entrypoint="sdk-cli")[0].metadata
+    assert meta == {"entrypoint": "sdk-cli", "client_version": "2.1.284"}  # no repo, no branch
+
+
+def test_metadata_follows_cwd_per_turn(tmp_path):
+    # Sessions often start in $HOME and move into repos/worktrees mid-way.
+    hub = _git_repo(tmp_path / "hub", remote="https://github.com/BeMonkAI/monkai-agent-hub")
+    trace = _git_repo(tmp_path / "trace", remote="https://github.com/BeMonkAI/monkai-trace")
+    home = tmp_path / "home"
+    home.mkdir()
+    lines = []
+    for cwd, branch in [(home, "HEAD"), (hub, "fix/a"), (trace, "feat/b")]:
+        turn = _turn("q", "a")
+        turn[0].update({"cwd": str(cwd), "gitBranch": branch, "entrypoint": "cli"})
+        lines += turn
+    session = _write_jsonl(tmp_path / "multi.jsonl", lines)
+    tracer = ClaudeCodeTracer(tracer_token="tk_test", namespace="claude-code", auto_upload=False)
+
+    metas = [r.metadata for r in tracer._parse_session(session)]
+
+    assert metas == [
+        {"entrypoint": "cli"},
+        {"repo": "BeMonkAI/monkai-agent-hub", "project": "hub", "branch": "fix/a", "entrypoint": "cli"},
+        {"repo": "BeMonkAI/monkai-trace", "project": "trace", "branch": "feat/b", "entrypoint": "cli"},
+    ]
+
+
+def test_metadata_absent_when_transcript_has_no_cwd(tmp_path):
+    session = _write_jsonl(tmp_path / "nocwd.jsonl", SAMPLE_SESSION)
+    tracer = ClaudeCodeTracer(tracer_token="tk_test", namespace="claude-code", auto_upload=False)
+    rec = tracer._parse_session(session)[0]
+    assert rec.metadata is None
+    assert "metadata" not in rec.to_api_format()
+
+
 # --- run_hook --------------------------------------------------------------
 
 

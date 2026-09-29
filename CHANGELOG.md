@@ -5,6 +5,12 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.3] - 2026-09-29
+
+### Added
+- **`ConversationRecord.metadata`**: optional free-form dict sent as `metadata` on `POST /records/upload`, for integration-specific context. (Issue #49)
+- **Claude Code hook sends where each turn ran**: `metadata` carries `repo` (`org/name` from the git remote), `project` (repository folder; worktrees under `.claude/worktrees/` resolve to the parent repo), `branch`, `entrypoint` (`cli` = interactive, `sdk-cli` = automation) and `client_version`. Repo and branch are resolved per turn, since sessions often start in `$HOME` and move into repos mid-way. The absolute working directory and any credentials in the remote URL are never sent; git runs with a 2s timeout and a failure only drops those fields. (Issue #49)
+
 ## [0.9.2] - 2026-09-29
 
 ### Fixed

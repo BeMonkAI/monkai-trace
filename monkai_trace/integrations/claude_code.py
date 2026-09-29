@@ -31,9 +31,12 @@ Example:
     >>> tracer.watch("~/.claude/projects/-Users-me/")
 """
 
+import functools
 import json
 import logging
 import os
+import re
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -332,6 +335,7 @@ class ClaudeCodeTracer:
             return []
 
         session_id = path.stem  # UUID filename without extension
+        session_meta = _session_metadata(lines)
 
         # Group into conversation turns
         turns = self._group_turns(lines)
@@ -416,6 +420,7 @@ class ClaudeCodeTracer:
                 source="claude-code",
                 model=model_name,
                 inserted_at=user_msg.get("timestamp"),
+                metadata=_turn_metadata(session_meta, user_msg),
             )
             records.append(record)
 
@@ -463,7 +468,14 @@ class ClaudeCodeTracer:
 
                 # Keep the transcript timestamp: the server stamps upload time
                 # when inserted_at is missing, which misdates backfills.
-                current_user = {"content": content, "timestamp": line.get("timestamp")}
+                current_user = {
+                    "content": content,
+                    "timestamp": line.get("timestamp"),
+                    # cwd/branch change mid-session (cd, worktrees), so they
+                    # are captured per turn, not once per transcript.
+                    "cwd": line.get("cwd"),
+                    "branch": line.get("gitBranch"),
+                }
                 current_assistants = []
                 current_usage = {}
 
@@ -531,6 +543,73 @@ class ClaudeCodeTracer:
         Example: '/Users/arthurvaz/Desktop' -> '-Users-arthurvaz-Desktop'
         """
         return path.replace("/", "-")
+
+
+# --- session context (repo / branch / entrypoint) -------------------------
+
+# Seconds per git call; the hook must never stall a Claude Code session.
+_GIT_TIMEOUT = 2.0
+# "org/name" from https://host/org/name(.git) or git@host:org/name(.git).
+# Only the last two path segments are kept, so credentials embedded in the
+# remote URL (https://token@host/...) never leave the machine.
+_REMOTE_RE = re.compile(r"[:/]([^/:]+)/([^/]+?)(?:\.git)?/?$")
+
+
+def _git(cwd: str, *args: str) -> Optional[str]:
+    try:
+        out = subprocess.run(
+            ["git", "-C", cwd, *args],
+            capture_output=True,
+            text=True,
+            timeout=_GIT_TIMEOUT,
+        )
+    except (OSError, subprocess.SubprocessError):
+        logger.warning("git %s failed in %s", " ".join(args), cwd, exc_info=True)
+        return None
+    return out.stdout.strip() if out.returncode == 0 and out.stdout.strip() else None
+
+
+@functools.lru_cache(maxsize=64)
+def _repo_info(cwd: str) -> Tuple[Optional[str], Optional[str]]:
+    """Return (repo "org/name", project folder name) for a working dir.
+
+    ``--git-common-dir`` points at the MAIN repository's .git even inside a
+    worktree, so ``.claude/worktrees/x`` resolves to its parent project.
+    """
+    common = _git(cwd, "rev-parse", "--path-format=absolute", "--git-common-dir")
+    if not common:
+        return None, None
+    common_path = Path(common)
+    project = common_path.parent.name if common_path.name == ".git" else common_path.name
+    remote = _git(cwd, "remote", "get-url", "origin")
+    match = _REMOTE_RE.search(remote) if remote else None
+    repo = f"{match.group(1)}/{match.group(2)}" if match else project
+    return repo, project
+
+
+def _session_metadata(lines: List[Dict]) -> Dict[str, str]:
+    """Fields that hold for the whole session (how it was launched)."""
+    first = next((line for line in lines if line.get("entrypoint") or line.get("version")), {})
+    meta = {"entrypoint": first.get("entrypoint"), "client_version": first.get("version")}
+    return {k: v for k, v in meta.items() if v}
+
+
+def _turn_metadata(session_meta: Dict[str, str], user_msg: Dict) -> Optional[Dict[str, str]]:
+    """Session fields plus the repo/branch the turn ran in.
+
+    The turn's ``cwd`` is only used locally to resolve the repository; it is
+    never sent, since it exposes the machine user and folder layout.
+    """
+    repo, project = _repo_info(user_msg["cwd"]) if user_msg.get("cwd") else (None, None)
+    meta = {
+        "repo": repo,
+        "project": project,
+        # a branch is only meaningful inside a repository
+        "branch": user_msg.get("branch") if repo else None,
+        **session_meta,
+    }
+    meta = {k: v for k, v in meta.items() if v}
+    return meta or None
 
 
 # Default public base URL for the hook (Vercel proxy → Supabase).
