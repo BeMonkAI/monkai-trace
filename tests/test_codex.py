@@ -347,7 +347,8 @@ def test_uninstall_codex_hook_without_file(tmp_path):
     assert not (tmp_path / "codex" / "hooks.json").exists()
 
 
-def test_session_end_hook_uploads_unfinished_trailing_turn(tmp_path, monkeypatch):
+def test_stop_hook_uploads_trailing_turn_once(tmp_path, monkeypatch):
+    # Stop fires when the turn is over, possibly before task_complete is on disk.
     mock = _mock_client(monkeypatch)
     monkeypatch.setenv("MONKAI_TRACE_TOKEN", "tk_test")
     lines = [_meta()] + _turn("t1", "hi", "hello", "2026-09-30T10:00:00Z")
@@ -355,7 +356,8 @@ def test_session_end_hook_uploads_unfinished_trailing_turn(tmp_path, monkeypatch
     _rollout(tmp_path, lines)
 
     run_codex_hook(_StdIn(json.dumps({"session_id": SESSION, "hook_event_name": "Stop"})))
-    assert len(mock.upload_records_batch.call_args[0][0]) == 1
+    assert [r.msg[0].content for r in mock.upload_records_batch.call_args[0][0]] == ["hi", "last"]
+    mock.upload_records_batch.reset_mock()
     payload = {"session_id": SESSION, "hook_event_name": "SessionEnd"}
     run_codex_hook(_StdIn(json.dumps(payload)))
-    assert [r.msg[0].content for r in mock.upload_records_batch.call_args[0][0]] == ["last"]
+    mock.upload_records_batch.assert_not_called()

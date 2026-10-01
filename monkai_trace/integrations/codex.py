@@ -261,4 +261,4 @@ def run_codex_hook(stdin=None) -> int:
     incremental upload, namespace from ``MONKAI_TRACE_NAMESPACE`` (default
     ``codex``), never raises, always returns 0.
     """
-    return _run_hook(stdin, "Codex", find_rollout, CodexTracer, "codex")
+    return _run_hook(stdin, "Codex", find_rollout, CodexTracer, "codex", finish_trailing=True)
