@@ -745,11 +745,15 @@ def _run_hook(
     locate: Callable[[Dict], Optional[str]],
     tracer_cls: type,
     default_namespace: str,
+    finish_trailing: bool = False,
 ) -> int:
     """Shared hook body: read the payload, find the session, upload new turns.
 
     ``locate`` maps the hook payload to the session path (or ``None``). Never
     raises and always returns 0, so a failing hook cannot break the session.
+    ``finish_trailing`` uploads the trailing turn on every event, for assistants
+    whose hooks only fire once the turn is over but log the turn-closing marker
+    after the hook runs (Codex, Grok).
     """
     try:
         raw = (stdin or sys.stdin).read()
@@ -781,7 +785,9 @@ def _run_hook(
             namespace=os.environ.get("MONKAI_TRACE_NAMESPACE", default_namespace),
             base_url=os.environ.get("MONKAI_TRACE_BASE_URL", DEFAULT_HOOK_BASE_URL),
         )
-        tracer.include_unfinished = payload.get("hook_event_name") == "SessionEnd"
+        tracer.include_unfinished = (
+            finish_trailing or payload.get("hook_event_name") == "SessionEnd"
+        )
         result = tracer.upload_session_incremental(session)
         logger.info("%s trace: %s new turns uploaded", label, result.get("total_inserted", 0))
     except Exception:  # noqa: BLE001 - hook must never crash the session

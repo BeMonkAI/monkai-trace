@@ -214,4 +214,4 @@ def run_grok_hook(stdin=None) -> int:
     incremental upload, namespace from ``MONKAI_TRACE_NAMESPACE`` (default
     ``grok``), never raises, always returns 0.
     """
-    return _run_hook(stdin, "Grok", find_session_dir, GrokTracer, "grok")
+    return _run_hook(stdin, "Grok", find_session_dir, GrokTracer, "grok", finish_trailing=True)

@@ -285,16 +285,26 @@ def test_claude_install_does_not_touch_grok_or_codex(tmp_path, monkeypatch):
     assert "claude-hook" in data["hooks"]["Stop"][0]["hooks"][0]["command"]
 
 
-def test_session_end_hook_uploads_unfinished_trailing_turn(tmp_path, monkeypatch):
-    # Subagent sessions never log turn_completed; SessionEnd flushes the turn.
+def test_stop_hook_uploads_trailing_turn_once(tmp_path, monkeypatch):
+    # Grok runs the Stop hook BEFORE it logs turn_completed (and subagent
+    # sessions never log it), so Stop must flush the trailing turn itself.
     mock = _mock_client(monkeypatch)
     monkeypatch.setenv("MONKAI_TRACE_TOKEN", "tk_test")
     _session(tmp_path, _turn(0, "a", "x", 10, T0, close=False))
 
     run_grok_hook(_StdIn(json.dumps({"sessionId": SESSION, "hook_event_name": "Stop"})))
-    mock.upload_records_batch.assert_not_called()
-    run_grok_hook(_StdIn(json.dumps({"sessionId": SESSION, "hook_event_name": "SessionEnd"})))
     assert [r.msg[0].content for r in mock.upload_records_batch.call_args[0][0]] == ["a"]
+    mock.upload_records_batch.reset_mock()
+    run_grok_hook(_StdIn(json.dumps({"sessionId": SESSION, "hook_event_name": "SessionEnd"})))
+    mock.upload_records_batch.assert_not_called()
+
+
+def test_hook_without_event_name_still_flushes_trailing_turn(tmp_path, monkeypatch):
+    mock = _mock_client(monkeypatch)
+    monkeypatch.setenv("MONKAI_TRACE_TOKEN", "tk_test")
+    _session(tmp_path, _turn(0, "a", "x", 10, T0, close=False))
+    run_grok_hook(_StdIn(json.dumps({"sessionId": SESSION})))
+    assert len(mock.upload_records_batch.call_args[0][0]) == 1
 
 
 def test_incremental_with_file_path_uses_session_offset(tmp_path, monkeypatch):
