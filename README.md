@@ -192,6 +192,23 @@ path from Claude Code and uploads it. It never raises, so a trace failure can
 never break your Claude Code session. Remove it anytime with
 `monkai-trace uninstall-hook`.
 
+#### Auto-trace Codex and Grok CLI sessions
+
+The same hook works for the Codex CLI and the Grok CLI:
+
+```bash
+monkai-trace install-hook --assistant codex   # ~/.codex/hooks.json
+monkai-trace install-hook --assistant grok    # ~/.grok/hooks/monkai-trace.json
+```
+
+Each finished turn is uploaded with `source` `codex` / `grok` and namespace
+`codex` / `grok` (or `MONKAI_TRACE_NAMESPACE`), plus model, tool calls and the
+repo/branch it ran in. Codex tokens are exact; Grok logs no input/output split,
+so its tokens are an estimate (`metadata.tokens_estimated: true`). Codex asks
+you to trust a new hook before running it. Remove with
+`monkai-trace uninstall-hook --assistant codex|grok`. See
+[docs/coding_assistants_integration.md](docs/coding_assistants_integration.md).
+
 > The transcript is uploaded once, when the session ends (`SessionEnd`). If you
 > resume a session and end it again, it is re-uploaded in full.
 

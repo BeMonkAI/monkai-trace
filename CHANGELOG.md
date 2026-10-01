@@ -5,6 +5,13 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-10-01
+
+### Added
+- **Codex CLI auto-trace**: `monkai-trace install-hook --assistant codex` registers `Stop` + `SessionEnd` in `~/.codex/hooks.json`; `monkai-trace codex-hook` uploads each finished turn of the rollout (`source="codex"`) with model, tool calls, repo/branch metadata and exact tokens (uncached input, cached input as `memory_tokens`, output). Injected context (AGENTS.md, environment context, developer messages) is not sent. New `CodexTracer` / `run_codex_hook`. (Issue #52)
+- **Grok CLI auto-trace**: `monkai-trace install-hook --assistant grok` writes `~/.grok/hooks/monkai-trace.json`; `monkai-trace grok-hook` uploads each finished user turn (`source="grok"`) from the append-only `updates.jsonl`. Grok logs no input/output split, so tokens are estimated from the growth of the context size and flagged with `metadata.tokens_estimated`. New `GrokTracer` / `run_grok_hook`. (Issue #53)
+- `uninstall-hook` takes the same `--assistant`; Claude Code stays the default.
+
 ## [0.9.3] - 2026-09-29
 
 ### Added

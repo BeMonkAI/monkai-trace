@@ -40,7 +40,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 try:
     import fcntl
@@ -71,6 +71,10 @@ class ClaudeCodeTracer:
     # Claude Code stores projects with path separators replaced by hyphens
     CLAUDE_DIR = Path.home() / ".claude"
     PROJECTS_DIR = CLAUDE_DIR / "projects"
+    # Codex/Grok subclasses hold back a trailing turn with no closing event
+    # (it may still be running); the hook sets this on ``SessionEnd``, when
+    # nothing runs anymore. Claude Code transcripts ignore it.
+    include_unfinished = False
 
     def __init__(
         self,
@@ -587,6 +591,22 @@ def _repo_info(cwd: str) -> Tuple[Optional[str], Optional[str]]:
     return repo, project
 
 
+@functools.lru_cache(maxsize=64)
+def _current_branch(cwd: str) -> Optional[str]:
+    """Branch checked out in ``cwd`` now (for logs that do not record it)."""
+    return _git(cwd, "branch", "--show-current")
+
+
+def _cwd_metadata(session_meta: Dict[str, str], cwd: Optional[str]) -> Optional[Dict]:
+    """:func:`_turn_metadata` for logs that store only the turn's ``cwd``.
+
+    The branch is read from git at upload time; hooks upload right after each
+    turn, so it matches the turn except for late backfills.
+    """
+    branch = _current_branch(cwd) if cwd else None
+    return _turn_metadata(session_meta, {"cwd": cwd, "branch": branch})
+
+
 def _session_metadata(lines: List[Dict]) -> Dict[str, str]:
     """Fields that hold for the whole session (how it was launched)."""
     first = next((line for line in lines if line.get("entrypoint") or line.get("version")), {})
@@ -710,38 +730,61 @@ def run_hook(stdin=None) -> int:
     Returns:
         Always 0 (success exit code for the hook runner).
     """
+    return _run_hook(
+        stdin,
+        "Claude Code",
+        lambda payload: payload.get("transcript_path"),
+        ClaudeCodeTracer,
+        "claude-code",
+    )
+
+
+def _run_hook(
+    stdin,
+    label: str,
+    locate: Callable[[Dict], Optional[str]],
+    tracer_cls: type,
+    default_namespace: str,
+) -> int:
+    """Shared hook body: read the payload, find the session, upload new turns.
+
+    ``locate`` maps the hook payload to the session path (or ``None``). Never
+    raises and always returns 0, so a failing hook cannot break the session.
+    """
     try:
         raw = (stdin or sys.stdin).read()
         payload = json.loads(raw) if raw.strip() else {}
     except (json.JSONDecodeError, ValueError, OSError) as exc:
-        logger.warning("Could not read Claude Code hook payload: %s", exc)
+        logger.warning("Could not read %s hook payload: %s", label, exc)
         return 0
-
-    transcript = payload.get("transcript_path")
-    if not transcript:
-        logger.info("Hook payload has no transcript_path; nothing to upload")
-        return 0
-
-    token = resolve_token()
-    if not token:
-        logger.warning(
-            "No tracer token (MONKAI_TRACE_TOKEN env or token file); "
-            "skipping Claude Code trace upload"
-        )
+    if not isinstance(payload, dict):
+        logger.warning("%s hook payload is not a JSON object; ignoring", label)
         return 0
 
     try:
-        tracer = ClaudeCodeTracer(
+        session = locate(payload)
+        if not session:
+            logger.info("%s hook payload points to no session; nothing to upload", label)
+            return 0
+
+        token = resolve_token()
+        if not token:
+            logger.warning(
+                "No tracer token (MONKAI_TRACE_TOKEN env or token file); "
+                "skipping %s trace upload",
+                label,
+            )
+            return 0
+
+        tracer = tracer_cls(
             tracer_token=token,
-            namespace=os.environ.get("MONKAI_TRACE_NAMESPACE", "claude-code"),
+            namespace=os.environ.get("MONKAI_TRACE_NAMESPACE", default_namespace),
             base_url=os.environ.get("MONKAI_TRACE_BASE_URL", DEFAULT_HOOK_BASE_URL),
         )
-        result = tracer.upload_session_incremental(transcript)
-        logger.info(
-            "Claude Code trace: %s new turns uploaded",
-            result.get("total_inserted", 0),
-        )
+        tracer.include_unfinished = payload.get("hook_event_name") == "SessionEnd"
+        result = tracer.upload_session_incremental(session)
+        logger.info("%s trace: %s new turns uploaded", label, result.get("total_inserted", 0))
     except Exception:  # noqa: BLE001 - hook must never crash the session
-        logger.exception("Failed to upload Claude Code session trace")
+        logger.exception("Failed to upload %s session trace", label)
 
     return 0

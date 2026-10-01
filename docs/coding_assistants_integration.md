@@ -7,6 +7,8 @@ MonkAI Trace can parse and upload usage data from popular coding assistants, ena
 | Tool | Class | Data Source | Token Tracking |
 |------|-------|-------------|----------------|
 | **Claude Code** | `ClaudeCodeTracer` | JSONL session logs (`~/.claude/`) | Exact (Anthropic API usage) |
+| **Codex CLI** | `CodexTracer` | Rollout logs (`~/.codex/sessions/`) | Exact (OpenAI usage) |
+| **Grok CLI** | `GrokTracer` | Session updates (`~/.grok/sessions/`) | Estimated (context growth) |
 | **Cline** | `ClineTracer` | Task history (VS Code extension storage) | Estimated (~4 chars/token) |
 | **OpenClaw** | `OpenClawTracer` | Session transcripts (`~/.openclaw/`) | Estimated (~4 chars/token) |
 | **GitHub Copilot** | `CopilotTracer` | Chat history + GitHub API + CSV | Estimated / API metrics |
@@ -65,6 +67,71 @@ Claude Code encodes project paths by replacing `/` with `-`:
 - `/Users/me/project` → `-Users-me-project`
 
 The tracer handles encoding/decoding automatically.
+
+---
+
+## Codex CLI
+
+```bash
+monkai-trace install-hook --assistant codex   # Stop + SessionEnd in $CODEX_HOME/hooks.json
+monkai-trace uninstall-hook --assistant codex
+```
+
+The hook runs `monkai-trace codex-hook`, finds the rollout file from the hook
+payload (`transcript_path`, else `session_id`) and uploads only the turns not
+sent before. Codex asks you to review and trust a new hook before it runs.
+
+What is sent per turn (`source="codex"`, namespace `codex` unless
+`MONKAI_TRACE_NAMESPACE` is set):
+
+- the text you typed (developer messages and injected context such as
+  AGENTS.md and `<environment_context>` are skipped) and the assistant replies;
+- tool calls (name, arguments, id); tool outputs are not sent;
+- the model of the turn and `metadata` with `repo`, `project`, `branch`,
+  `entrypoint` (Codex originator, e.g. `codex-tui`) and `client_version`;
+- tokens from `turn_token_usage`: `input_tokens` = uncached input,
+  `memory_tokens` = cached input, `process_tokens` = cache writes,
+  `output_tokens` = output (reasoning included).
+
+A turn without a closing event yet is held back until it closes, the next
+turn starts or `SessionEnd` fires.
+
+```python
+from monkai_trace.integrations import CodexTracer
+
+tracer = CodexTracer(tracer_token="tk_your_token", namespace="codex")
+tracer.upload_session_incremental("~/.codex/sessions/2026/09/30/rollout-...jsonl")
+```
+
+---
+
+## Grok CLI
+
+```bash
+monkai-trace install-hook --assistant grok   # writes $GROK_HOME/hooks/monkai-trace.json
+monkai-trace uninstall-hook --assistant grok
+```
+
+The hook runs `monkai-trace grok-hook` and locates the session directory by
+the payload's `sessionId` (falling back to the most recently updated session).
+Turns are read from `updates.jsonl`, which is append-only;
+`chat_history.jsonl` is rewritten on compaction.
+A turn is sent once `turn_completed` is logged, the next prompt starts or
+`SessionEnd` fires (subagent sessions never log `turn_completed`).
+
+Per user turn (`source="grok"`, namespace `grok` by default): your prompt,
+assistant text, tool calls (no outputs), model and the same repo/branch
+`metadata`. **Tokens are estimated**: Grok logs only the current context size
+(`totalTokens`), so a turn's tokens are how much that grew since the previous
+turn (never negative after a compaction), sent as `input_tokens` with
+`metadata.tokens_estimated: true`.
+
+```python
+from monkai_trace.integrations import GrokTracer
+
+tracer = GrokTracer(tracer_token="tk_your_token", namespace="grok")
+tracer.upload_session_incremental("~/.grok/sessions/<encoded-cwd>/<session-id>")
+```
 
 ---
 
