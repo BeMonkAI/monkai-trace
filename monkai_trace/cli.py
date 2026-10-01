@@ -7,9 +7,14 @@ so they appear in the MonkAI Hub.
 Subcommands:
     monkai-trace claude-hook        Read a Claude Code hook payload from stdin
                                     and incrementally upload the session.
-    monkai-trace install-hook       Register the hook in ~/.claude/settings.json
-                                    (idempotent; resolves an absolute command).
-    monkai-trace uninstall-hook     Remove the hook from ~/.claude/settings.json.
+    monkai-trace codex-hook         Same, for the Codex CLI hook.
+    monkai-trace grok-hook          Same, for the Grok CLI hook.
+    monkai-trace install-hook       Register the hook (idempotent; resolves an
+                                    absolute command). ``--assistant`` picks
+                                    claude-code (~/.claude/settings.json),
+                                    codex (~/.codex/hooks.json) or grok
+                                    (~/.grok/hooks/monkai-trace.json).
+    monkai-trace uninstall-hook     Remove the hook (same ``--assistant``).
     monkai-trace watch <dir>        Poll a project dir and upload incrementally.
     monkai-trace upload-session ... Manually upload a single session JSONL.
     monkai-trace upload-project ... Manually upload all sessions in a project dir.
@@ -22,7 +27,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -35,12 +40,27 @@ HOOK_MARKER = "claude-hook"
 # safety net for sessions that end without a final Stop. The per-session
 # incremental offset makes the overlap a no-op (no duplicate turns).
 DEFAULT_EVENTS = ["Stop", "SessionEnd"]
+# Hook subcommand (also the idempotency marker) per assistant.
+HOOK_MARKERS = {"claude-code": HOOK_MARKER, "codex": "codex-hook", "grok": "grok-hook"}
+# Codex and Grok kill hooks after 5s by default (Grok: SessionEnd); an upload
+# can take longer.
+HOOK_TIMEOUT = 30
+
+
+def _hook_file(assistant: str) -> Path:
+    """Hook config file per assistant; homes follow CODEX_HOME / GROK_HOME."""
+    if assistant == "codex":
+        return Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))) / "hooks.json"
+    if assistant == "grok":
+        home = Path(os.environ.get("GROK_HOME", str(Path.home() / ".grok")))
+        return home / "hooks" / "monkai-trace.json"
+    return CLAUDE_SETTINGS
 
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="monkai-trace",
-        description="MonkAI Trace CLI — auto-trace Claude Code conversations.",
+        description="MonkAI Trace CLI — auto-trace Claude Code, Codex and Grok conversations.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -48,11 +68,14 @@ def _build_parser() -> argparse.ArgumentParser:
         "claude-hook",
         help="Read a Claude Code hook payload from stdin and upload the session.",
     )
+    sub.add_parser("codex-hook", help="Same as claude-hook, for the Codex CLI.")
+    sub.add_parser("grok-hook", help="Same as claude-hook, for the Grok CLI.")
 
     p_install = sub.add_parser(
         "install-hook",
-        help="Register the Claude Code hook in ~/.claude/settings.json.",
+        help="Register the hook (Claude Code by default; see --assistant).",
     )
+    _add_assistant_arg(p_install)
     p_install.add_argument(
         "--event",
         nargs="+",
@@ -69,10 +92,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "hook command via MONKAI_TRACE_TOKEN_FILE; default ~/.monkai_trace_token.",
     )
 
-    sub.add_parser(
+    p_uninstall = sub.add_parser(
         "uninstall-hook",
-        help="Remove the MonkAI Trace hook from ~/.claude/settings.json.",
+        help="Remove the MonkAI Trace hook (Claude Code by default; see --assistant).",
     )
+    _add_assistant_arg(p_uninstall)
 
     p_watch = sub.add_parser(
         "watch", help="Poll a project directory and upload sessions incrementally."
@@ -89,6 +113,15 @@ def _build_parser() -> argparse.ArgumentParser:
     p_project.add_argument("path", help="Path to the project directory.")
 
     return parser
+
+
+def _add_assistant_arg(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--assistant",
+        choices=sorted(HOOK_MARKERS),
+        default="claude-code",
+        help="Coding assistant whose hook config to edit (default: claude-code).",
+    )
 
 
 def _require_token() -> Optional[str]:
@@ -114,7 +147,7 @@ def _make_tracer(token: str):
     )
 
 
-def _resolve_hook_command(token_file: Optional[str]) -> str:
+def _resolve_hook_command(token_file: Optional[str], marker: str = HOOK_MARKER) -> str:
     """Build a hook command that resolves regardless of the hook runner's PATH.
 
     Prefers the absolute path of the installed ``monkai-trace`` binary; falls
@@ -124,9 +157,9 @@ def _resolve_hook_command(token_file: Optional[str]) -> str:
     """
     binary = shutil.which("monkai-trace")
     if binary:
-        cmd = f"{binary} {HOOK_MARKER}"
+        cmd = f"{binary} {marker}"
     else:
-        cmd = f"{sys.executable} -m monkai_trace.cli {HOOK_MARKER}"
+        cmd = f"{sys.executable} -m monkai_trace.cli {marker}"
     if token_file:
         cmd = f'MONKAI_TRACE_TOKEN_FILE="{token_file}" {cmd}'
     return cmd
@@ -138,29 +171,35 @@ def _cmd_claude_hook() -> int:
     return run_hook()
 
 
-def _cmd_install_hook(events: List[str], token_file: Optional[str]) -> int:
+def _cmd_install_hook(
+    events: List[str], token_file: Optional[str], assistant: str = "claude-code"
+) -> int:
     from .integrations.claude_code import resolve_token
 
-    settings = _load_settings(CLAUDE_SETTINGS)
+    path = _hook_file(assistant)
+    marker = HOOK_MARKERS[assistant]
+    settings = _load_settings(path)
     hooks = settings.setdefault("hooks", {})
-    command = _resolve_hook_command(token_file)
+    command = _resolve_hook_command(token_file, marker)
+    handler: Dict[str, Any] = {"type": "command", "command": command}
+    if assistant != "claude-code":
+        handler["timeout"] = HOOK_TIMEOUT
 
     registered: List[str] = []
     for event in events:
         event_hooks = hooks.setdefault(event, [])
-        if _hook_present(event_hooks):
+        if _hook_present(event_hooks, marker):
             print(f"MonkAI Trace hook already registered on {event}.")
             continue
-        event_hooks.append({"hooks": [{"type": "command", "command": command}]})
+        event_hooks.append({"hooks": [dict(handler)]})
         registered.append(event)
 
     if registered:
-        _save_settings(CLAUDE_SETTINGS, settings)
-        print(
-            f"Registered MonkAI Trace hook on {', '.join(registered)} "
-            f"in {CLAUDE_SETTINGS}."
-        )
+        _save_settings(path, settings)
+        print(f"Registered MonkAI Trace hook on {', '.join(registered)} in {path}.")
         print(f"  command: {command}")
+        if assistant == "codex":
+            print("  Codex asks you to review and trust new hooks before running them.")
 
     # Robustness: warn now if the hook would have no token at fire time.
     if token_file is None and not resolve_token():
@@ -173,16 +212,18 @@ def _cmd_install_hook(events: List[str], token_file: Optional[str]) -> int:
     return 0
 
 
-def _cmd_uninstall_hook() -> int:
-    if not CLAUDE_SETTINGS.exists():
-        print("No ~/.claude/settings.json found; nothing to remove.")
+def _cmd_uninstall_hook(assistant: str = "claude-code") -> int:
+    path = _hook_file(assistant)
+    marker = HOOK_MARKERS[assistant]
+    if not path.exists():
+        print(f"No {path} found; nothing to remove.")
         return 0
 
-    settings = _load_settings(CLAUDE_SETTINGS)
+    settings = _load_settings(path)
     hooks = settings.get("hooks", {})
     removed = False
     for event, event_hooks in list(hooks.items()):
-        kept = [h for h in event_hooks if not _is_monkai_hook(h)]
+        kept = [h for h in event_hooks if not _is_monkai_hook(h, marker)]
         if len(kept) != len(event_hooks):
             removed = True
             if kept:
@@ -191,8 +232,8 @@ def _cmd_uninstall_hook() -> int:
                 del hooks[event]
 
     if removed:
-        _save_settings(CLAUDE_SETTINGS, settings)
-        print("Removed MonkAI Trace hook from ~/.claude/settings.json.")
+        _save_settings(path, settings)
+        print(f"Removed MonkAI Trace hook from {path}.")
     else:
         print("MonkAI Trace hook was not registered; nothing to remove.")
     return 0
@@ -246,16 +287,16 @@ def _save_settings(path: Path, settings: dict) -> None:
     path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
 
 
-def _is_monkai_hook(entry: dict) -> bool:
+def _is_monkai_hook(entry: dict, marker: str = HOOK_MARKER) -> bool:
     inner = entry.get("hooks", []) if isinstance(entry, dict) else []
     return any(
-        isinstance(h, dict) and isinstance(h.get("command"), str) and HOOK_MARKER in h["command"]
+        isinstance(h, dict) and isinstance(h.get("command"), str) and marker in h["command"]
         for h in inner
     )
 
 
-def _hook_present(event_hooks: List[dict]) -> bool:
-    return any(_is_monkai_hook(h) for h in event_hooks)
+def _hook_present(event_hooks: List[dict], marker: str = HOOK_MARKER) -> bool:
+    return any(_is_monkai_hook(h, marker) for h in event_hooks)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -264,10 +305,18 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.command == "claude-hook":
         return _cmd_claude_hook()
+    if args.command == "codex-hook":
+        from .integrations.codex import run_codex_hook
+
+        return run_codex_hook()
+    if args.command == "grok-hook":
+        from .integrations.grok import run_grok_hook
+
+        return run_grok_hook()
     if args.command == "install-hook":
-        return _cmd_install_hook(args.event, args.token_file)
+        return _cmd_install_hook(args.event, args.token_file, args.assistant)
     if args.command == "uninstall-hook":
-        return _cmd_uninstall_hook()
+        return _cmd_uninstall_hook(args.assistant)
     if args.command == "watch":
         return _cmd_watch(args.path, args.interval)
     if args.command == "upload-session":
