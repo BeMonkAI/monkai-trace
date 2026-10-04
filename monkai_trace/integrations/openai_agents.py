@@ -25,6 +25,23 @@ from ..session_manager import SessionManager, PersistentSessionManager
 from functools import wraps
 
 
+def _model_id(model: Any) -> Optional[str]:
+    """Model id string for an Agent.model value (str or SDK Model object).
+
+    SDK Model objects (OpenAIResponsesModel, OpenAIChatCompletionsModel, LitellmModel)
+    keep the id in ``.model``. LiteLLM ids carry a routing prefix ("anthropic/claude-x")
+    that is dropped so the Hub prices it by the bare id. Unknown objects -> None, never a repr.
+    """
+    if model is None or isinstance(model, str):
+        return model
+    model_id = getattr(model, "model", None)
+    if not isinstance(model_id, str):
+        return None
+    if "litellm" in type(model).__module__:
+        return model_id.rsplit("/", 1)[-1]
+    return model_id
+
+
 class MonkAIRunHooks(RunHooks):
     """
     OpenAI Agents RunHooks integration for MonkAI.
@@ -110,7 +127,11 @@ class MonkAIRunHooks(RunHooks):
         self._pending_user_input: Optional[str] = None
         self._user_input: Optional[str] = None
         self._skip_auto_flush: bool = False
-    
+        # Per-agent usage of the current turn, from on_llm_end: name -> [agent, input, output]
+        self._agent_usage: Dict[str, list] = {}
+        # Last handoff made by each agent in the current turn: name -> handoff Message
+        self._handoff_msgs: Dict[str, Message] = {}
+
     async def on_agent_start(
         self,
         context: RunContextWrapper,
@@ -281,7 +302,23 @@ class MonkAIRunHooks(RunHooks):
                 system_prompt_tokens=self._system_prompt_tokens,
                 context_tokens=self._context_tokens
             )
-        
+
+        # Handoff turn: context.usage is cumulative across agents, so each agent that
+        # called the LLM gets its own record with its own tokens and model.
+        handoff_records = [
+            self._intermediate_record(name, *entry)
+            for name, entry in self._agent_usage.items()
+            if name != agent.name
+        ]
+        if handoff_records:
+            _, own_input, own_output = self._agent_usage.get(agent.name, (agent, 0, 0))
+            token_usage = TokenUsage(
+                input_tokens=own_input,
+                output_tokens=own_output,
+                process_tokens=self._system_prompt_tokens,
+                memory_tokens=self._context_tokens,
+            )
+
         # Build messages list - ensure we have user and assistant messages
         messages = self._messages.copy() if self._messages else []
         
@@ -307,10 +344,7 @@ class MonkAIRunHooks(RunHooks):
         if not has_assistant_message:
             messages.append(Message(role="assistant", content=str(output), sender=agent.name))
         
-        # Extract model name from agent
-        model_name = getattr(agent, 'model', None)
-        if model_name and not isinstance(model_name, str):
-            model_name = str(model_name)
+        model_name = _model_id(getattr(agent, 'model', None))
 
         # Create conversation record with external_user_id from set_user_id()
         record = ConversationRecord(
@@ -331,8 +365,9 @@ class MonkAIRunHooks(RunHooks):
             model=model_name
         )
         
-        # Upload or batch
+        # Upload or batch (final record last: run_with_tracking appends internal tools to it)
         if self.auto_upload:
+            self._batch_buffer.extend(handoff_records)
             self._batch_buffer.append(record)
             # Skip auto-flush if using run_with_tracking (will flush after capturing internal tools)
             if not self._skip_auto_flush and len(self._batch_buffer) >= self.batch_size:
@@ -345,8 +380,64 @@ class MonkAIRunHooks(RunHooks):
         self._context_tokens = 0
         self._user_input = None
         self._anonymous_session = None
-        
+        self._agent_usage.clear()
+        self._handoff_msgs.clear()
+
         logger.info(f"Tracked {token_usage.total_tokens} tokens for '{agent.name}'")
+
+    def _intermediate_record(
+        self, name: str, agent: Agent, input_tokens: int, output_tokens: int
+    ) -> ConversationRecord:
+        """Record for an agent that handed off mid-turn: its own tokens and model.
+
+        msg is a single assistant message (no user message, so the Hub does not count it
+        as a human turn); the handoff timestamp keeps it unique for the Hub's content dedup.
+        """
+        handoff = self._handoff_msgs.get(name)
+        msg = Message(
+            role="assistant",
+            content=handoff.content if handoff else f"{name} encaminhou a conversa",
+            sender=name,
+            tool_calls=handoff.tool_calls if handoff else [{
+                "name": "transfer_to_agent",
+                "arguments": {"from_agent": name, "timestamp": datetime.utcnow().isoformat()},
+            }],
+        )
+        instructions = getattr(agent, 'instructions', None)
+        usage = TokenUsage(
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            process_tokens=(
+                len(instructions) // 4
+                if self.estimate_system_tokens and isinstance(instructions, str)
+                else 0
+            ),
+        )
+        return ConversationRecord(
+            namespace=self.namespace,
+            agent=name,
+            session_id=self._current_session,
+            msg=[msg],
+            input_tokens=usage.input_tokens,
+            output_tokens=usage.output_tokens,
+            process_tokens=usage.process_tokens,
+            memory_tokens=usage.memory_tokens,
+            total_tokens=usage.total_tokens,
+            inserted_at=datetime.utcnow().isoformat(),
+            external_user_id=self._current_user_id,
+            external_user_name=self._external_user_name,
+            external_user_channel=self._external_user_channel,
+            model=_model_id(getattr(agent, 'model', None)),
+        )
+
+    async def on_llm_end(self, context: RunContextWrapper, agent: Agent, response: Any) -> None:
+        """Accumulate this LLM call's usage under the agent that made it."""
+        usage = getattr(response, 'usage', None)
+        if usage is None:
+            return
+        entry = self._agent_usage.setdefault(agent.name, [agent, 0, 0])
+        entry[1] += getattr(usage, 'input_tokens', 0) or 0
+        entry[2] += getattr(usage, 'output_tokens', 0) or 0
     
     async def on_handoff(
         self,
@@ -368,7 +459,7 @@ class MonkAIRunHooks(RunHooks):
         self._transfers.append(transfer)
         
         # Also create a tool message for the handoff (for frontend visualization)
-        self._messages.append(Message(
+        handoff_msg = Message(
             role="tool",
             content=f"Transferindo conversa para {to_agent.name}",
             sender=from_agent.name,
@@ -381,8 +472,10 @@ class MonkAIRunHooks(RunHooks):
                     "timestamp": timestamp
                 }
             }]
-        ))
-    
+        )
+        self._messages.append(handoff_msg)
+        self._handoff_msgs[from_agent.name] = handoff_msg
+
     async def on_tool_start(
         self,
         context: RunContextWrapper,

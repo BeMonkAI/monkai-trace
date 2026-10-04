@@ -220,6 +220,24 @@ Message(
 )
 ```
 
+**Records per turn.** A turn without handoff produces one record. A turn with handoffs
+(e.g. Triage → Billing) produces one record per agent that called the LLM, all with the
+same `session_id`, so the Hub can group tokens and cost by model correctly:
+
+| Record | `agent` / `model` | Tokens | `msg` | `transfers` |
+|---|---|---|---|---|
+| Each agent that handed off (uploaded first) | that agent and its model | only its own LLM calls (`on_llm_end` usage) | one `assistant` message, the handoff note above (no `user` message, so it is not counted as a human turn) | `null` |
+| Final agent (uploaded last) | final agent and its model | only its own LLM calls | full conversation, as before | all transfers |
+
+The input/output tokens of the records add up to the run's total usage. On SDKs that never
+call `on_llm_end`, the turn falls back to a single record with the run's cumulative usage.
+
+**`model`** is the model id string: `Agent.model` as given when it is a string, or the
+`.model` of a Model object (`OpenAIResponsesModel`, `OpenAIChatCompletionsModel`,
+`LitellmModel`). For `LitellmModel` the provider prefix is dropped
+(`anthropic/claude-sonnet-4-5` → `claude-sonnet-4-5`). Unknown objects send `null`.
+When `Agent.model` is unset, `model` is `null` (the run's default model is not resolved).
+
 ### Tool Calls
 All tool invocations are tracked with:
 - Tool name
