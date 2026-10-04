@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-10-04
+
 ### Fixed
 - **OpenAI Agents: `model` is the model id, not a repr**: when `Agent.model` was a Model object (`LitellmModel`, or `OpenAIChatCompletionsModel` / `OpenAIResponsesModel` with a custom client), the record got `str(obj)` (`<agents...LitellmModel object at 0x...>`), so the Hub could not group or price it. The id now comes from the object's `.model`; `LitellmModel` drops the provider prefix (`anthropic/claude-sonnet-4-5` → `claude-sonnet-4-5`); unknown objects send `null`. String models pass through unchanged.
 - **OpenAI Agents: handoff turns attribute tokens per agent**: a Triage → Specialist turn emitted one record tagged with the specialist, carrying the run's cumulative usage, so the triage agent's tokens were billed to the specialist's model. Usage is now collected per agent from `on_llm_end`; each agent that handed off gets its own record (its name, model and tokens, same `session_id`, a single `assistant` handoff message so the Hub does not count it as a human turn) before the final agent's record, which keeps the full conversation and transfers with only its own tokens. Turns without handoff, and SDKs that never call `on_llm_end`, produce the same record as before.
