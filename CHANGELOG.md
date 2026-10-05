@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-10-05
+
+### Added
+- **OpenAI Agents: `MonkAIRunHooks.set_metadata()`**: sends `metadata` on every record of the turn (handoff records included), e.g. an experiment label (`{"label": ..., "variant": ...}`). `set_metadata(None)` clears it. (#58)
+
 ## [0.10.2] - 2026-10-04
 
 ### Fixed
