@@ -113,6 +113,7 @@ class MonkAIRunHooks(RunHooks):
         self._current_user_id: Optional[str] = None
         self._external_user_name: Optional[str] = None
         self._external_user_channel: Optional[str] = None
+        self._metadata: Optional[Dict[str, Any]] = None
         
         # Track conversation state
         self._current_session: Optional[str] = None
@@ -272,7 +273,16 @@ class MonkAIRunHooks(RunHooks):
             result = await Runner.run(agent, "Hello", hooks=hooks)
         """
         self._external_user_channel = channel
-    
+
+    def set_metadata(self, metadata: Optional[Dict[str, Any]]) -> None:
+        """Context sent on every record of the next turns, e.g. an experiment label.
+
+        Usage:
+            hooks.set_metadata({"label": "teste.21", "variant": "A"})
+        ``None`` clears it. The Hub keeps only ``label`` and ``variant``.
+        """
+        self._metadata = dict(metadata) if metadata else None
+
     async def on_agent_end(
         self,
         context: RunContextWrapper,
@@ -362,7 +372,8 @@ class MonkAIRunHooks(RunHooks):
             external_user_id=self._current_user_id,  # ID do usuário definido via set_user_id()
             external_user_name=self._external_user_name,  # Nome do usuário definido via set_user_name()
             external_user_channel=self._external_user_channel,  # Canal definido via set_user_channel()
-            model=model_name
+            model=model_name,
+            metadata=self._metadata,
         )
         
         # Upload or batch (final record last: run_with_tracking appends internal tools to it)
@@ -428,6 +439,7 @@ class MonkAIRunHooks(RunHooks):
             external_user_name=self._external_user_name,
             external_user_channel=self._external_user_channel,
             model=_model_id(getattr(agent, 'model', None)),
+            metadata=self._metadata,
         )
 
     async def on_llm_end(self, context: RunContextWrapper, agent: Agent, response: Any) -> None:

@@ -237,3 +237,43 @@ async def test_per_agent_usage_resets_between_turns():
     records = await _flush(hooks)
     assert len(records) == 3
     assert (records[-1]["input_tokens"], records[-1]["output_tokens"]) == (7, 3)
+
+
+@pytest.mark.asyncio
+async def test_metadata_goes_on_every_record_of_the_turn():
+    hooks = _hooks()
+    hooks.set_metadata({"label": "teste.21", "variant": "A"})
+    await _handoff_turn(hooks)
+    records = await _flush(hooks)
+
+    assert len(records) == 2  # triage handoff record + final record
+    assert all(r["metadata"] == {"label": "teste.21", "variant": "A"} for r in records)
+
+
+@pytest.mark.asyncio
+async def test_metadata_cleared_with_none_and_absent_by_default():
+    hooks = _hooks()
+    hooks.set_metadata({"label": "teste.21"})
+    hooks.set_metadata(None)
+    await _handoff_turn(hooks)
+    records = await _flush(hooks)
+
+    assert all(r["metadata"] is None for r in records)
+
+
+@pytest.mark.asyncio
+async def test_wire_format_omits_metadata_unless_set():
+    wire = {}
+    for name, meta in (("without", None), ("with", {"label": "teste.21", "variant": "A"})):
+        hooks = _hooks()
+        hooks.client.upload_records_batch = Mock(
+            side_effect=lambda records: wire.setdefault(name, [r.to_api_format() for r in records])
+            and {"total_inserted": len(records)}
+        )
+        if meta:
+            hooks.set_metadata(meta)
+        await _handoff_turn(hooks)
+        await hooks.flush()
+
+    assert wire["without"] and all("metadata" not in r for r in wire["without"])
+    assert wire["with"] and all(r["metadata"] == {"label": "teste.21", "variant": "A"} for r in wire["with"])
