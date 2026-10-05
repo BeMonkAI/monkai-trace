@@ -279,8 +279,7 @@ class MonkAIRunHooks(RunHooks):
 
         Usage:
             hooks.set_metadata({"label": "teste.21", "variant": "A"})
-        ``None`` clears it. The Hub keeps only the keys it knows (``label``, ``variant``
-        for business agents).
+        ``None`` clears it. The Hub keeps only ``label`` and ``variant``.
         """
         self._metadata = dict(metadata) if metadata else None
 

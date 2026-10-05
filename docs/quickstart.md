@@ -62,6 +62,7 @@ async def main():
     hooks.set_user_id("user-12345")       # Unique ID for session
     hooks.set_user_name("João Silva")     # Display name in dashboard
     hooks.set_user_channel("whatsapp")    # Communication channel
+    hooks.set_metadata({"label": "teste.21", "variant": "A"})  # Experiment label (Hub keeps label/variant)
     
     # 3. Create your agent
     agent = Agent(
