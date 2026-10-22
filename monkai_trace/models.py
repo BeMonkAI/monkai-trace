@@ -1,6 +1,6 @@
 """Pydantic models for MonkAI data structures"""
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from typing import List, Optional, Dict, Any, Union
 from datetime import datetime
 
@@ -36,8 +36,7 @@ class Transfer(BaseModel):
     reason: Optional[str] = None
     timestamp: Optional[str] = None
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class TokenUsage(BaseModel):
