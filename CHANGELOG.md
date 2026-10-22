@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-10-22
+
+### Fixed
+- **No pydantic deprecation warning on import**: `Transfer` used a class-based `Config`, which emitted `PydanticDeprecatedSince20` on every import of the package and breaks on pydantic v3. It now uses `model_config = ConfigDict(...)` with the same options. (#61)
+
 ## [0.11.0] - 2026-10-05
 
 ### Added
