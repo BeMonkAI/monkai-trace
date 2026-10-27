@@ -261,6 +261,24 @@ async def test_metadata_cleared_with_none_and_absent_by_default():
     assert all(r["metadata"] is None for r in records)
 
 
+def test_metadata_property_reads_a_copy():
+    hooks = _hooks()
+    assert hooks.metadata is None
+
+    hooks.set_metadata({"label": "teste.21", "variant": "A"})
+    read = hooks.metadata
+    read["label"] = "mutated"
+    assert hooks.metadata == {"label": "teste.21", "variant": "A"}
+
+    hooks.set_metadata(None)
+    assert hooks.metadata is None
+
+
+def test_metadata_property_is_read_only():
+    with pytest.raises(AttributeError):
+        _hooks().metadata = {"label": "x"}
+
+
 @pytest.mark.asyncio
 async def test_wire_format_omits_metadata_unless_set():
     wire = {}

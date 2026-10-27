@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **`MonkAIClient.upload_topology(namespace, topology)`** (and on `AsyncMonkAIClient`): sends the declared agent topology of a namespace (e.g. AtendentePro's `export_network_topology()`, `schema_version` 1) to `POST /v1/topology/upload`, so the Hub can compare it with the topology observed in traces. Re-uploading an unchanged topology is a no-op (`changed: false`). (#60)
 
+## [0.11.2] - 2026-10-27
+
+### Added
+- **OpenAI Agents: `MonkAIRunHooks.metadata`**: read-only property returning a copy of the metadata set by `set_metadata()`, or `None`, so consumers no longer read the private `_metadata`. (#63)
+
 ## [0.11.1] - 2026-10-22
 
 ### Fixed
