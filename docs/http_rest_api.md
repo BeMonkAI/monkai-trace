@@ -70,7 +70,7 @@ exhausted the server returns `429 rate_limit_exceeded` with a
 |---|---:|---|
 | `traces` | 600 | `POST /v1/traces/llm`, `/tool`, `/handoff`, `/log` |
 | `traces_batch` | 60 | `POST /v1/traces/batch` (each batch holds up to 100 items) |
-| `bulk_upload` | 60 | `POST /v1/records/upload`, `/v1/logs/upload` |
+| `bulk_upload` | 60 | `POST /v1/records/upload`, `/v1/logs/upload`, `/v1/topology/upload` |
 | `sessions` | 600 | `POST /v1/sessions/create`, `/v1/sessions/get-or-create` |
 | `query` | 60 | `POST /v1/record_query`, `/v1/logs/query`, `/v1/records/export`, `/v1/logs/export` |
 | `rules` | 60 | `GET` and `PUT /v1/anonymization-rules` |
@@ -544,6 +544,41 @@ curl -X POST https://lpvbvnqrozlwalnkvrgk.supabase.co/functions/v1/monkai-api/v1
       { "type": "log",  "session_id": "sess_abc", "level": "info", "message": "done" }
     ]
   }'
+```
+
+### Upload Declared Topology — `POST /v1/topology/upload`
+
+Stores the **declared** agent network of a namespace, so the Hub can compare
+it with the topology **observed** in traces (Agentes → Fluxo).
+
+**Request body:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `namespace` | string | Yes | Registered namespace (or alias) owned by the token's user |
+| `topology` | object | Yes | Declared network, stored verbatim (max 256 KB). Must have `schema_version: 1` and an `agents` object keyed by agent key; each agent's `name` is the name its traces use |
+
+AtendentePro produces this object with `export_network_topology(network)`.
+
+**Response (200):** `{"namespace": "...", "topology_hash": "<sha256>", "changed": true}`.
+The hash is taken over the canonical JSON (sorted keys), so re-uploading the
+same topology in any key order returns `changed: false` and writes nothing.
+It is safe to call on every deploy.
+
+**Errors:** `400` (`missing_field` / `invalid_payload`, e.g. unknown
+`schema_version`), `403 member_token_forbidden` (member tokens cannot write),
+`404 not_found` (namespace not registered or not yours), `413 invalid_payload`
+(over 256 KB).
+
+**Python SDK:** `MonkAIClient.upload_topology(namespace, topology)` (also on
+`AsyncMonkAIClient`).
+
+```bash
+curl -X POST https://api.monkai.com.br/trace/v1/topology/upload \
+  -H "Authorization: Bearer tk_YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"namespace":"my-agent","topology":{"schema_version":1,"entry_point":"triage",
+       "agents":{"triage":{"name":"Triage","handoffs":["sales"],"tools":[]},
+                 "sales":{"name":"Sales","handoffs":[],"tools":["get_price"]}}}}'
 ```
 
 ---

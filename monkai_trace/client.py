@@ -4,7 +4,7 @@ import re
 import time
 import logging
 import requests
-from typing import List, Optional, Union, Dict
+from typing import Any, List, Optional, Union, Dict
 from pathlib import Path
 from .models import ConversationRecord, LogEntry, TokenUsage
 from .file_handlers import FileHandler
@@ -738,7 +738,25 @@ class MonkAIClient:
         }
         response = self._request_with_retry("POST", url, json=data)
         return response.json()
-    
+
+    # ==================== TOPOLOGY METHODS ====================
+
+    def upload_topology(self, namespace: str, topology: Dict[str, Any]) -> Dict:
+        """
+        Upload the declared agent topology of a namespace (e.g. AtendentePro's
+        ``export_network_topology(network)``, ``schema_version`` 1).
+
+        The Hub dedupes by content hash, so re-uploading an unchanged
+        topology is a no-op.
+
+        Returns:
+            Dict with namespace, topology_hash and changed (bool)
+        """
+        url = f"{self.base_url}/topology/upload"
+        data = {"namespace": namespace, "topology": topology}
+        response = self._request_with_retry("POST", url, json=data)
+        return response.json()
+
     # ==================== UTILITY METHODS ====================
     
     def test_connection(self) -> bool:

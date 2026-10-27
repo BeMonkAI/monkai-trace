@@ -49,6 +49,8 @@ tags:
     description: Read records and logs.
   - name: Export
     description: Bulk export with server-side pagination.
+  - name: Topology
+    description: Declared agent topology of a namespace.
 
 security:
   - bearerAuth: []
@@ -852,6 +854,94 @@ paths:
                 "https://api.monkai.com.br/trace/v1/logs/upload",
                 headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
                 json={"logs":[{"namespace":"my-agent","level":"info","message":"hi"}]},
+            )
+            print(r.headers["x-request-id"], r.json())
+  /topology/upload:
+    post:
+      tags: [Topology]
+      summary: Upload the declared agent topology of a namespace
+      description: >-
+        Stores the declared agent network of one namespace so the Hub can compare it with
+        the topology observed in traces. Idempotent by content: re-uploading the same
+        topology (any key order) returns `changed: false` and writes nothing. Only the
+        namespace owner's token may write; member tokens get 403.
+      operationId: uploadTopology
+      parameters:
+        - $ref: "#/components/parameters/RequestIdHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopologyUploadRequest"
+      responses:
+        "200":
+          description: Topology stored (or unchanged)
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestId"
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TopologyUploadResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Namespace not registered or not owned by the token's user (`not_found`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "413":
+          description: Topology larger than 256 KB (`invalid_payload`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        "500":
+          $ref: "#/components/responses/InternalError"
+      x-codeSamples:
+        - lang: Shell
+          label: curl
+          source: |
+            curl -X POST "https://api.monkai.com.br/trace/v1/topology/upload" \
+              -H "Authorization: Bearer $MONKAI_TRACER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -H "X-Request-ID: $(uuidgen)" \
+              -d '{"namespace":"my-agent","topology":{"schema_version":1,"entry_point":"triage","agents":{"triage":{"name":"Triage","handoffs":["sales"],"tools":[]},"sales":{"name":"Sales","handoffs":[],"tools":["get_price"]}}}}'
+        - lang: JavaScript
+          label: Node.js
+          source: |
+            // Node.js 18+ — no dependencies
+            const res = await fetch("https://api.monkai.com.br/trace/v1/topology/upload", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.MONKAI_TRACER_TOKEN}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({"namespace":"my-agent","topology":{"schema_version":1,"entry_point":"triage","agents":{"triage":{"name":"Triage","handoffs":["sales"],"tools":[]},"sales":{"name":"Sales","handoffs":[],"tools":["get_price"]}}}})
+            });
+            console.log(res.headers.get("x-request-id"), await res.json());
+        - lang: Python
+          label: Python
+          source: |
+            import os, requests
+            r = requests.post(
+                "https://api.monkai.com.br/trace/v1/topology/upload",
+                headers={"Authorization": f"Bearer {os.environ['MONKAI_TRACER_TOKEN']}"},
+                json={"namespace":"my-agent","topology":{"schema_version":1,"entry_point":"triage","agents":{"triage":{"name":"Triage","handoffs":["sales"],"tools":[]},"sales":{"name":"Sales","handoffs":[],"tools":["get_price"]}}}},
             )
             print(r.headers["x-request-id"], r.json())
   /record_query:
@@ -2023,6 +2113,47 @@ components:
         inserted_count:
           type: integer
           minimum: 0
+
+    # ---------- Topology ----------
+    TopologyUploadRequest:
+      type: object
+      required: [namespace, topology]
+      properties:
+        namespace:
+          type: string
+          minLength: 1
+          description: Registered namespace (or alias) owned by the token's user.
+        topology:
+          type: object
+          description: >-
+            Declared network, stored verbatim (max 256 KB), e.g. AtendentePro's
+            `export_network_topology()`. Only the envelope is validated.
+          required: [schema_version, agents]
+          additionalProperties: true
+          properties:
+            schema_version:
+              type: integer
+              enum: [1]
+            agents:
+              type: object
+              description: Keyed by agent key; each value carries at least `name` (the name traces use).
+              additionalProperties:
+                type: object
+                additionalProperties: true
+
+    TopologyUploadResponse:
+      type: object
+      required: [namespace, topology_hash, changed]
+      properties:
+        namespace:
+          type: string
+          description: Canonical namespace (aliases resolved).
+        topology_hash:
+          type: string
+          description: SHA-256 of the canonical JSON (sorted keys) of `topology`.
+        changed:
+          type: boolean
+          description: "`false` when the stored topology already had this hash (nothing written)."
 
     # ---------- Query ----------
     RecordQueryFilters:

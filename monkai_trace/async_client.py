@@ -655,8 +655,16 @@ class AsyncMonkAIClient:
                         json_mod.dump(logs, f, ensure_ascii=False, indent=2)
                 return logs
     
+    # ==================== TOPOLOGY METHODS ====================
+
+    async def upload_topology(self, namespace: str, topology: Dict[str, Any]) -> Dict[str, Any]:
+        """Async :meth:`MonkAIClient.upload_topology`: declared agent topology of a namespace."""
+        return await self._make_request(
+            "POST", "topology/upload", {"namespace": namespace, "topology": topology}
+        )
+
     # ==================== UTILITY METHODS ====================
-    
+
     async def test_connection(self) -> bool:
         """
         Test API connection.

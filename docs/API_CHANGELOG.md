@@ -12,7 +12,13 @@ keep working during a deprecation window.
 
 ## [Unreleased]
 
-_All Phase 2 and Phase 3 items shipped. The roadmap is currently **complete**._
+### Added
+- **`POST /v1/topology/upload`**: declared agent topology of a namespace
+  (`schema_version` 1, stored verbatim, max 256 KB), deduped by the hash of
+  its canonical JSON (`changed: false` when unchanged). Owner tokens only;
+  `bulk_upload` rate-limit bucket. Server side:
+  [BeMonkAI/monkai-agent-hub#230](https://github.com/BeMonkAI/monkai-agent-hub/pull/230).
+  ([#60](https://github.com/BeMonkAI/monkai-trace/issues/60))
 
 ## [v1.5] — 2026-05-03
 
