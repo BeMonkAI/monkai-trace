@@ -283,6 +283,11 @@ class MonkAIRunHooks(RunHooks):
         """
         self._metadata = dict(metadata) if metadata else None
 
+    @property
+    def metadata(self) -> Optional[Dict[str, Any]]:
+        """Copy of the metadata set by :meth:`set_metadata`, or ``None``."""
+        return dict(self._metadata) if self._metadata else None
+
     async def on_agent_end(
         self,
         context: RunContextWrapper,

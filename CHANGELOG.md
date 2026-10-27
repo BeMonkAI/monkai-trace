@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.2] - 2026-10-27
+
+### Added
+- **OpenAI Agents: `MonkAIRunHooks.metadata`**: read-only property returning a copy of the metadata set by `set_metadata()`, or `None`, so consumers no longer read the private `_metadata`. (#63)
+
 ## [0.11.1] - 2026-10-22
 
 ### Fixed
