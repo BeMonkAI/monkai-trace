@@ -642,8 +642,10 @@ Batch upload conversation records.
 - `inserted_at` (optional, ISO-8601): when the turn happened. Omitted → server stamps upload time, so backfills should always send it. The Hub buckets volume charts and sessions on this field.
 - `session_id` (optional): the Hub's Conversations tab groups records sharing a `session_id` into one session regardless of pauses; records without it fall back to a 120s inactivity gap. Rotate the id per conversation (the SDK session managers do this on inactivity) — never reuse one id per end user forever, and never share one id across different end users.
 - `model` (optional): stored and shown per session.
-- `source` (optional): the integration that produced the record (`claude-code`, `cline`, `copilot`, `openclaw`, ...). Coding-assistant sources will drive the Hub's Dev view.
-- `metadata` (optional, object): integration-specific context. The Claude Code hook sends `repo`, `project`, `branch`, `entrypoint` (`cli` interactive / `sdk-cli` automation) and `client_version`; never absolute paths. Persisting `source`/`metadata` in the Hub is pending (monkai-agent-hub Dev view); until then the server ignores them.
+- `source` (optional): the integration that produced the record. Stored. The coding-assistant sources (`claude-code`, `cline`, `copilot`, `openclaw`, `codex`, `grok`, `monkai-router`) mark the namespace as `coding_assistant`: it moves out of the Hub's business Monitoring and into the Dev view ("Assistentes de código").
+- `metadata` (optional, object, ≤ 2 KB): the Hub keeps only string values of known keys and drops the rest (`null` when nothing is left):
+  - every source: `label` and `variant`, an experiment label compared in Analytics (`[A-Za-z0-9._-]`, up to 64 chars). The Python SDK sends them via `MonkAIRunHooks.set_metadata({"label": ..., "variant": ...})`.
+  - coding-assistant sources only: `repo`, `project`, `branch`, `entrypoint` (`cli` interactive / `sdk-cli` automation) and `client_version`, sent by the Claude Code hook; never absolute paths.
 
 ---
 
