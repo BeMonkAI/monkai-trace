@@ -77,6 +77,12 @@ def example_payload(operation_id: str) -> str:
         return '{"namespace":"my-agent","format":"json"}'
     if operation_id == "exportLogs":
         return '{"namespace":"my-agent","format":"csv"}'
+    if operation_id == "uploadTopology":
+        return (
+            '{"namespace":"my-agent","topology":{"schema_version":1,"entry_point":"triage",'
+            '"agents":{"triage":{"name":"Triage","handoffs":["sales"],"tools":[]},'
+            '"sales":{"name":"Sales","handoffs":[],"tools":["get_price"]}}}}'
+        )
     return "{}"
 
 
