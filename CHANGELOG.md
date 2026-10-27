@@ -5,6 +5,46 @@ All notable changes to monkai-trace-python will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.12.0] - 2026-10-27
+
+### Added
+- **`MonkAIClient.upload_topology(namespace, topology)`** (and on `AsyncMonkAIClient`): sends the declared agent topology of a namespace (e.g. AtendentePro's `export_network_topology()`, `schema_version` 1) to `POST /v1/topology/upload`, so the Hub can compare it with the topology observed in traces. Re-uploading an unchanged topology is a no-op (`changed: false`). (#60)
+
+## [0.11.2] - 2026-10-27
+
+### Added
+- **OpenAI Agents: `MonkAIRunHooks.metadata`**: read-only property returning a copy of the metadata set by `set_metadata()`, or `None`, so consumers no longer read the private `_metadata`. (#63)
+
+## [0.11.1] - 2026-10-22
+
+### Fixed
+- **No pydantic deprecation warning on import**: `Transfer` used a class-based `Config`, which emitted `PydanticDeprecatedSince20` on every import of the package and breaks on pydantic v3. It now uses `model_config = ConfigDict(...)` with the same options. (#61)
+
+## [0.11.0] - 2026-10-05
+
+### Added
+- **OpenAI Agents: `MonkAIRunHooks.set_metadata()`**: sends `metadata` on every record of the turn (handoff records included), e.g. an experiment label (`{"label": ..., "variant": ...}`). `set_metadata(None)` clears it. (#58)
+
+## [0.10.2] - 2026-10-04
+
+### Fixed
+- **OpenAI Agents: `model` is the model id, not a repr**: when `Agent.model` was a Model object (`LitellmModel`, or `OpenAIChatCompletionsModel` / `OpenAIResponsesModel` with a custom client), the record got `str(obj)` (`<agents...LitellmModel object at 0x...>`), so the Hub could not group or price it. The id now comes from the object's `.model`; `LitellmModel` drops the provider prefix (`anthropic/claude-sonnet-4-5` → `claude-sonnet-4-5`); unknown objects send `null`. String models pass through unchanged.
+- **OpenAI Agents: handoff turns attribute tokens per agent**: a Triage → Specialist turn emitted one record tagged with the specialist, carrying the run's cumulative usage, so the triage agent's tokens were billed to the specialist's model. Usage is now collected per agent from `on_llm_end`; each agent that handed off gets its own record (its name, model and tokens, same `session_id`, a single `assistant` handoff message so the Hub does not count it as a human turn) before the final agent's record, which keeps the full conversation and transfers with only its own tokens. Turns without handoff, and SDKs that never call `on_llm_end`, produce the same record as before.
+
+## [0.10.1] - 2026-10-01
+
+### Fixed
+- **Codex/Grok hooks upload the turn that just ended on `Stop`**: Grok runs its `Stop` hook before it logs `turn_completed` (and Codex may not have flushed `task_complete` yet), so 0.10.0 held the turn back until the next prompt or `SessionEnd`; a one-prompt session uploaded nothing. Codex and Grok hooks now flush the trailing turn on every event; offsets keep a later `SessionEnd` from duplicating it. Claude Code is unchanged. (Issues #52, #53)
+
+## [0.10.0] - 2026-10-01
+
+### Added
+- **Codex CLI auto-trace**: `monkai-trace install-hook --assistant codex` registers `Stop` + `SessionEnd` in `~/.codex/hooks.json`; `monkai-trace codex-hook` uploads each finished turn of the rollout (`source="codex"`) with model, tool calls, repo/branch metadata and exact tokens (uncached input, cached input as `memory_tokens`, output). Injected context (AGENTS.md, environment context, developer messages) is not sent. New `CodexTracer` / `run_codex_hook`. (Issue #52)
+- **Grok CLI auto-trace**: `monkai-trace install-hook --assistant grok` writes `~/.grok/hooks/monkai-trace.json`; `monkai-trace grok-hook` uploads each finished user turn (`source="grok"`) from the append-only `updates.jsonl`. Grok logs no input/output split, so tokens are estimated from the growth of the context size and flagged with `metadata.tokens_estimated`. New `GrokTracer` / `run_grok_hook`. (Issue #53)
+- `uninstall-hook` takes the same `--assistant`; Claude Code stays the default.
+
 ## [0.9.3] - 2026-09-29
 
 ### Added
