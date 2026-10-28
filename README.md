@@ -118,6 +118,8 @@ hooks.set_user_channel("whatsapp")
 # Experiment label: sent on every record of the turn; the Hub keeps `label` and `variant`
 hooks.set_metadata({"label": "teste.21", "variant": "A"})
 hooks.metadata  # read-only copy of what goes on the trace, or None
+# Function tool arguments are recorded (anonymized) in tool_calls[].arguments;
+# pass capture_tool_arguments=False to MonkAIRunHooks to never send them
 
 result = await MonkAIRunHooks.run_with_tracking(agent, "Hello!", hooks)
 ```
