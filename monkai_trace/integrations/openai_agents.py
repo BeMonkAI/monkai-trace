@@ -225,7 +225,7 @@ class MonkAIRunHooks(RunHooks):
                 sender="user"
             ))
             logger.debug(f"Captured user message: {user_message_content[:50]}...")
-        else:
+        elif not self._user_input:  # after a handoff the first agent already captured it
             logger.warning("No user message captured. Consider using hooks.set_user_input() or MonkAIRunHooks.run_with_tracking()")
     
     def set_user_input(self, user_input: str) -> None:

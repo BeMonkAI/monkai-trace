@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-10-28
+
+### Fixed
+- **OpenAI Agents: no spurious `No user message captured` WARNING after a handoff**: the agent that receives a handoff no longer warns when the first agent of the turn already captured the user message. A turn with no user input at all still logs the WARNING. (#69)
+
 ## [0.13.0] - 2026-10-28
 
 ### Added
