@@ -1,5 +1,6 @@
 """OpenAI Agents framework integration for MonkAI"""
 
+import json
 import logging
 import uuid
 from typing import Any, Optional, Dict, List
@@ -69,7 +70,8 @@ class MonkAIRunHooks(RunHooks):
         batch_size: int = 10,
         session_manager: Optional[SessionManager] = None,
         inactivity_timeout: int = 120,
-        persistent_sessions: bool = False
+        persistent_sessions: bool = False,
+        capture_tool_arguments: bool = True
     ):
         """
         Initialize MonkAI tracking hooks.
@@ -85,6 +87,10 @@ class MonkAIRunHooks(RunHooks):
             persistent_sessions: Use server-side session persistence (default: False).
                 When True, sessions are resolved via the MonkAI backend database,
                 ensuring continuity across stateless environments (REST APIs, serverless).
+            capture_tool_arguments: Record function tool call arguments in
+                ``tool_calls[].arguments`` of the "Calling tool" message (default: True).
+                Arguments go through the same anonymization as message content;
+                set False to never send them.
         """
         if not OPENAI_AGENTS_AVAILABLE:
             raise ImportError(
@@ -97,7 +103,8 @@ class MonkAIRunHooks(RunHooks):
         self.auto_upload = auto_upload
         self.estimate_system_tokens = estimate_system_tokens
         self.batch_size = batch_size
-        
+        self.capture_tool_arguments = capture_tool_arguments
+
         # Session management
         if session_manager:
             self.session_manager = session_manager
@@ -501,13 +508,31 @@ class MonkAIRunHooks(RunHooks):
     ) -> None:
         """Called when tool execution starts"""
         logger.debug(f"Tool '{tool.name}' started by {agent.name}")
-        
+
+        # Function tools get a ToolContext carrying the raw JSON arguments
+        # (older SDKs pass a plain RunContextWrapper without them). The client
+        # anonymizes tool_calls[].arguments before upload, same as content.
+        tool_calls = None
+        raw_args = getattr(context, 'tool_arguments', None) if self.capture_tool_arguments else None
+        if isinstance(raw_args, str):
+            try:
+                arguments = json.loads(raw_args) if raw_args else {}
+            except ValueError:
+                arguments = raw_args
+            tool_calls = [{
+                "name": tool.name,
+                "type": "function_call",
+                "id": getattr(context, 'tool_call_id', None),
+                "arguments": arguments,
+            }]
+
         # Track as a message
         self._messages.append(Message(
             role="tool",
             content=f"Calling tool: {tool.name}",
             sender=agent.name,
-            tool_name=tool.name
+            tool_name=tool.name,
+            tool_calls=tool_calls
         ))
     
     async def on_tool_end(
@@ -784,7 +809,24 @@ class MonkAIRunHooks(RunHooks):
         
         try:
             result = self.client.upload_records_batch(self._batch_buffer)
-            logger.info(f"Uploaded {result['total_inserted']} records")
+            failures = result.get('failures') or []
+            if failures:
+                lost = result.get('total_records', len(self._batch_buffer)) - result['total_inserted']
+                for failure in failures:
+                    error = failure.get('error', '')
+                    hint = ""
+                    if "unregistered_namespace" in error:
+                        hint = (
+                            f" Register namespace '{self.namespace}' in the MonkAI Hub panel "
+                            "(or POST /namespace/register) before sending traces."
+                        )
+                    logger.warning(
+                        f"Upload of chunk {failure.get('chunk_index')} failed "
+                        f"for namespace '{self.namespace}': {error}.{hint}"
+                    )
+                logger.warning(f"Uploaded {result['total_inserted']} records; {lost} records lost")
+            else:
+                logger.info(f"Uploaded {result['total_inserted']} records")
             self._batch_buffer.clear()
         except Exception as e:
             logger.error(f"Upload failed: {e}")

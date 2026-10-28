@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-10-28
+
+### Added
+- **OpenAI Agents: function tool arguments in the trace**: the "Calling tool: <name>" message now carries `tool_calls=[{"name", "type": "function_call", "id", "arguments"}]`, with the arguments the agent sent (parsed JSON, or the raw string if not JSON). Arguments go through the same anonymization as message content before upload. Opt out with `MonkAIRunHooks(..., capture_tool_arguments=False)`. SDK versions that do not pass a `ToolContext` keep the name-only message. (#67)
+
+### Fixed
+- **OpenAI Agents: failed batch upload is no longer logged as `INFO Uploaded 0 records`**: each failed chunk is logged as a WARNING with the error and namespace, plus how many records were lost. An unregistered namespace gets an actionable hint (register it in the Hub panel or via `POST /namespace/register`). (#66)
+
 ## [0.12.0] - 2026-10-27
 
 ### Added

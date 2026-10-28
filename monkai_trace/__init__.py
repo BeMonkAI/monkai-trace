@@ -45,7 +45,7 @@ try:
 except ImportError:
     OpenClawTracer = None
 
-__version__ = "0.12.0"
+__version__ = "0.13.0"
 __all__ = [
     "MonkAIClient",
     "AsyncMonkAIClient",
